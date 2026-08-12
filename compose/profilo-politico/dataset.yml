@@ -43,6 +43,16 @@ raw:
       args:
         path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
         filename: "senato_gruppi.parquet"
+    - name: "camera_voti"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet"
+        filename: "camera_voti.parquet"
+    - name: "camera_deputati"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
+        filename: "camera_deputati.parquet"
 
 clean:
   sql: "sql/clean.sql"
@@ -53,16 +63,16 @@ clean:
 
 mart:
   tables:
-    - name: "mart_profilo_senatore"
+    - name: "mart_profilo"
       sql: "sql/mart_profilo_senatore.sql"
   required_tables:
-    - "mart_profilo_senatore"
+    - "mart_profilo"
   validate:
     table_rules:
-      mart_profilo_senatore:
-        required_columns: [senatore_id, nome, n_voti, pct_coerente, pct_col_gruppo]
-        primary_key: [senatore_id]
-        min_rows: 100
+      mart_profilo:
+        required_columns: [ramo, id_parlamentare, persona_id, nome, n_voti, pct_coerente, pct_col_gruppo]
+        primary_key: [ramo, id_parlamentare]
+        min_rows: 400
 
 validation:
   fail_on_error: true

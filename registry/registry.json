@@ -355,6 +355,74 @@
       ]
     },
     {
+      "slug": "camera_voti",
+      "name": "Camera Voti",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "votazioni",
+        "voti",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "deputato_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sigla_gruppo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "gruppo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "gruppo_parlamentare"
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_voti/2026/camera_voti_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_voti__mart_sintesi",
+        "camera_voti__mart_voto_deputato"
+      ]
+    },
+    {
       "slug": "dait_amministratori_locali",
       "name": "Dait Amministratori Locali",
       "description": "",
@@ -1405,11 +1473,23 @@
       "category": "politica",
       "columns": [
         {
-          "name": "senatore_id",
+          "name": "ramo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_parlamentare",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
           "type": "BIGINT",
           "role": "dimension",
           "description": "",
-          "semantic_type": "senator_id"
+          "semantic_type": "person_id"
         },
         {
           "name": "nome",
@@ -1422,13 +1502,6 @@
           "type": "VARCHAR",
           "role": "dimension",
           "description": ""
-        },
-        {
-          "name": "persona_id",
-          "type": "BIGINT",
-          "role": "dimension",
-          "description": "",
-          "semantic_type": "person_id"
         },
         {
           "name": "n_voti",
@@ -1486,7 +1559,7 @@
       },
       "stage": "incubating",
       "mart_refs": [
-        "profilo_politico__mart_profilo_senatore"
+        "profilo_politico__mart_profilo"
       ]
     },
     {
@@ -2115,6 +2188,26 @@
       }
     },
     {
+      "slug": "camera_voti__mart_sintesi",
+      "dataset": "camera_voti",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_voti/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_voti__mart_voto_deputato",
+      "dataset": "camera_voti",
+      "table": "mart_voto_deputato",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_voti/2026/mart_voto_deputato.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "dait_amministratori_locali__mart_profilo_carica",
       "dataset": "dait_amministratori_locali",
       "table": "mart_profilo_carica",
@@ -2285,12 +2378,12 @@
       }
     },
     {
-      "slug": "profilo_politico__mart_profilo_senatore",
+      "slug": "profilo_politico__mart_profilo",
       "dataset": "profilo_politico",
-      "table": "mart_profilo_senatore",
+      "table": "mart_profilo",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/profilo_politico/2026/mart_profilo_senatore.parquet",
+        "path": "gs://dataciviclab-mart/profilo_politico/2026/mart_profilo.parquet",
         "multi_file": false
       }
     },
@@ -2444,7 +2537,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260812T125604Z_814da964",
+        "run_id": "20260812T183017Z_8286ff07",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2453,17 +2546,17 @@
           "mart": 100
         },
         "output_rows": {
-          "clean": 209,
-          "mart": 209
+          "clean": 622,
+          "mart": 622
         },
         "output_bytes": {
-          "raw": 4141232,
-          "clean": 7655,
-          "mart": 7357
+          "raw": 41840960,
+          "clean": 17943,
+          "mart": 17623
         },
-        "started_at": "2026-08-12T12:56:04.460111+00:00",
-        "finished_at": "2026-08-12T12:56:05.122862+00:00",
-        "duration_seconds": 0.663
+        "started_at": "2026-08-12T18:30:17.127196+00:00",
+        "finished_at": "2026-08-12T18:30:19.376716+00:00",
+        "duration_seconds": 2.25
       }
     },
     {
@@ -2585,6 +2678,36 @@
         "started_at": "2026-08-12T13:35:01.699315+00:00",
         "finished_at": "2026-08-12T13:35:04.906746+00:00",
         "duration_seconds": 3.207
+      }
+    },
+    {
+      "id": "camera_voti",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_voti",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T182612Z_885217c6",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 7747588,
+          "mart": 419
+        },
+        "output_bytes": {
+          "raw": 98652823,
+          "clean": 36777504,
+          "mart": 7637
+        },
+        "started_at": "2026-08-12T18:26:12.142139+00:00",
+        "finished_at": "2026-08-12T18:26:23.145806+00:00",
+        "duration_seconds": 11.004
       }
     },
     {
@@ -3085,10 +3208,16 @@
             "name": "Camera Incarichi",
             "column": "gruppo",
             "semantic_type": "gruppo_parlamentare"
+          },
+          {
+            "slug": "camera_voti",
+            "name": "Camera Voti",
+            "column": "gruppo",
+            "semantic_type": "gruppo_parlamentare"
           }
         ],
         "types": {
-          "gruppo_parlamentare": 2
+          "gruppo_parlamentare": 3
         }
       },
       "Nazione": {
@@ -3143,12 +3272,6 @@
           {
             "slug": "profilo_politico",
             "name": "Profilo Politico",
-            "column": "senatore_id",
-            "semantic_type": "senator_id"
-          },
-          {
-            "slug": "profilo_politico",
-            "name": "Profilo Politico",
             "column": "persona_id",
             "semantic_type": "person_id"
           },
@@ -3179,7 +3302,7 @@
         ],
         "types": {
           "person_id": 5,
-          "senator_id": 6
+          "senator_id": 5
         }
       },
       "Provincia": {
