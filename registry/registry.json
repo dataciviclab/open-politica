@@ -1,0 +1,2482 @@
+{
+  "schema_version": 1,
+  "repo": "open-politica",
+  "source_repo": "dataciviclab/open-politica",
+  "updated_at": "2026-08-12",
+  "datasets": [
+    {
+      "slug": "camera_deputati_legislature",
+      "name": "Camera Deputati Legislature",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1861,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "deputati",
+        "legislature"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "deputato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "gender",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "biografia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "foto_url",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "mandato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "scheda_url",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_deputati_legislature__mart_legislatura_genere",
+        "camera_deputati_legislature__mart_top_mandati"
+      ]
+    },
+    {
+      "slug": "camera_incarichi",
+      "name": "Camera Incarichi",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1946,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "incarichi",
+        "gruppi-parlamentari"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "incarico",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "deputato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "gruppo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "gruppo_parlamentare"
+        },
+        {
+          "name": "legislatura",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "start_date",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "end_date",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_incarichi/2026/camera_incarichi_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_incarichi__mart_ruoli_legislatura",
+        "camera_incarichi__mart_top_deputati"
+      ]
+    },
+    {
+      "slug": "elezioni_comunali",
+      "name": "Elezioni Comunali",
+      "description": "",
+      "source": "",
+      "source_id": "eligendo",
+      "period": {
+        "start": 2016,
+        "end": 2024
+      },
+      "tags": [
+        "politica",
+        "elezioni"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "regione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "region_code"
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "turno",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "candidato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "lista",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_candidato",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "voti_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "seggi_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "elettori",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "elettori_maschi",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti_maschi",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_bianche",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/elezioni_comunali/*/elezioni_comunali_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "elezioni_comunali__mart_voti_lista_comune"
+      ]
+    },
+    {
+      "slug": "elezioni_europee",
+      "name": "Elezioni Europee",
+      "description": "",
+      "source": "",
+      "source_id": "eligendo",
+      "period": {
+        "start": 1979,
+        "end": 2024
+      },
+      "tags": [
+        "politica",
+        "elezioni",
+        "europee"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "circoscrizione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "regione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "region_code"
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "lista",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "elettori",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_bianche",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/elezioni_europee/*/elezioni_europee_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "elezioni_europee__mart_voti_lista_comune"
+      ]
+    },
+    {
+      "slug": "elezioni_politiche",
+      "name": "Elezioni Politiche",
+      "description": "",
+      "source": "",
+      "source_id": "ministero_interno_dait",
+      "period": {
+        "start": 1948,
+        "end": 2022
+      },
+      "tags": [
+        "politica",
+        "elezioni",
+        "politiche"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "camera_senato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "circoscrizione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "collegio_plurinominale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "collegio_uninominale",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "elettori_totali",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "elettori_maschi",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti_totali",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti_maschi",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_biache",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "lista",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "descr_lista",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "luogo_nascita",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_nascita",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sesso",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_candidato",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/elezioni_politiche/2022/elezioni_politiche_2022_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "elezioni_politiche__mart_voti_elezioni_politiche",
+        "elezioni_politiche__mart_candidati",
+        "elezioni_politiche__mart_trend"
+      ]
+    },
+    {
+      "slug": "elezioni_referendum",
+      "name": "Elezioni Referendum",
+      "description": "",
+      "source": "",
+      "source_id": "eligendo",
+      "period": {
+        "start": 1995,
+        "end": 2022
+      },
+      "tags": [
+        "politica",
+        "elezioni",
+        "referendum"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "regione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "region_code"
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "elettori_uomini",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "elettori",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti_uomini",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "voti_si",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "voti_no",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_nulle",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_bianche",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_contestate",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "num_quesito",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/elezioni_referendum/*/elezioni_referendum_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "elezioni_referendum__mart_voti_quesito_comune",
+        "elezioni_referendum__mart_trend"
+      ]
+    },
+    {
+      "slug": "elezioni_regionali",
+      "name": "Elezioni Regionali",
+      "description": "",
+      "source": "",
+      "source_id": "eligendo",
+      "period": {
+        "start": 2018,
+        "end": 2024
+      },
+      "tags": [
+        "politica",
+        "elezioni"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "regione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "region_code"
+        },
+        {
+          "name": "circoscrizione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "elettori",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_bianche",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "candidato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_candidato",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "lista",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/elezioni_regionali/*/elezioni_regionali_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "elezioni_regionali__mart_voti_lista_comune"
+      ]
+    },
+    {
+      "slug": "elezioni_voto",
+      "name": "Elezioni Voto",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 1979,
+        "end": 2024
+      },
+      "tags": [
+        "politica",
+        "elezioni",
+        "voto"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_elezione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "regione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "region_code"
+        },
+        {
+          "name": "provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "circoscrizione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "elettori",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "schede_bianche",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "affluenza_pct",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "lista",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "candidato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voti_candidato",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "turno",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "seggi_lista",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/elezioni_voto/2026/elezioni_voto_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "elezioni_voto__mart_sintesi",
+        "elezioni_voto__mart_trend",
+        "elezioni_voto__mart_liste"
+      ]
+    },
+    {
+      "slug": "membri_governo",
+      "name": "Membri Governo",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1862,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "governo",
+        "ministri",
+        "legislature"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "membro",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "start_date",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "end_date",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "interim",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "motivo_termine",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "governo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "organo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/membri_governo/2026/membri_governo_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "membri_governo__mart_legislatura",
+        "membri_governo__mart_governi"
+      ]
+    },
+    {
+      "slug": "ponte_persona",
+      "name": "Ponte Persona",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "ponte",
+        "identita",
+        "persona"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "tipo_match",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/ponte_persona/2026/ponte_persona_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "ponte_persona__mart_match"
+      ]
+    },
+    {
+      "slug": "profilo_politico",
+      "name": "Profilo Politico",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "profilo",
+        "senato",
+        "voti",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "n_voti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_favorevoli",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_contrari",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_astenuti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "pct_coerente",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "pct_col_gruppo",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_cariche_governo",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "in_governo",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/profilo_politico/2026/profilo_politico_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "profilo_politico__mart_profilo_senatore"
+      ]
+    },
+    {
+      "slug": "senato_anagrafica",
+      "name": "Senato Anagrafica",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "anagrafica",
+        "senatori"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_nascita",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "luogo_nascita",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_anagrafica__mart_nascita_anno",
+        "senato_anagrafica__mart_luogo_nascita"
+      ]
+    },
+    {
+      "slug": "senato_gruppi",
+      "name": "Senato Gruppi",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "gruppi",
+        "membership",
+        "compattezza"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "gruppo_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "nome_gruppo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sigla",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "carica",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_inizio",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_fine",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_gruppi__mart_gruppi_attuali",
+        "senato_gruppi__mart_carica_gruppo"
+      ]
+    },
+    {
+      "slug": "senato_votazioni",
+      "name": "Senato Votazioni",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "votazioni",
+        "voti",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "votazione_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "voto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "esito",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "seduta",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "n_favorevoli",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_contrari",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_astenuti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_votanti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_presenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_maggioranza",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_congedo_missione",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_votazioni__mart_sintesi",
+        "senato_votazioni__mart_voto_senatore"
+      ]
+    }
+  ],
+  "marts": [
+    {
+      "slug": "camera_deputati_legislature__mart_legislatura_genere",
+      "dataset": "camera_deputati_legislature",
+      "table": "mart_legislatura_genere",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_deputati_legislature/2026/mart_legislatura_genere.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_deputati_legislature__mart_top_mandati",
+      "dataset": "camera_deputati_legislature",
+      "table": "mart_top_mandati",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_deputati_legislature/2026/mart_top_mandati.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_gruppi__mart_gruppi_legislatura",
+      "dataset": "camera_gruppi",
+      "table": "mart_gruppi_legislatura",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_gruppi/2026/mart_gruppi_legislatura.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_incarichi__mart_ruoli_legislatura",
+      "dataset": "camera_incarichi",
+      "table": "mart_ruoli_legislatura",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_incarichi/2026/mart_ruoli_legislatura.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_incarichi__mart_top_deputati",
+      "dataset": "camera_incarichi",
+      "table": "mart_top_deputati",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_incarichi/2026/mart_top_deputati.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_votazioni_sparql__camera_votazioni",
+      "dataset": "camera_votazioni_sparql",
+      "table": "camera_votazioni",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_votazioni_sparql/camera_votazioni.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "dait_amministratori_locali__mart_profilo_carica",
+      "dataset": "dait_amministratori_locali",
+      "table": "mart_profilo_carica",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/dait_amministratori_locali/2026/mart_profilo_carica.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "dait_amministratori_locali__mart_profilo_demografico",
+      "dataset": "dait_amministratori_locali",
+      "table": "mart_profilo_demografico",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/dait_amministratori_locali/2026/mart_profilo_demografico.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "dait_amministratori_locali__mart_territorio",
+      "dataset": "dait_amministratori_locali",
+      "table": "mart_territorio",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/dait_amministratori_locali/2026/mart_territorio.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_comunali__mart_voti_lista_comune",
+      "dataset": "elezioni_comunali",
+      "table": "mart_voti_lista_comune",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_comunali/2024/mart_voti_lista_comune.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_europee__mart_voti_lista_comune",
+      "dataset": "elezioni_europee",
+      "table": "mart_voti_lista_comune",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_europee/2024/mart_voti_lista_comune.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_politiche__mart_candidati",
+      "dataset": "elezioni_politiche",
+      "table": "mart_candidati",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_politiche/2022/mart_candidati.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_politiche__mart_trend",
+      "dataset": "elezioni_politiche",
+      "table": "mart_trend",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_politiche/2022/mart_trend.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_politiche__mart_voti_elezioni_politiche",
+      "dataset": "elezioni_politiche",
+      "table": "mart_voti_elezioni_politiche",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_politiche/2022/mart_voti_elezioni_politiche.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_referendum__mart_trend",
+      "dataset": "elezioni_referendum",
+      "table": "mart_trend",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_referendum/2022/mart_trend.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_referendum__mart_voti_quesito_comune",
+      "dataset": "elezioni_referendum",
+      "table": "mart_voti_quesito_comune",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_referendum/2022/mart_voti_quesito_comune.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_regionali__mart_voti_lista_comune",
+      "dataset": "elezioni_regionali",
+      "table": "mart_voti_lista_comune",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_regionali/2024/mart_voti_lista_comune.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_voto__mart_liste",
+      "dataset": "elezioni_voto",
+      "table": "mart_liste",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_voto/2026/mart_liste.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_voto__mart_sintesi",
+      "dataset": "elezioni_voto",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_voto/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "elezioni_voto__mart_trend",
+      "dataset": "elezioni_voto",
+      "table": "mart_trend",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_voto/2026/mart_trend.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "membri_governo__mart_governi",
+      "dataset": "membri_governo",
+      "table": "mart_governi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/membri_governo/2026/mart_governi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "membri_governo__mart_legislatura",
+      "dataset": "membri_governo",
+      "table": "mart_legislatura",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/membri_governo/2026/mart_legislatura.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "ponte_persona__mart_match",
+      "dataset": "ponte_persona",
+      "table": "mart_match",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/ponte_persona/2026/mart_match.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "profilo_politico__mart_profilo_senatore",
+      "dataset": "profilo_politico",
+      "table": "mart_profilo_senatore",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/profilo_politico/2026/mart_profilo_senatore.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_anagrafica__mart_luogo_nascita",
+      "dataset": "senato_anagrafica",
+      "table": "mart_luogo_nascita",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_anagrafica/2026/mart_luogo_nascita.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_anagrafica__mart_nascita_anno",
+      "dataset": "senato_anagrafica",
+      "table": "mart_nascita_anno",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_anagrafica/2026/mart_nascita_anno.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_ddl__mart_anno",
+      "dataset": "senato_ddl",
+      "table": "mart_anno",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_ddl/2026/mart_anno.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_ddl__mart_iter_tempi",
+      "dataset": "senato_ddl",
+      "table": "mart_iter_tempi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_ddl/2026/mart_iter_tempi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_ddl__mart_stato",
+      "dataset": "senato_ddl",
+      "table": "mart_stato",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_ddl/2026/mart_stato.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_firmatari__mart_firmatari_ddl",
+      "dataset": "senato_firmatari",
+      "table": "mart_firmatari_ddl",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_firmatari/2026/mart_firmatari_ddl.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_firmatari__mart_tipo_iniziativa",
+      "dataset": "senato_firmatari",
+      "table": "mart_tipo_iniziativa",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_firmatari/2026/mart_tipo_iniziativa.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_gruppi__mart_carica_gruppo",
+      "dataset": "senato_gruppi",
+      "table": "mart_carica_gruppo",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_gruppi/2026/mart_carica_gruppo.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_gruppi__mart_gruppi_attuali",
+      "dataset": "senato_gruppi",
+      "table": "mart_gruppi_attuali",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_gruppi/2026/mart_gruppi_attuali.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_votazioni__mart_sintesi",
+      "dataset": "senato_votazioni",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_votazioni/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_votazioni__mart_voto_senatore",
+      "dataset": "senato_votazioni",
+      "table": "mart_voto_senatore",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_votazioni/2026/mart_voto_senatore.parquet",
+        "multi_file": false
+      }
+    }
+  ],
+  "signals": [
+    {
+      "id": "compose:elezioni_voto",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "elezioni_voto",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T132712Z_e800b416",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 1351089,
+          "mart": 180073
+        },
+        "output_bytes": {
+          "raw": 439500,
+          "clean": 6005675,
+          "mart": 2786637
+        },
+        "started_at": "2026-08-12T13:27:12.235692+00:00",
+        "finished_at": "2026-08-12T13:27:18.476897+00:00",
+        "duration_seconds": 6.241
+      }
+    },
+    {
+      "id": "compose:profilo_politico",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "profilo_politico",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T125604Z_814da964",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 209,
+          "mart": 209
+        },
+        "output_bytes": {
+          "raw": 4141232,
+          "clean": 7655,
+          "mart": 7357
+        },
+        "started_at": "2026-08-12T12:56:04.460111+00:00",
+        "finished_at": "2026-08-12T12:56:05.122862+00:00",
+        "duration_seconds": 0.663
+      }
+    },
+    {
+      "id": "camera_deputati_legislature",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_deputati_legislature",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T122432Z_15f4c6bb",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 27764,
+          "clean": 27764,
+          "mart": 11326
+        },
+        "output_bytes": {
+          "raw": 9215485,
+          "clean": 922224,
+          "mart": 111916
+        },
+        "started_at": "2026-08-12T12:24:32.194510+00:00",
+        "finished_at": "2026-08-12T12:24:43.922812+00:00",
+        "duration_seconds": 11.728
+      }
+    },
+    {
+      "id": "camera_gruppi",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_gruppi",
+      "detail": "anno 2026 — mart: si",
+      "action": ""
+    },
+    {
+      "id": "camera_incarichi",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_incarichi",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T122400Z_1cf96c15",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 3096,
+          "clean": 2861,
+          "mart": 2196
+        },
+        "output_bytes": {
+          "raw": 1085531,
+          "clean": 112578,
+          "mart": 12184
+        },
+        "started_at": "2026-08-12T12:24:00.290331+00:00",
+        "finished_at": "2026-08-12T12:24:03.358310+00:00",
+        "duration_seconds": 3.068
+      }
+    },
+    {
+      "id": "camera_votazioni_sparql",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_votazioni_sparql",
+      "detail": "anni 2018-2026 — mart: si",
+      "action": ""
+    },
+    {
+      "id": "dait_amministratori_locali",
+      "source_id": "dait",
+      "status": "ok",
+      "label": "dait_amministratori_locali",
+      "detail": "anno 2026 — mart: si",
+      "action": ""
+    },
+    {
+      "id": "elezioni_comunali",
+      "source_id": "eligendo",
+      "status": "ok",
+      "label": "elezioni_comunali",
+      "detail": "anni 2016-2024 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T131946Z_5227f9fc",
+        "year": 2024,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 10342,
+          "clean": 10342,
+          "mart": 10342
+        },
+        "output_bytes": {
+          "raw": 1738425,
+          "clean": 280742,
+          "mart": 301948
+        },
+        "started_at": "2026-08-12T13:19:46.668192+00:00",
+        "finished_at": "2026-08-12T13:19:49.160853+00:00",
+        "duration_seconds": 2.493
+      }
+    },
+    {
+      "id": "elezioni_europee",
+      "source_id": "eligendo",
+      "status": "ok",
+      "label": "elezioni_europee",
+      "detail": "anni 1979-2024 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T132133Z_041f4caa",
+        "year": 2024,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 93984,
+          "clean": 93984,
+          "mart": 93984
+        },
+        "output_bytes": {
+          "raw": 12648879,
+          "clean": 318908,
+          "mart": 730734
+        },
+        "started_at": "2026-08-12T13:21:33.193913+00:00",
+        "finished_at": "2026-08-12T13:21:55.717270+00:00",
+        "duration_seconds": 22.523
+      }
+    },
+    {
+      "id": "elezioni_politiche",
+      "source_id": "ministero_interno_dait",
+      "status": "ok",
+      "label": "elezioni_politiche",
+      "detail": "anno 2022 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T132425Z_f8ecba17",
+        "year": 2022,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 3784837,
+          "clean": 3784837,
+          "mart": 3648936
+        },
+        "output_bytes": {
+          "raw": 397449066,
+          "clean": 20058159,
+          "mart": 32870018
+        },
+        "started_at": "2026-08-12T13:24:25.771752+00:00",
+        "finished_at": "2026-08-12T13:26:24.946539+00:00",
+        "duration_seconds": 119.175
+      }
+    },
+    {
+      "id": "elezioni_referendum",
+      "source_id": "eligendo",
+      "status": "ok",
+      "label": "elezioni_referendum",
+      "detail": "anni 1995-2022 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T132021Z_3f058fa9",
+        "year": 2022,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 39515,
+          "clean": 39515,
+          "mart": 39755
+        },
+        "output_bytes": {
+          "raw": 3140054,
+          "clean": 613561,
+          "mart": 649769
+        },
+        "started_at": "2026-08-12T13:20:21.549788+00:00",
+        "finished_at": "2026-08-12T13:20:23.874941+00:00",
+        "duration_seconds": 2.325
+      }
+    },
+    {
+      "id": "elezioni_regionali",
+      "source_id": "eligendo",
+      "status": "ok",
+      "label": "elezioni_regionali",
+      "detail": "anni 2018-2024 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T132211Z_73298faf",
+        "year": 2024,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 15266,
+          "clean": 15266,
+          "mart": 15266
+        },
+        "output_bytes": {
+          "raw": 1557369,
+          "clean": 66752,
+          "mart": 146573
+        },
+        "started_at": "2026-08-12T13:22:11.776205+00:00",
+        "finished_at": "2026-08-12T13:22:14.152545+00:00",
+        "duration_seconds": 2.376
+      }
+    },
+    {
+      "id": "membri_governo",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "membri_governo",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T124129Z_eed888b3",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 7505,
+          "clean": 7579,
+          "mart": 312
+        },
+        "output_bytes": {
+          "raw": 2961831,
+          "clean": 275827,
+          "mart": 3924
+        },
+        "started_at": "2026-08-12T12:41:29.809459+00:00",
+        "finished_at": "2026-08-12T12:41:34.041921+00:00",
+        "duration_seconds": 4.232
+      }
+    },
+    {
+      "id": "ponte_persona",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "ponte_persona",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T122655Z_6156518e",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 64,
+          "mart": 2
+        },
+        "output_bytes": {
+          "raw": 1787,
+          "clean": 1081,
+          "mart": 671
+        },
+        "started_at": "2026-08-12T12:26:55.072043+00:00",
+        "finished_at": "2026-08-12T12:26:55.401638+00:00",
+        "duration_seconds": 0.33
+      }
+    },
+    {
+      "id": "senato_anagrafica",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_anagrafica",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T122443Z_6bdf4838",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 212,
+          "clean": 212,
+          "mart": 186
+        },
+        "output_bytes": {
+          "raw": 15933,
+          "clean": 5589,
+          "mart": 2153
+        },
+        "started_at": "2026-08-12T12:24:43.754107+00:00",
+        "finished_at": "2026-08-12T12:24:45.859684+00:00",
+        "duration_seconds": 2.106
+      }
+    },
+    {
+      "id": "senato_ddl",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_ddl",
+      "detail": "anno 2026 — mart: si",
+      "action": ""
+    },
+    {
+      "id": "senato_firmatari",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_firmatari",
+      "detail": "anno 2026 — mart: si",
+      "action": ""
+    },
+    {
+      "id": "senato_gruppi",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_gruppi",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T125523Z_e38d0a6e",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 288,
+          "clean": 288,
+          "mart": 16
+        },
+        "output_bytes": {
+          "raw": 39690,
+          "clean": 4289,
+          "mart": 1844
+        },
+        "started_at": "2026-08-12T12:55:23.126619+00:00",
+        "finished_at": "2026-08-12T12:55:25.390147+00:00",
+        "duration_seconds": 2.264
+      }
+    },
+    {
+      "id": "senato_votazioni",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_votazioni",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T121938Z_a72821f6",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 1182928,
+          "mart": 214
+        },
+        "output_bytes": {
+          "raw": 5752671,
+          "clean": 3854446,
+          "mart": 5774
+        },
+        "started_at": "2026-08-12T12:19:38.832857+00:00",
+        "finished_at": "2026-08-12T12:19:41.072721+00:00",
+        "duration_seconds": 2.24
+      }
+    }
+  ],
+  "codelists": [],
+  "entities": {
+    "entities": {
+      "Comune": {
+        "entity": "Comune",
+        "label": "Comune (ISTAT)",
+        "datasets": [
+          {
+            "slug": "elezioni_comunali",
+            "name": "Elezioni Comunali",
+            "column": "comune",
+            "semantic_type": "municipality_name"
+          },
+          {
+            "slug": "elezioni_europee",
+            "name": "Elezioni Europee",
+            "column": "comune",
+            "semantic_type": "municipality_name"
+          },
+          {
+            "slug": "elezioni_politiche",
+            "name": "Elezioni Politiche",
+            "column": "comune",
+            "semantic_type": "municipality_name"
+          },
+          {
+            "slug": "elezioni_referendum",
+            "name": "Elezioni Referendum",
+            "column": "comune",
+            "semantic_type": "municipality_name"
+          },
+          {
+            "slug": "elezioni_regionali",
+            "name": "Elezioni Regionali",
+            "column": "comune",
+            "semantic_type": "municipality_name"
+          },
+          {
+            "slug": "elezioni_voto",
+            "name": "Elezioni Voto",
+            "column": "comune",
+            "semantic_type": "municipality_name"
+          }
+        ],
+        "types": {
+          "municipality_name": 6
+        }
+      },
+      "Gruppo parlamentare": {
+        "entity": "Gruppo parlamentare",
+        "label": "Gruppo parlamentare",
+        "datasets": [
+          {
+            "slug": "camera_incarichi",
+            "name": "Camera Incarichi",
+            "column": "gruppo",
+            "semantic_type": "gruppo_parlamentare"
+          }
+        ],
+        "types": {
+          "gruppo_parlamentare": 1
+        }
+      },
+      "Persona": {
+        "entity": "Persona",
+        "label": "Persona",
+        "datasets": [
+          {
+            "slug": "camera_deputati_legislature",
+            "name": "Camera Deputati Legislature",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
+            "slug": "camera_incarichi",
+            "name": "Camera Incarichi",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
+            "slug": "membri_governo",
+            "name": "Membri Governo",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
+            "slug": "ponte_persona",
+            "name": "Ponte Persona",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
+            "slug": "ponte_persona",
+            "name": "Ponte Persona",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
+            "slug": "profilo_politico",
+            "name": "Profilo Politico",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
+            "slug": "profilo_politico",
+            "name": "Profilo Politico",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
+            "slug": "senato_anagrafica",
+            "name": "Senato Anagrafica",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
+            "slug": "senato_gruppi",
+            "name": "Senato Gruppi",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
+            "slug": "senato_votazioni",
+            "name": "Senato Votazioni",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          }
+        ],
+        "types": {
+          "person_id": 5,
+          "senator_id": 5
+        }
+      },
+      "Provincia": {
+        "entity": "Provincia",
+        "label": "Provincia",
+        "datasets": [
+          {
+            "slug": "elezioni_comunali",
+            "name": "Elezioni Comunali",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          },
+          {
+            "slug": "elezioni_europee",
+            "name": "Elezioni Europee",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          },
+          {
+            "slug": "elezioni_politiche",
+            "name": "Elezioni Politiche",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          },
+          {
+            "slug": "elezioni_referendum",
+            "name": "Elezioni Referendum",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          },
+          {
+            "slug": "elezioni_regionali",
+            "name": "Elezioni Regionali",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          },
+          {
+            "slug": "elezioni_voto",
+            "name": "Elezioni Voto",
+            "column": "provincia",
+            "semantic_type": "province_code"
+          }
+        ],
+        "types": {
+          "province_code": 6
+        }
+      },
+      "Regione": {
+        "entity": "Regione",
+        "label": "Regione",
+        "datasets": [
+          {
+            "slug": "elezioni_comunali",
+            "name": "Elezioni Comunali",
+            "column": "regione",
+            "semantic_type": "region_code"
+          },
+          {
+            "slug": "elezioni_europee",
+            "name": "Elezioni Europee",
+            "column": "regione",
+            "semantic_type": "region_code"
+          },
+          {
+            "slug": "elezioni_referendum",
+            "name": "Elezioni Referendum",
+            "column": "regione",
+            "semantic_type": "region_code"
+          },
+          {
+            "slug": "elezioni_regionali",
+            "name": "Elezioni Regionali",
+            "column": "regione",
+            "semantic_type": "region_code"
+          },
+          {
+            "slug": "elezioni_voto",
+            "name": "Elezioni Voto",
+            "column": "regione",
+            "semantic_type": "region_code"
+          }
+        ],
+        "types": {
+          "region_code": 5
+        }
+      }
+    },
+    "bridges": []
+  }
+}

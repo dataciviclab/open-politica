@@ -45,6 +45,13 @@ make check               # valida tutti i config
 make registry-write      # build registry/registry.json
 ```
 
+> **Elezioni**: i dataset `elezioni_*` usano il source type `script`
+> (preprocess.py), disabilitato di default nel toolkit per policy. Il Makefile
+> abilita già `TOOLKIT_ALLOW_SCRIPT_SOURCE=1`; a mano serve
+> `TOOLKIT_ALLOW_SCRIPT_SOURCE=1 python3 -m toolkit.cli.app run --config ...`.
+> Senza questa env var i run elezioni falliscono al layer raw (fonte del
+> FAILED storico di `elezioni_comunali`).
+
 ## Fonti
 
 - Eligendo — Archivio storico elettorale DAIT (Ministero dell'Interno)

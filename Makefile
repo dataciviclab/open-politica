@@ -1,6 +1,8 @@
 PYTHON ?= python3
 # toolkit CLI — vedi rna-aiuti-stato (safe_connect applica memory_limit=2GB)
-TOOLKIT = $(PYTHON) -m toolkit.cli.app
+# TOOLKIT_ALLOW_SCRIPT_SOURCE: i dataset elezioni usano preprocess.py come
+# source type `script`, disabilitato di default nel toolkit (policy).
+TOOLKIT = TOOLKIT_ALLOW_SCRIPT_SOURCE=1 $(PYTHON) -m toolkit.cli.app
 
 # --- Dataset ---
 
