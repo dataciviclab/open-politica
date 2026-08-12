@@ -1,0 +1,72 @@
+# Osservatorio Parlamento — KPI istituzionali per legislatura/anno
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "osservatorio_parlamento"
+  source_id: "dataciviclab_composite"
+  tags: [politica, osservatorio, kpi, parlamento, benchmark]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # produione ddl/gruppi: XIX leg.; votazioni/rappresentanza: dove coperto
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_ddl"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
+        filename: "senato_ddl.parquet"
+      primary: true
+    - name: "camera_votazioni"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_votazioni_sparql/2026/camera_votazioni_sparql_2026_clean.parquet"
+        filename: "camera_votazioni.parquet"
+    - name: "camera_voti"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet"
+        filename: "camera_voti.parquet"
+    - name: "senato_votazioni"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
+        filename: "senato_votazioni.parquet"
+    - name: "senato_gruppi"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
+        filename: "senato_gruppi.parquet"
+    - name: "camera_deputati"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
+        filename: "camera_deputati.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: latest
+  validate:
+    min_rows: 30
+
+mart:
+  tables:
+    - name: "mart_kpi"
+      sql: "sql/mart_kpi.sql"
+  required_tables:
+    - "mart_kpi"
+  validate:
+    table_rules:
+      mart_kpi:
+        required_columns: [periodo, dimensione, kpi, valore, fonte]
+        min_rows: 20
+
+validation:
+  fail_on_error: true
