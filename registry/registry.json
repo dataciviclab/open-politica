@@ -96,6 +96,54 @@
       ]
     },
     {
+      "slug": "camera_gruppi",
+      "name": "Camera Gruppi",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1948,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "gruppi",
+        "parlamentari"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "gruppo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "gruppo_parlamentare"
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_gruppi/2026/camera_gruppi_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_gruppi__mart_gruppi_legislatura"
+      ]
+    },
+    {
       "slug": "camera_incarichi",
       "name": "Camera Incarichi",
       "description": "",
@@ -179,6 +227,288 @@
       "mart_refs": [
         "camera_incarichi__mart_ruoli_legislatura",
         "camera_incarichi__mart_top_deputati"
+      ]
+    },
+    {
+      "slug": "camera_votazioni_sparql",
+      "name": "Camera Votazioni Sparql",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2018,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "votazioni",
+        "sparql"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "favorevoli",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "contrari",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "astenuti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "votanti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "presenti",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "approvato",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "votazione_finale",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "votazione_segreta",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "richiesta_fiducia",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "maggioranza",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "seduta",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "atto_camera",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_votazioni_sparql/*/camera_votazioni_sparql_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_votazioni_sparql__camera_votazioni"
+      ]
+    },
+    {
+      "slug": "dait_amministratori_locali",
+      "name": "Dait Amministratori Locali",
+      "description": "",
+      "source": "",
+      "source_id": "dait",
+      "period": {
+        "start": 2026,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "dait",
+        "amministratori",
+        "locali"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "anno",
+          "type": "INTEGER",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "year"
+        },
+        {
+          "name": "codice_regione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "region_code"
+        },
+        {
+          "name": "codice_provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "codice_comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_code"
+        },
+        {
+          "name": "codice_dait_completo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "denominazione_comune",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "municipality_name"
+        },
+        {
+          "name": "sigla_provincia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "province_code"
+        },
+        {
+          "name": "popolazione_censita",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sesso",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_nascita",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "luogo_nascita",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descrizione_carica",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "incarico",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_elezione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_entrata_in_carica",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "lista_appartenenza",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo_studio",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "professione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/dait_amministratori_locali/2026/dait_amministratori_locali_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "dait_amministratori_locali__mart_profilo_carica",
+        "dait_amministratori_locali__mart_profilo_demografico",
+        "dait_amministratori_locali__mart_territorio"
       ]
     },
     {
@@ -1227,6 +1557,294 @@
       ]
     },
     {
+      "slug": "senato_ddl",
+      "name": "Senato Ddl",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "ddl",
+        "iter-legislativo"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "id_ddl",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "ddl_url",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo_breve",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "stato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "country_code"
+        },
+        {
+          "name": "data_presentazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_stato_ddl",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "natura",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "fase",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ramo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "iniziativa",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descr_iniziativa",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "progressivo_iter",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "numero_fase",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "numero_fase_compatto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_fase",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "presentato_trasmesso",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero_legge",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_legge",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "relatore",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "classificazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "assegnazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "testo_presentato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "testo_approvato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "testo_unificato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "stralcio",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_ddl/2026/senato_ddl_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_ddl__mart_stato",
+        "senato_ddl__mart_anno",
+        "senato_ddl__mart_iter_tempi"
+      ]
+    },
+    {
+      "slug": "senato_firmatari",
+      "name": "Senato Firmatari",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "ddl",
+        "firmatari",
+        "iter-legislativo"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "ddl",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "iniziativa",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "presentatore",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_iniziativa",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "primo_firmatario",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "data_aggiunta_firma",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_ritiro_firma",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "deputato_url",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_firmatari/2026/senato_firmatari_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_firmatari__mart_firmatari_ddl",
+        "senato_firmatari__mart_tipo_iniziativa"
+      ]
+    },
+    {
       "slug": "senato_gruppi",
       "name": "Senato Gruppi",
       "description": "",
@@ -1885,7 +2503,30 @@
       "status": "ok",
       "label": "camera_gruppi",
       "detail": "anno 2026 — mart: si",
-      "action": ""
+      "action": "",
+      "run": {
+        "run_id": "20260812T133421Z_f4a2909f",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 239,
+          "clean": 239,
+          "mart": 20
+        },
+        "output_bytes": {
+          "raw": 37943,
+          "clean": 5342,
+          "mart": 538
+        },
+        "started_at": "2026-08-12T13:34:21.503106+00:00",
+        "finished_at": "2026-08-12T13:34:22.593882+00:00",
+        "duration_seconds": 1.091
+      }
     },
     {
       "id": "camera_incarichi",
@@ -1924,7 +2565,27 @@
       "status": "ok",
       "label": "camera_votazioni_sparql",
       "detail": "anni 2018-2026 — mart: si",
-      "action": ""
+      "action": "",
+      "run": {
+        "run_id": "20260812T133501Z_c516588a",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100
+        },
+        "output_rows": {
+          "raw": 3321,
+          "clean": 3321
+        },
+        "output_bytes": {
+          "raw": 769535,
+          "clean": 59949
+        },
+        "started_at": "2026-08-12T13:35:01.699315+00:00",
+        "finished_at": "2026-08-12T13:35:04.906746+00:00",
+        "duration_seconds": 3.207
+      }
     },
     {
       "id": "dait_amministratori_locali",
@@ -1932,7 +2593,29 @@
       "status": "ok",
       "label": "dait_amministratori_locali",
       "detail": "anno 2026 — mart: si",
-      "action": ""
+      "action": "",
+      "run": {
+        "run_id": "20260812T133354Z_9a3f7b9c",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 124716,
+          "mart": 167
+        },
+        "output_bytes": {
+          "raw": 30791385,
+          "clean": 2097594,
+          "mart": 5815
+        },
+        "started_at": "2026-08-12T13:33:54.725469+00:00",
+        "finished_at": "2026-08-12T13:34:00.258982+00:00",
+        "duration_seconds": 5.534
+      }
     },
     {
       "id": "elezioni_comunali",
@@ -2187,7 +2870,30 @@
       "status": "ok",
       "label": "senato_ddl",
       "detail": "anno 2026 — mart: si",
-      "action": ""
+      "action": "",
+      "run": {
+        "run_id": "20260812T133314Z_6713a68f",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 9868,
+          "clean": 5165,
+          "mart": 373
+        },
+        "output_bytes": {
+          "raw": 3744822,
+          "clean": 422837,
+          "mart": 22467
+        },
+        "started_at": "2026-08-12T13:33:14.356950+00:00",
+        "finished_at": "2026-08-12T13:33:27.256243+00:00",
+        "duration_seconds": 12.899
+      }
     },
     {
       "id": "senato_firmatari",
@@ -2195,7 +2901,30 @@
       "status": "ok",
       "label": "senato_firmatari",
       "detail": "anno 2026 — mart: si",
-      "action": ""
+      "action": "",
+      "run": {
+        "run_id": "20260812T133334Z_57aa5835",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 38275,
+          "clean": 38275,
+          "mart": 4696
+        },
+        "output_bytes": {
+          "raw": 7022047,
+          "clean": 498704,
+          "mart": 12807
+        },
+        "started_at": "2026-08-12T13:33:34.184811+00:00",
+        "finished_at": "2026-08-12T13:33:51.548297+00:00",
+        "duration_seconds": 17.363
+      }
     },
     {
       "id": "senato_gruppi",
@@ -2262,10 +2991,43 @@
   "codelists": [],
   "entities": {
     "entities": {
+      "Atto legislativo": {
+        "entity": "Atto legislativo",
+        "label": "Atto legislativo / Disegno di legge",
+        "datasets": [
+          {
+            "slug": "senato_ddl",
+            "name": "Senato Ddl",
+            "column": "id_ddl",
+            "semantic_type": "ddl_id"
+          },
+          {
+            "slug": "senato_firmatari",
+            "name": "Senato Firmatari",
+            "column": "ddl_id",
+            "semantic_type": "ddl_id"
+          }
+        ],
+        "types": {
+          "ddl_id": 2
+        }
+      },
       "Comune": {
         "entity": "Comune",
         "label": "Comune (ISTAT)",
         "datasets": [
+          {
+            "slug": "dait_amministratori_locali",
+            "name": "Dait Amministratori Locali",
+            "column": "codice_comune",
+            "semantic_type": "municipality_code"
+          },
+          {
+            "slug": "dait_amministratori_locali",
+            "name": "Dait Amministratori Locali",
+            "column": "denominazione_comune",
+            "semantic_type": "municipality_name"
+          },
           {
             "slug": "elezioni_comunali",
             "name": "Elezioni Comunali",
@@ -2304,13 +3066,20 @@
           }
         ],
         "types": {
-          "municipality_name": 6
+          "municipality_code": 1,
+          "municipality_name": 7
         }
       },
       "Gruppo parlamentare": {
         "entity": "Gruppo parlamentare",
         "label": "Gruppo parlamentare",
         "datasets": [
+          {
+            "slug": "camera_gruppi",
+            "name": "Camera Gruppi",
+            "column": "gruppo",
+            "semantic_type": "gruppo_parlamentare"
+          },
           {
             "slug": "camera_incarichi",
             "name": "Camera Incarichi",
@@ -2319,7 +3088,22 @@
           }
         ],
         "types": {
-          "gruppo_parlamentare": 1
+          "gruppo_parlamentare": 2
+        }
+      },
+      "Nazione": {
+        "entity": "Nazione",
+        "label": "Nazione",
+        "datasets": [
+          {
+            "slug": "senato_ddl",
+            "name": "Senato Ddl",
+            "column": "stato",
+            "semantic_type": "country_code"
+          }
+        ],
+        "types": {
+          "country_code": 1
         }
       },
       "Persona": {
@@ -2375,6 +3159,12 @@
             "semantic_type": "senator_id"
           },
           {
+            "slug": "senato_firmatari",
+            "name": "Senato Firmatari",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
             "slug": "senato_gruppi",
             "name": "Senato Gruppi",
             "column": "senatore_id",
@@ -2389,13 +3179,25 @@
         ],
         "types": {
           "person_id": 5,
-          "senator_id": 5
+          "senator_id": 6
         }
       },
       "Provincia": {
         "entity": "Provincia",
         "label": "Provincia",
         "datasets": [
+          {
+            "slug": "dait_amministratori_locali",
+            "name": "Dait Amministratori Locali",
+            "column": "codice_provincia",
+            "semantic_type": "province_code"
+          },
+          {
+            "slug": "dait_amministratori_locali",
+            "name": "Dait Amministratori Locali",
+            "column": "sigla_provincia",
+            "semantic_type": "province_code"
+          },
           {
             "slug": "elezioni_comunali",
             "name": "Elezioni Comunali",
@@ -2434,13 +3236,19 @@
           }
         ],
         "types": {
-          "province_code": 6
+          "province_code": 8
         }
       },
       "Regione": {
         "entity": "Regione",
         "label": "Regione",
         "datasets": [
+          {
+            "slug": "dait_amministratori_locali",
+            "name": "Dait Amministratori Locali",
+            "column": "codice_regione",
+            "semantic_type": "region_code"
+          },
           {
             "slug": "elezioni_comunali",
             "name": "Elezioni Comunali",
@@ -2473,7 +3281,22 @@
           }
         ],
         "types": {
-          "region_code": 5
+          "region_code": 6
+        }
+      },
+      "Tempo": {
+        "entity": "Tempo",
+        "label": "Tempo / data",
+        "datasets": [
+          {
+            "slug": "dait_amministratori_locali",
+            "name": "Dait Amministratori Locali",
+            "column": "anno",
+            "semantic_type": "year"
+          }
+        ],
+        "types": {
+          "year": 1
         }
       }
     },
