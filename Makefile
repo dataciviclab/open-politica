@@ -4,7 +4,7 @@ TOOLKIT = $(PYTHON) -m toolkit.cli.app
 
 # --- Dataset ---
 
-.PHONY: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-senato-anagrafica run-senato-ddl run-senato-firmatari run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni extract-senato-votazioni run-all
+.PHONY: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-senato-anagrafica run-senato-ddl run-senato-firmatari run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni run-ponte-persona extract-senato-votazioni build-ponte-persona run-all
 
 run-elezioni-politiche:
 	$(TOOLKIT) run --config datasets/elezioni-politiche/dataset.yml
@@ -56,6 +56,12 @@ run-senato-votazioni:
 
 extract-senato-votazioni:
 	python3 scripts/extract_senato_votazioni.py --legislature 19
+
+run-ponte-persona:
+	$(TOOLKIT) run --config datasets/ponte-persona/dataset.yml
+
+build-ponte-persona:
+	python3 scripts/build_ponte_persona.py
 
 run-all: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-senato-anagrafica run-senato-ddl run-senato-firmatari run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni
 

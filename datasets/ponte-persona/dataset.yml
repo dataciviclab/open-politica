@@ -1,0 +1,52 @@
+# Ponte persona_id (Camera) ↔ senator_id (Senato)
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "ponte_persona"
+  source_id: "dataciviclab_composite"
+  tags: [politica, ponte, identita, persona]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — anagrafica senatori vs anagrafica deputati (tutte le leg.)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    # parquet prodotto da scripts/build_ponte_persona.py
+    - name: "ponte_persona_parquet"
+      type: "local_file"
+      primary: true
+      args:
+        path: "../../out/data/derived/ponte_persona/ponte_persona.parquet"
+        filename: "ponte_persona.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: latest
+  required_columns: [senatore_id, persona_id, tipo_match]
+  validate:
+    not_null: [senatore_id, persona_id]
+    primary_key: [senatore_id, persona_id]
+    min_rows: 50
+
+mart:
+  tables:
+    - name: "mart_match"
+      sql: "sql/mart_match.sql"
+  required_tables:
+    - "mart_match"
+  validate:
+    table_rules:
+      mart_match:
+        required_columns: [tipo_match, n]
+        primary_key: [tipo_match]
+        min_rows: 2
+
+validation:
+  fail_on_error: true

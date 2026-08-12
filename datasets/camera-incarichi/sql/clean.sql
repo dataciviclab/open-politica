@@ -53,3 +53,38 @@ SELECT
     )                                                                 AS end_date
 FROM base
 WHERE incarico IS NOT NULL
+-- Dedup semantico: lo stesso ufficio può comparire con URI diversi
+-- (es. incarico singolo "i1614" e versione combinata "i1614+2130").
+-- Chiave logica: persona × ruolo × gruppo × legislatura × date.
+-- Si tiene l'URI più corto (il singolo, non la combinazione).
+QUALIFY row_number() OVER (
+    PARTITION BY
+        TRY_CAST(
+            CASE
+                WHEN deputato LIKE '%/deputato.rdf/d%' AND deputato NOT LIKE '%/deputato.rdf/dr%' THEN
+                    regexp_extract(deputato, 'deputato\.rdf/d(\d+)_', 1)
+                WHEN deputato LIKE '%/deputato.rdf/dr%' THEN
+                    regexp_extract(deputato, 'deputato\.rdf/dr(\d+)_', 1)
+            END AS BIGINT
+        ),
+        normalize_string(ruolo),
+        normalize_string(gruppo),
+        CASE
+            WHEN legislatura LIKE '%/legislatura.rdf/%' THEN
+                substring(legislatura, strpos(legislatura, '/legislatura.rdf/') + 17)
+            ELSE legislatura
+        END,
+        TRY_CAST(
+            substr(CAST(start AS VARCHAR), 1, 4) || '-' ||
+            substr(CAST(start AS VARCHAR), 5, 2) || '-' ||
+            substr(CAST(start AS VARCHAR), 7, 2)
+            AS DATE
+        ),
+        TRY_CAST(
+            substr(CAST("end" AS VARCHAR), 1, 4) || '-' ||
+            substr(CAST("end" AS VARCHAR), 5, 2) || '-' ||
+            substr(CAST("end" AS VARCHAR), 7, 2)
+            AS DATE
+        )
+    ORDER BY length(normalize_string(incarico))
+) = 1
