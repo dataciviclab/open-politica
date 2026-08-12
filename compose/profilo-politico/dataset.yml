@@ -1,0 +1,63 @@
+# Profilo politico — scheda viva del senatore (partecipazione + coerenza)
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "profilo_politico"
+  source_id: "dataciviclab_composite"
+  tags: [politica, profilo, senato, voti, accountability]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — dai clean locali di senato_votazioni, anagrafica,
+    # ponte persona e membri_governo
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_votazioni"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
+        filename: "senato_votazioni.parquet"
+      primary: true
+    - name: "senato_anagrafica"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet"
+        filename: "senato_anagrafica.parquet"
+    - name: "ponte_persona"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/ponte_persona/2026/ponte_persona_2026_clean.parquet"
+        filename: "ponte_persona.parquet"
+    - name: "membri_governo"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet"
+        filename: "membri_governo.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+  validate:
+    min_rows: 100
+
+mart:
+  tables:
+    - name: "mart_profilo_senatore"
+      sql: "sql/mart_profilo_senatore.sql"
+  required_tables:
+    - "mart_profilo_senatore"
+  validate:
+    table_rules:
+      mart_profilo_senatore:
+        required_columns: [senatore_id, nome, n_voti, pct_coerente]
+        primary_key: [senatore_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
