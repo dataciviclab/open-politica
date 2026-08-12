@@ -1,0 +1,81 @@
+# Commissioni del Senato (XIX leg.) — membership e cariche
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_commissioni"
+  source_id: "dati_senato"
+  tags: [politica, senato, commissioni, membership, iter]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — graph composizione/19 (osr:Afferenza)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_commissioni_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          SELECT ?sen (MAX(?car) AS ?car) (MAX(?ini) AS ?ini) (MAX(?fin) AS ?fin)
+                 (MAX(?titolo) AS ?titolo) (MAX(?breve) AS ?breve) (MAX(?cat) AS ?cat) ?comm
+          WHERE {
+            GRAPH <http://dati.senato.it/composizione/19> {
+              ?sen osr:afferisce ?aff .
+              ?aff a osr:Afferenza ; osr:commissione ?comm .
+              OPTIONAL { ?aff osr:carica ?car . }
+              OPTIONAL { ?aff osr:inizio ?ini . }
+              OPTIONAL { ?aff osr:fine ?fin . }
+              OPTIONAL { ?comm osr:titolo ?titolo . }
+              OPTIONAL { ?comm osr:titoloBreve ?breve . }
+              OPTIONAL { ?comm osr:categoriaCommissione ?cat . }
+            }
+          }
+          GROUP BY ?sen ?comm ?car ?ini ?fin
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [senatore_id, commissione_id, nome, categoria, data_inizio]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [senatore_id, commissione_id]
+    # una riga = periodo di appartenenza di un senatore a una commissione
+    # con un ruolo (stesso senatore/comm/data può avere più cariche: Membro+Segretario)
+    primary_key: [senatore_id, commissione_id, carica, data_inizio, data_fine]
+    min_rows: 800
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_membro_commissione"
+      sql: "sql/mart_membro_commissione.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [commissione_id, nome, n_membri]
+        min_rows: 10
+      mart_membro_commissione:
+        required_columns: [senatore_id, n_commissioni]
+        primary_key: [senatore_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
