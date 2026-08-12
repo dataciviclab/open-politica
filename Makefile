@@ -4,7 +4,7 @@ TOOLKIT = $(PYTHON) -m toolkit.cli.app
 
 # --- Dataset ---
 
-.PHONY: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-senato-anagrafica run-senato-ddl run-senato-firmatari run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni run-ponte-persona run-profilo-politico extract-senato-votazioni build-ponte-persona run-all
+.PHONY: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-senato-anagrafica run-senato-ddl run-senato-firmatari run-senato-gruppi run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni run-ponte-persona run-profilo-politico extract-senato-votazioni build-ponte-persona run-all
 
 run-elezioni-politiche:
 	$(TOOLKIT) run --config datasets/elezioni-politiche/dataset.yml
@@ -53,6 +53,9 @@ run-elezioni-voto:
 
 run-senato-votazioni:
 	$(TOOLKIT) run --config datasets/senato-votazioni/dataset.yml
+
+run-senato-gruppi:
+	$(TOOLKIT) run --config datasets/senato-gruppi/dataset.yml
 
 extract-senato-votazioni:
 	python3 scripts/extract_senato_votazioni.py --legislature 19

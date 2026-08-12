@@ -9,8 +9,11 @@ non più un insieme di dataset, ma una scheda interrogabile.
 
 - **Partecipazione** — `n_voti` espressi (su ~7.998 votazioni)
 - **Direzione** — `n_favorevoli` / `n_contrari` / `n_astenuti`
-- **Coerenza** — % di voti in linea con l'esito della votazione (FAVOREVOLE su
-  approvata, CONTRARIO su respinta)
+- **Coerenza** (`pct_coerente`) — % di voti in linea con l'esito della
+  votazione (FAVOREVOLE su approvata, CONTRARIO su respinta)
+- **Affidabilità al gruppo** (`pct_col_gruppo`) — % di voti (F/C) in linea
+  col voto dominante del proprio gruppo sulla stessa votazione (via
+  `senato_gruppi`, join per periodo di membership)
 - **Governo** — `n_cariche_governo` in carica, `in_governo` (via persona_id +
   ponte)
 
@@ -24,6 +27,9 @@ non più un insieme di dataset, ma una scheda interrogabile.
   Calderoli, Zangrillo ~99,5%)
 - **Opposizione ~8% coerenti** (Magni, Cucchi, Floridia, De Cristofaro) —
   votano contro l'esito vincente, come atteso
+- **Tutti i gruppi compatti (pct_col_gruppo 95-100%)**: la divisione
+  governo/opposizione è strutturale di gruppo, non individuale; i divergenti
+  individuali sono i noti indipendenti (Durnwalder SVP, Calenda, Gelmini)
 - **Partecipazione molto variabile**: Salvini solo 282 voti (ministro in
   missione), Garavaglia 5.498 (anche vicepresidente dell'aula); senatori a
   vita (Rubbia, Monti) quasi mai presenti

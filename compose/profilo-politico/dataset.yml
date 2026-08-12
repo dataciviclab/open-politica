@@ -38,6 +38,11 @@ raw:
       args:
         path: "../../out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet"
         filename: "membri_governo.parquet"
+    - name: "senato_gruppi"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
+        filename: "senato_gruppi.parquet"
 
 clean:
   sql: "sql/clean.sql"
@@ -55,7 +60,7 @@ mart:
   validate:
     table_rules:
       mart_profilo_senatore:
-        required_columns: [senatore_id, nome, n_voti, pct_coerente]
+        required_columns: [senatore_id, nome, n_voti, pct_coerente, pct_col_gruppo]
         primary_key: [senatore_id]
         min_rows: 100
 

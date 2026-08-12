@@ -1,0 +1,77 @@
+# Gruppi parlamentari del Senato (XIX leg.) — membership e cariche
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_gruppi"
+  source_id: "dati_senato"
+  tags: [politica, senato, gruppi, membership, compattezza]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — graph composizione/19
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_gruppi_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          SELECT ?sen ?grp ?car ?ini ?fin (MAX(?tit) AS ?titolo) (MAX(?sig) AS ?sigla)
+          WHERE {
+            GRAPH <http://dati.senato.it/composizione/19> {
+              ?sen <http://dati.camera.it/ocd/aderisce> ?ades .
+              ?ades a <http://dati.camera.it/ocd/adesioneGruppo> ; osr:gruppo ?grp .
+              OPTIONAL { ?ades osr:carica ?car . }
+              OPTIONAL { ?ades osr:inizio ?ini . }
+              OPTIONAL { ?ades osr:fine ?fin . }
+              OPTIONAL { ?grp osr:denominazione ?den . ?den osr:titolo ?tit . }
+              OPTIONAL { ?grp osr:denominazione ?den2 . ?den2 osr:titoloBreve ?sig . }
+            }
+          }
+          GROUP BY ?sen ?grp ?car ?ini ?fin
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [senatore_id, gruppo_id, nome_gruppo, data_inizio]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [senatore_id, gruppo_id]
+    # una riga = periodo di adesione di un senatore a un gruppo
+    primary_key: [senatore_id, gruppo_id, data_inizio]
+    min_rows: 200
+
+mart:
+  tables:
+    - name: "mart_gruppi_attuali"
+      sql: "sql/mart_gruppi_attuali.sql"
+    - name: "mart_carica_gruppo"
+      sql: "sql/mart_carica_gruppo.sql"
+  required_tables:
+    - "mart_gruppi_attuali"
+  validate:
+    table_rules:
+      mart_gruppi_attuali:
+        required_columns: [gruppo_id, nome_gruppo, n_senatori]
+        min_rows: 5
+      mart_carica_gruppo:
+        required_columns: [carica, n]
+        min_rows: 3
+
+validation:
+  fail_on_error: true
