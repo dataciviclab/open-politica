@@ -1,0 +1,78 @@
+# Commissioni/Organi della Camera (XIX leg.) — membership e cariche
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_commissioni"
+  source_id: "dati_camera"
+  tags: [politica, camera, commissioni, membership, iter]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — ocd:ufficioParlamentare (commissioni, giunte, organi)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "camera_commissioni_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          SELECT ?dep ?up ?org (MAX(?car) AS ?car) (MAX(?nome) AS ?nome)
+                 (MAX(?inizio) AS ?inizio) (MAX(?fine) AS ?fine)
+          WHERE {
+            ?dep a ocd:deputato ; ocd:rif_ufficioParlamentare ?up .
+            ?up a ocd:ufficioParlamentare ; ocd:rif_organo ?org .
+            OPTIONAL { ?up ocd:carica ?car . }
+            OPTIONAL { ?up ocd:startDate ?inizio . }
+            OPTIONAL { ?up dc:date ?fine . }
+            OPTIONAL { ?org <http://www.w3.org/2000/01/rdf-schema#label> ?nome . }
+            ?up ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_19> .
+          }
+          GROUP BY ?dep ?up ?org
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [deputato_id, organo_id, nome, carica]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [deputato_id, organo_id]
+    # una riga = membership di un deputato a un organo (con ruolo)
+    primary_key: [deputato_id, organo_id, carica, data_inizio]
+    min_rows: 600
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_membro_organo"
+      sql: "sql/mart_membro_organo.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [organo_id, nome, n_membri]
+        min_rows: 10
+      mart_membro_organo:
+        required_columns: [deputato_id, n_organi]
+        primary_key: [deputato_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true

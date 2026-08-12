@@ -149,6 +149,21 @@ camera_anagrafica AS (
     SELECT DISTINCT persona_id, nome, cognome
     FROM read_parquet('out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet')
 ),
+-- organi Camera: ruoli (presidente/capogruppo/segretario) — "chi comanda l'organo"
+camera_comm_agg AS (
+    SELECT
+        deputato_id,
+        count(*) FILTER (WHERE data_fine IS NULL)                 AS n_organi_ruolo,
+        count(*) FILTER (
+            WHERE data_fine IS NULL AND carica = 'PRESIDENTE'
+        ) > 0                                                     AS presidente_organo,
+        string_agg(
+            nome || ' (' || carica || ')',
+            '; ' ORDER BY nome
+        ) FILTER (WHERE data_fine IS NULL)                        AS organi_ruoli
+    FROM read_parquet('out/data/clean/camera_commissioni/2026/camera_commissioni_2026_clean.parquet')
+    GROUP BY deputato_id
+),
 camera_profilo AS (
     SELECT
         'camera' AS ramo,
@@ -160,9 +175,9 @@ camera_profilo AS (
         round(100.0 * al.n_col_gruppo / NULLIF(al.n_voti_gruppo, 0), 1) AS pct_col_gruppo,
         COALESCE(g.n_cariche_governo, 0) AS n_cariche_governo,
         COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo,
-        0 AS n_commissioni_attuali,
-        FALSE AS presidente_commissione,
-        NULL AS commissioni_attuali
+        COALESCE(c.n_organi_ruolo, 0) AS n_commissioni_attuali,
+        COALESCE(c.presidente_organo, FALSE) AS presidente_commissione,
+        c.organi_ruoli AS commissioni_attuali
     FROM camera_anagrafica a
     JOIN (
         SELECT deputato_id, count(*) AS n_voti,
@@ -174,6 +189,7 @@ camera_profilo AS (
         GROUP BY deputato_id
     ) v ON a.persona_id = v.deputato_id
     LEFT JOIN camera_align al ON a.persona_id = al.deputato_id
+    LEFT JOIN camera_comm_agg c ON a.persona_id = c.deputato_id
     LEFT JOIN (
         SELECT persona_id, count(*) AS n_cariche_governo
         FROM read_parquet('out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet')
