@@ -58,6 +58,21 @@ senato_anagrafica AS (
     SELECT DISTINCT senatore_id, nome, cognome
     FROM read_parquet('out/data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet')
 ),
+-- commissioni: "di cosa si occupa" (fase 3 dell'iter) — aggregato per senatore
+senato_comm_agg AS (
+    SELECT
+        senatore_id,
+        count(*) FILTER (WHERE data_fine IS NULL)              AS n_commissioni_attuali,
+        count(*) FILTER (
+            WHERE data_fine IS NULL AND carica = 'Presidente'
+        ) > 0                                                  AS presidente_commissione,
+        string_agg(
+            nome || ' (' || carica || ')',
+            '; ' ORDER BY nome
+        ) FILTER (WHERE data_fine IS NULL)                     AS commissioni_attuali
+    FROM read_parquet('out/data/clean/senato_commissioni/2026/senato_commissioni_2026_clean.parquet')
+    GROUP BY senatore_id
+),
 senato_profilo AS (
     SELECT
         'senato' AS ramo,
@@ -68,7 +83,10 @@ senato_profilo AS (
         round(100.0 * v.n_coerenti / NULLIF(v.n_voti, 0), 1) AS pct_coerente,
         round(100.0 * al.n_col_gruppo / NULLIF(al.n_voti_gruppo, 0), 1) AS pct_col_gruppo,
         COALESCE(g.n_cariche_governo, 0) AS n_cariche_governo,
-        COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo
+        COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo,
+        COALESCE(c.n_commissioni_attuali, 0) AS n_commissioni_attuali,
+        COALESCE(c.presidente_commissione, FALSE) AS presidente_commissione,
+        c.commissioni_attuali
     FROM senato_anagrafica a
     JOIN (
         SELECT senatore_id, count(*) AS n_voti,
@@ -90,6 +108,7 @@ senato_profilo AS (
         WHERE end_date IS NULL
         GROUP BY persona_id
     ) g ON p.persona_id = g.persona_id
+    LEFT JOIN senato_comm_agg c ON a.senatore_id = c.senatore_id
 ),
 
 -- ─────────────────────────── CAMERA ───────────────────────────
@@ -140,7 +159,10 @@ camera_profilo AS (
         round(100.0 * v.n_coerenti / NULLIF(v.n_voti, 0), 1) AS pct_coerente,
         round(100.0 * al.n_col_gruppo / NULLIF(al.n_voti_gruppo, 0), 1) AS pct_col_gruppo,
         COALESCE(g.n_cariche_governo, 0) AS n_cariche_governo,
-        COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo
+        COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo,
+        0 AS n_commissioni_attuali,
+        FALSE AS presidente_commissione,
+        NULL AS commissioni_attuali
     FROM camera_anagrafica a
     JOIN (
         SELECT deputato_id, count(*) AS n_voti,

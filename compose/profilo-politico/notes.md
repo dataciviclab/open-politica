@@ -15,6 +15,9 @@ scheda interrogabile per ogni parlamentare.
 - **Affidabilità al gruppo** (`pct_col_gruppo`) — % di voti (F/C) in linea col
   voto dominante del proprio gruppo sulla stessa votazione
 - **Governo** — `n_cariche_governo` in carica, `in_governo`
+- **Commissioni** (solo Senato per ora) — `n_commissioni_attuali`,
+  `presidente_commissione`, `commissioni_attuali` (lista "nome (ruolo)"):
+  la fase 3 dell'iter, "di cosa si occupa davvero"
 
 ## Come si calcola il gruppo
 
@@ -46,3 +49,5 @@ make run-profilo-politico
 - `pct_coerente` della Camera deriva dall'esito `approvato` di
   `camera_votazioni_sparql` (che copre il 100% delle votazioni XIX) — per
   votazioni a cavallo di anno il join è per URI, non per data
+- **Commissioni solo per il Senato** — la Camera è ancora `0`/`NULL`:
+  `camera_commissioni` non è ancora estratta
