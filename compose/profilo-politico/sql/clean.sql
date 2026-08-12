@@ -93,10 +93,18 @@ senato_profilo AS (
 ),
 
 -- ─────────────────────────── CAMERA ───────────────────────────
+-- esito (approvato) di ogni votazione dalla serie multi-anno
+camera_esito AS (
+    SELECT DISTINCT votazione, approvato
+    FROM read_parquet('out/data/clean/camera_votazioni_sparql/*/*_clean.parquet')
+),
 camera_voti AS (
-    SELECT deputato_id, votazione, voto, sigla_gruppo
-    FROM read_parquet('out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet')
-    WHERE voto IN ('FAVOREVOLE', 'CONTRARIO', 'ASTENUTO')
+    SELECT v.deputato_id, v.votazione, v.voto, v.sigla_gruppo,
+           (e.approvato AND v.voto = 'FAVOREVOLE')
+            OR (NOT e.approvato AND v.voto = 'CONTRARIO') AS coerente
+    FROM read_parquet('out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet') v
+    LEFT JOIN camera_esito e ON v.votazione = e.votazione
+    WHERE v.voto IN ('FAVOREVOLE', 'CONTRARIO', 'ASTENUTO')
 ),
 -- moda del gruppo per votazione (gruppo = sigla al momento del voto)
 camera_gm AS (
@@ -129,7 +137,7 @@ camera_profilo AS (
         a.persona_id,
         a.nome, a.cognome,
         v.n_voti, v.n_favorevoli, v.n_contrari, v.n_astenuti,
-        NULL AS pct_coerente,
+        round(100.0 * v.n_coerenti / NULLIF(v.n_voti, 0), 1) AS pct_coerente,
         round(100.0 * al.n_col_gruppo / NULLIF(al.n_voti_gruppo, 0), 1) AS pct_col_gruppo,
         COALESCE(g.n_cariche_governo, 0) AS n_cariche_governo,
         COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo
@@ -138,7 +146,8 @@ camera_profilo AS (
         SELECT deputato_id, count(*) AS n_voti,
                count(*) FILTER (WHERE voto = 'FAVOREVOLE') AS n_favorevoli,
                count(*) FILTER (WHERE voto = 'CONTRARIO')  AS n_contrari,
-               count(*) FILTER (WHERE voto = 'ASTENUTO')   AS n_astenuti
+               count(*) FILTER (WHERE voto = 'ASTENUTO')   AS n_astenuti,
+               count(*) FILTER (WHERE coerente)            AS n_coerenti
         FROM camera_voti
         GROUP BY deputato_id
     ) v ON a.persona_id = v.deputato_id

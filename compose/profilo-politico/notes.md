@@ -8,8 +8,10 @@ scheda interrogabile per ogni parlamentare.
 
 - **Partecipazione** — `n_voti` espressi
 - **Direzione** — `n_favorevoli` / `n_contrari` / `n_astenuti`
-- **Coerenza** (`pct_coerente`, solo Senato) — % di voti in linea con l'esito
-  della votazione. Per la Camera è `NULL`: l'esito non è in `camera_voti`
+- **Coerenza** (`pct_coerente`) — % di voti in linea con l'esito della
+  votazione. **Ora su entrambe le camere**: per la Camera l'esito è
+  `approvato` da `camera_votazioni_sparql` (serie multi-anno, join per
+  votazione al 100%)
 - **Affidabilità al gruppo** (`pct_col_gruppo`) — % di voti (F/C) in linea col
   voto dominante del proprio gruppo sulla stessa votazione
 - **Governo** — `n_cariche_governo` in carica, `in_governo`
@@ -39,7 +41,8 @@ make run-profilo-politico
 
 ## Limiti
 
-- `pct_coerente` non disponibile per la Camera (manca l'esito in camera_voti);
-  la metrica comparabile tra camere è `pct_col_gruppo`
 - `persona_id` NULL per i senatori mai stati deputati (identity solo `senatore_id`)
 - L'identità unica persona (Camera↔Senato) è limitata al ponte (29% dei senatori)
+- `pct_coerente` della Camera deriva dall'esito `approvato` di
+  `camera_votazioni_sparql` (che copre il 100% delle votazioni XIX) — per
+  votazioni a cavallo di anno il join è per URI, non per data
