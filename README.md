@@ -1,60 +1,92 @@
 # open-politica
 
-Dati aperti e interrogabili sulla politica italiana — elezioni, parlamento,
-governo, legislazione e amministratori locali — con la **Persona** come entità
-centrale del grafo.
+**La politica italiana in dati aperti: chi vota, come vota, cosa decide.**
 
-Repo dedicata del dominio politico (progetto interno). I config migrano da
-`dataset-incubator` seguendo il modello di `rna-aiuti-stato`.
+Dati aperti e interrogabili su elezioni, Parlamento (Camera e Senato), governo
+e amministratori locali. Il progetto nasce da una domanda semplice: **come fa
+un cittadino a sapere davvero cosa fa chi lo rappresenta?**
 
-## Perimetro
+Qui ogni dato è:
 
-| Dominio | Dataset |
+- **aperto** — da fonti ufficiali (Camera, Senato, Ministero dell'Interno)
+- **pulito e interrogabile** — parquet pronti per l'analisi, senza scraping
+- **collegato** — dalla scheda del singolo parlamentare alla "pagella"
+  dell'intero Parlamento
+
+---
+
+## Cosa puoi scoprire
+
+### 🗳️ Il tuo rappresentante, da tutte le angolazioni
+
+Ogni parlamentare ha una **scheda** che risponde a tre domande:
+
+| Domanda | Cosa c'è |
 |---|---|
-| Elezioni | `elezioni_politiche`, `elezioni_europee`, `elezioni_comunali`, `elezioni_regionali`, `elezioni_referendum`, `elezioni_voto` (compose) |
-| Camera | `camera_deputati_legislature`, `camera_gruppi`, `camera_incarichi`, `camera_votazioni_sparql` |
-| Senato | `senato_anagrafica`, `senato_ddl`, `senato_firmatari` |
-| Governo | `membri_governo` |
-| Amministratori locali | `dait_amministratori_locali` |
+| **Come vota?** | quante volte, in che direzione, quanto è fedele al suo partito |
+| **Cosa comanda?** | è ministro? presidente di commissione? |
+| **Di cosa si occupa?** | lavoro, sanità, giustizia, esteri... |
 
-## Roadmap
+Sapevi che la disciplina di partito in Italia è altissima? La fedeltà media al
+proprio gruppo è **~99,5% in entrambe le Camere**: i "ribelli" sono pochi, e
+sono quasi sempre i nomi che conosci (Calenda, Gelmini, Soumahoro).
 
-- [ ] Step 0 — migrazione config da dataset-incubator (fatto: config copiati in `datasets/` + `compose/`)
-- [ ] Step 1 — `senato_votazioni` (voti individuali via SPARQL) + ponte `person_id` ↔ `senator_id` + fix dedup `camera_incarichi`
-- [ ] Step 2 — `camera_voti_individuali` (scraping HTML) + compose `profilo_politico` (hub Persona)
-- [ ] Step 3 — gap inventario (commissioni, referendum 1946, regionali 1970, costituente 1946) + prima analisi "chi vota col proprio gruppo?"
+### 🏛️ Il Parlamento come istituzione
 
-## Struttura
+L'**osservatorio** — la "pagella del Parlamento" — misura come funziona la
+macchina legislativa. Numeri della XIX legislatura:
 
+- **~36% delle leggi approvate nasce dal governo** (e senza contare i
+  decreti-legge, il vero "decide o ratifica")
+- **1,18 milioni di voti individuali** dei senatori e **7,7 milioni** dei
+  deputati, tutti interrogabili
+- le donne alla Camera: **11,5% (XIV leg.) → 36,4% (XVIII leg.)**
+- 26 voti di fiducia nel solo 2023 — il governo che schiaccia il dibattito
+
+### 📈 Le elezioni, dal 1948
+
+Risultati per comune di ogni tornata: politiche, europee, regionali, comunali
+e referendum. Per capire com'è cambiato il voto, territorio per territorio.
+
+---
+
+## Come si usa
+
+I dati sono interrogabili con SQL (DuckDB) sui parquet o via MCP del toolkit:
+
+```sql
+-- Chi vota MENO col proprio partito? (i "ribelli")
+SELECT nome, cognome, pct_col_gruppo, ramo
+FROM read_parquet('out/data/mart/profilo_politico/2026/mart_profilo.parquet')
+ORDER BY pct_col_gruppo;
 ```
-open-politica/
-  datasets/                  # un filone = dataset.yml + sql/
-  compose/                   # dataset compositi (es. elezioni-voto)
-  registry/                  # registry.json (artifact catalogo, fusion ADR)
-  notes/                     # note per dataset
-  scripts/                   # estrazione SPARQL, scraping
-  tests/
-  out/                       # output runtime — mai versionato
-```
-
-## Comandi
 
 ```bash
-make run-<slug>          # esegue il dataset via toolkit
-make check               # valida tutti i config
-make registry-write      # build registry/registry.json
+make run-<dataset>    # esegue un dataset (raw → clean → mart)
+make check            # valida tutti i config
+make registry-write   # aggiorna il catalogo
 ```
 
-> **Elezioni**: i dataset `elezioni_*` usano il source type `script`
-> (preprocess.py), disabilitato di default nel toolkit per policy. Il Makefile
-> abilita già `TOOLKIT_ALLOW_SCRIPT_SOURCE=1`; a mano serve
-> `TOOLKIT_ALLOW_SCRIPT_SOURCE=1 python3 -m toolkit.cli.app run --config ...`.
-> Senza questa env var i run elezioni falliscono al layer raw (fonte del
-> FAILED storico di `elezioni_comunali`).
+## Contenuto
+
+```
+datasets/    # un dataset per cartella (dataset.yml + sql/)
+compose/     # dataset compositi: profilo_politico, osservatorio_parlamento, elezioni_voto
+registry/    # catalogo degli artifact
+scripts/     # estrazione SPARQL, preprocessing elezioni
+out/         # output runtime — mai versionato
+```
 
 ## Fonti
 
-- Eligendo — Archivio storico elettorale DAIT (Ministero dell'Interno)
-- dati.camera.it — OpenData SPARQL endpoint
-- dati.senato.it — OpenData SPARQL endpoint
-- DAIT — Anagrafe Amministratori Locali
+- **Eligendo / DAIT** — Ministero dell'Interno (elezioni, amministratori locali)
+- **dati.camera.it** — OpenData SPARQL (deputati, votazioni, voti, organi)
+- **dati.senato.it** — OpenData SPARQL (senatori, gruppi, commissioni, ddl, voti)
+- **dati.gov.it** — anagrafica PA
+
+## Stato
+
+Progetto di dominio del DataCivicLab (in incubazione). I dataset sono in
+sviluppo locale; la pubblicazione su GCS ed Explorer è in roadmap. Prossimi
+passi: decreti-legge (per completare il "decide o ratifica"), interventi in
+aula, estensione alle legislature precedenti.
