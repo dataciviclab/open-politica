@@ -1,0 +1,60 @@
+# Voti individuali dei Deputati (XIX legislatura) — SPARQL dati.camera.it
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_voti"
+  source_id: "dati_camera"
+  tags: [politica, camera, votazioni, voti, accountability]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — classe ocd:voto, filtro rif_leg repubblica_19
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    # parquet prodotto da scripts/extract_camera_voti.py
+    - name: "camera_voti_parquet"
+      type: "local_file"
+      primary: true
+      args:
+        path: "../../out/data/derived/camera_voti/camera_voti.parquet"
+        filename: "camera_voti.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: latest
+  required_columns: [deputato_id, votazione, voto, data]
+  validate:
+    not_null: [deputato_id, votazione, voto]
+    # una riga = voto di un deputato su una votazione (stato completo)
+    primary_key: [votazione, deputato_id]
+    min_rows: 5000000
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_voto_deputato"
+      sql: "sql/mart_voto_deputato.sql"
+  required_tables:
+    - "mart_sintesi"
+    - "mart_voto_deputato"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [anno, n_votazioni]
+        primary_key: [anno]
+        min_rows: 1
+      mart_voto_deputato:
+        required_columns: [deputato_id, n_voti, n_favorevoli, n_contrari]
+        primary_key: [deputato_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
