@@ -58,6 +58,11 @@ raw:
       args:
         path: "../../out/data/clean/senato_commissioni/2026/senato_commissioni_2026_clean.parquet"
         filename: "senato_commissioni.parquet"
+    - name: "camera_relatori"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_relatori/2026/camera_relatori_2026_clean.parquet"
+        filename: "camera_relatori.parquet"
 
 clean:
   sql: "sql/clean.sql"

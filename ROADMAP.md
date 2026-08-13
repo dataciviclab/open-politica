@@ -28,7 +28,7 @@ chiave:
 
 ### Fase 1 — chiudere la storia
 - [x] A. Decreti-legge (`decreti_legge` — 108 DL XIX, 89% convertiti, + KPI in osservatorio)
-- [ ] C. Relatori Camera (basso costo, alto valore)
+- [x] C. Relatori Camera (`camera_relatori` — 10.360 incarichi, registi delle leggi)
 - [ ] B. Interventi (la dimensione "chi parla")
 
 ### Fase 2 — infrastruttura (rendere sostenibile)

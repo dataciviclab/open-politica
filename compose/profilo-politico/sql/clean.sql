@@ -86,7 +86,9 @@ senato_profilo AS (
         COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo,
         COALESCE(c.n_commissioni_attuali, 0) AS n_commissioni_attuali,
         COALESCE(c.presidente_commissione, FALSE) AS presidente_commissione,
-        c.commissioni_attuali
+        c.commissioni_attuali,
+        0 AS n_relatori,
+        0 AS anni_relatore
     FROM senato_anagrafica a
     JOIN (
         SELECT senatore_id, count(*) AS n_voti,
@@ -164,6 +166,15 @@ camera_comm_agg AS (
     FROM read_parquet('out/data/clean/camera_commissioni/2026/camera_commissioni_2026_clean.parquet')
     GROUP BY deputato_id
 ),
+-- relatori Camera: "chi regista le leggi"
+camera_relatori_agg AS (
+    SELECT
+        deputato_id,
+        count(*)                                AS n_relatori,
+        count(DISTINCT year(data))              AS anni_attivi
+    FROM read_parquet('out/data/clean/camera_relatori/2026/camera_relatori_2026_clean.parquet')
+    GROUP BY deputato_id
+),
 camera_profilo AS (
     SELECT
         'camera' AS ramo,
@@ -177,7 +188,9 @@ camera_profilo AS (
         COALESCE(g.n_cariche_governo, 0) > 0 AS in_governo,
         COALESCE(c.n_organi_ruolo, 0) AS n_commissioni_attuali,
         COALESCE(c.presidente_organo, FALSE) AS presidente_commissione,
-        c.organi_ruoli AS commissioni_attuali
+        c.organi_ruoli AS commissioni_attuali,
+        COALESCE(r.n_relatori, 0) AS n_relatori,
+        COALESCE(r.anni_attivi, 0) AS anni_relatore
     FROM camera_anagrafica a
     JOIN (
         SELECT deputato_id, count(*) AS n_voti,
@@ -190,6 +203,7 @@ camera_profilo AS (
     ) v ON a.persona_id = v.deputato_id
     LEFT JOIN camera_align al ON a.persona_id = al.deputato_id
     LEFT JOIN camera_comm_agg c ON a.persona_id = c.deputato_id
+    LEFT JOIN camera_relatori_agg r ON a.persona_id = r.deputato_id
     LEFT JOIN (
         SELECT persona_id, count(*) AS n_cariche_governo
         FROM read_parquet('out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet')

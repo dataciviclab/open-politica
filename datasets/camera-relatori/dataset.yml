@@ -1,0 +1,76 @@
+# Relatori della Camera (XIX leg.) — i "registi" delle leggi
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_relatori"
+  source_id: "dati_camera"
+  tags: [politica, camera, relatori, iter, produzione]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX legislatura — ocd:relatore (il deputato che segue e dirige un atto in commissione)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "camera_relatori_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        # 10.621 relatori XIX > cap 10k → pages=2; dedup in clean su URI relatore
+        pages: 2
+        step: 10000
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          SELECT ?rel (MAX(?dep) AS ?dep) (MAX(?data) AS ?data) (MAX(?tipo) AS ?tipo)
+          WHERE {
+            ?rel a ocd:relatore ; ocd:rif_deputato ?dep .
+            ?disc ocd:rif_relatore ?rel ; <http://purl.org/dc/elements/1.1/date> ?data .
+            OPTIONAL { ?rel <http://purl.org/dc/elements/1.1/type> ?tipo . }
+            FILTER(CONTAINS(STR(?rel), "rel19_"))
+          }
+          GROUP BY ?rel
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [relatore_id, deputato_id, data]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [relatore_id, deputato_id]
+    primary_key: [relatore_id]
+    min_rows: 8000
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_top_relatori"
+      sql: "sql/mart_top_relatori.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [anno, n_relatori]
+        primary_key: [anno]
+        min_rows: 1
+      mart_top_relatori:
+        required_columns: [deputato_id, n_incarichi]
+        primary_key: [deputato_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
