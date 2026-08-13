@@ -47,6 +47,11 @@ raw:
       args:
         path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
         filename: "camera_deputati.parquet"
+    - name: "decreti_legge"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/decreti_legge/2026/decreti_legge_2026_clean.parquet"
+        filename: "decreti_legge.parquet"
 
 clean:
   sql: "sql/clean.sql"

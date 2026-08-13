@@ -25,6 +25,9 @@ gruppi AS (
 deputati AS (
     SELECT * FROM read_parquet('out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet')
 ),
+dl AS (
+    SELECT * FROM read_parquet('out/data/clean/decreti_legge/2026/decreti_legge_2026_clean.parquet')
+),
 
 kpi AS (
     -- ── A. Produzione legislativa (Senato, XIX leg.) ──────────────
@@ -116,6 +119,25 @@ kpi AS (
     SELECT 'repubblica_19', 'gruppi', 'n_membership',
            CAST(count(*) AS DOUBLE), 'senato_gruppi'
     FROM gruppi
+
+    -- ── G. Decreti-legge (da decreti_legge, dedupato per DL) ──────
+    UNION ALL
+    SELECT 'repubblica_19', 'decreti', 'n_dl',
+           CAST(count(*) AS DOUBLE), 'decreti_legge'
+    FROM dl
+    UNION ALL
+    SELECT 'repubblica_19', 'decreti', 'n_dl_convertiti',
+           CAST(count(*) FILTER (WHERE esito = 'convertito') AS DOUBLE), 'decreti_legge'
+    FROM dl
+    UNION ALL
+    SELECT 'repubblica_19', 'decreti', 'n_dl_decaduti',
+           CAST(count(*) FILTER (WHERE esito = 'decaduto') AS DOUBLE), 'decreti_legge'
+    FROM dl
+    UNION ALL
+    SELECT 'repubblica_19', 'decreti', 'pct_dl_convertiti',
+           round(100.0 * count(*) FILTER (WHERE esito = 'convertito') / NULLIF(count(*), 0), 1),
+           'decreti_legge'
+    FROM dl
 )
 
 SELECT periodo, dimensione, kpi, valore, fonte FROM kpi

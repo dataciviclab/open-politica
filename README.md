@@ -36,8 +36,9 @@ sono quasi sempre i nomi che conosci (Calenda, Gelmini, Soumahoro).
 L'**osservatorio** — la "pagella del Parlamento" — misura come funziona la
 macchina legislativa. Numeri della XIX legislatura:
 
-- **~36% delle leggi approvate nasce dal governo** (e senza contare i
-  decreti-legge, il vero "decide o ratifica")
+- **~36% delle leggi approvate nasce dal governo**, e il governo legifera
+  d'urgenza con i **decreti-legge**: 108 nella XIX, **89% convertiti** in
+  legge dal Parlamento, 8 decaduti
 - **1,18 milioni di voti individuali** dei senatori e **7,7 milioni** dei
   deputati, tutti interrogabili
 - le donne alla Camera: **11,5% (XIV leg.) → 36,4% (XVIII leg.)**

@@ -27,7 +27,7 @@ chiave:
 ## 2. Roadmap
 
 ### Fase 1 — chiudere la storia
-- [ ] A. Decreti-legge (senza, il "decide o ratifica" è incompleto)
+- [x] A. Decreti-legge (`decreti_legge` — 108 DL XIX, 89% convertiti, + KPI in osservatorio)
 - [ ] C. Relatori Camera (basso costo, alto valore)
 - [ ] B. Interventi (la dimensione "chi parla")
 

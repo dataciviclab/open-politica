@@ -1,0 +1,57 @@
+# Decreti-Legge — conversioni in Parlamento (XIX leg.)
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "decreti_legge"
+  source_id: "dataciviclab_composite"
+  tags: [politica, governo, decreti-legge, conversione, iter]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX leg. — i DDL di conversione (il DL arriva in Senato come disegno di conversione)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_ddl"
+      type: "local_file"
+      primary: true
+      args:
+        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
+        filename: "senato_ddl.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: latest
+  required_columns: [dl_numero, dl_anno, esito, data_presentazione]
+  validate:
+    not_null: [dl_numero, data_presentazione]
+    # una riga = un decreto-legge presentato per conversione
+    primary_key: [dl_numero, dl_anno]
+    min_rows: 80
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_dettaglio"
+      sql: "sql/mart_dettaglio.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [anno, n_dl, n_convertiti, n_decaduti]
+        primary_key: [anno]
+        min_rows: 1
+      mart_dettaglio:
+        required_columns: [dl_numero, dl_anno, esito, titolo]
+        min_rows: 80
+
+validation:
+  fail_on_error: true
