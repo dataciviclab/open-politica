@@ -58,6 +58,11 @@ senato_anagrafica AS (
     SELECT DISTINCT senatore_id, nome, cognome
     FROM read_parquet('out/data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet')
 ),
+senato_interventi_agg AS (
+    SELECT senatore_id, count(*) AS n_interventi
+    FROM read_parquet('out/data/clean/senato_interventi/2026/senato_interventi_2026_clean.parquet')
+    GROUP BY senatore_id
+),
 -- commissioni: "di cosa si occupa" (fase 3 dell'iter) — aggregato per senatore
 senato_comm_agg AS (
     SELECT
@@ -88,7 +93,8 @@ senato_profilo AS (
         COALESCE(c.presidente_commissione, FALSE) AS presidente_commissione,
         c.commissioni_attuali,
         0 AS n_relatori,
-        0 AS anni_relatore
+        0 AS anni_relatore,
+        COALESCE(i.n_interventi, 0) AS n_interventi
     FROM senato_anagrafica a
     JOIN (
         SELECT senatore_id, count(*) AS n_voti,
@@ -111,6 +117,7 @@ senato_profilo AS (
         GROUP BY persona_id
     ) g ON p.persona_id = g.persona_id
     LEFT JOIN senato_comm_agg c ON a.senatore_id = c.senatore_id
+    LEFT JOIN senato_interventi_agg i ON a.senatore_id = i.senatore_id
 ),
 
 -- ─────────────────────────── CAMERA ───────────────────────────
@@ -175,6 +182,12 @@ camera_relatori_agg AS (
     FROM read_parquet('out/data/clean/camera_relatori/2026/camera_relatori_2026_clean.parquet')
     GROUP BY deputato_id
 ),
+-- interventi: "chi parla in aula" (una riga per intervento)
+camera_interventi_agg AS (
+    SELECT deputato_id, count(*) AS n_interventi
+    FROM read_parquet('out/data/clean/camera_interventi/2026/camera_interventi_2026_clean.parquet')
+    GROUP BY deputato_id
+),
 camera_profilo AS (
     SELECT
         'camera' AS ramo,
@@ -190,7 +203,8 @@ camera_profilo AS (
         COALESCE(c.presidente_organo, FALSE) AS presidente_commissione,
         c.organi_ruoli AS commissioni_attuali,
         COALESCE(r.n_relatori, 0) AS n_relatori,
-        COALESCE(r.anni_attivi, 0) AS anni_relatore
+        COALESCE(r.anni_attivi, 0) AS anni_relatore,
+        COALESCE(iv.n_interventi, 0) AS n_interventi
     FROM camera_anagrafica a
     JOIN (
         SELECT deputato_id, count(*) AS n_voti,
@@ -204,6 +218,7 @@ camera_profilo AS (
     LEFT JOIN camera_align al ON a.persona_id = al.deputato_id
     LEFT JOIN camera_comm_agg c ON a.persona_id = c.deputato_id
     LEFT JOIN camera_relatori_agg r ON a.persona_id = r.deputato_id
+    LEFT JOIN camera_interventi_agg iv ON a.persona_id = iv.deputato_id
     LEFT JOIN (
         SELECT persona_id, count(*) AS n_cariche_governo
         FROM read_parquet('out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet')

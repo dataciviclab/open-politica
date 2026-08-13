@@ -29,7 +29,7 @@ chiave:
 ### Fase 1 — chiudere la storia
 - [x] A. Decreti-legge (`decreti_legge` — 108 DL XIX, 89% convertiti, + KPI in osservatorio)
 - [x] C. Relatori Camera (`camera_relatori` — 10.360 incarichi, registi delle leggi)
-- [ ] B. Interventi (la dimensione "chi parla")
+- [x] B. Interventi (`camera_interventi` 94k + `senato_interventi` 36k — chi parla in aula)
 
 ### Fase 2 — infrastruttura (rendere sostenibile)
 - [ ] PR toolkit: source `sparql` robusto (branch locale `fix/sparql-pagination` — keyset + anti-troncamento)

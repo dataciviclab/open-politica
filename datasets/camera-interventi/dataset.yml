@@ -1,0 +1,72 @@
+# Interventi in aula della Camera (XIX leg.) — chi parla, quando
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_interventi"
+  source_id: "dati_camera"
+  tags: [politica, camera, interventi, attivita, parlamento]
+  category: politica
+  years: [2022, 2023, 2024, 2025, 2026]
+  time_coverage:
+    # XIX leg. — ocd:intervento (il deputato che parla in aula/commissione)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "camera_interventi_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        # partizione per anno sulla data della discussione (deterministica,
+        # niente OFFSET globale instabile); pages per il volume annuale
+        pages: 5
+        step: 10000
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          SELECT ?int (MAX(?dep) AS ?dep) (MAX(?data) AS ?data) (MAX(?titolo) AS ?titolo)
+          WHERE {
+            ?int a ocd:intervento ; ocd:rif_deputato ?dep .
+            ?disc ocd:rif_intervento ?int ; dc:date ?data .
+            OPTIONAL { ?int dc:title ?titolo . }
+            FILTER(CONTAINS(STR(?int), "in19_") && STRSTARTS(?data, "{year}"))
+          }
+          GROUP BY ?int
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: all
+  required_columns: [intervento_id, deputato_id, data]
+  validate:
+    not_null: [intervento_id, deputato_id]
+    primary_key: [intervento_id]
+    min_rows: 3000
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_top_parlanti"
+      sql: "sql/mart_top_parlanti.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [anno, n_interventi]
+        primary_key: [anno]
+        min_rows: 1
+      mart_top_parlanti:
+        required_columns: [deputato_id, n_interventi]
+        primary_key: [deputato_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true

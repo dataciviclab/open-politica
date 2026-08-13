@@ -1,0 +1,73 @@
+# Interventi al Senato (XIX leg.) — chi parla, quando
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_interventi"
+  source_id: "dati_senato"
+  tags: [politica, senato, interventi, attivita, parlamento]
+  category: politica
+  years: [2026]
+  time_coverage:
+    # XIX leg. — osr:Intervento (graph composizione/19)
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_interventi_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        pages: 5
+        step: 10000
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          SELECT ?int (MAX(?sen) AS ?sen) (MAX(?data) AS ?data) (MAX(?ogg) AS ?ogg)
+          WHERE {
+            GRAPH <http://dati.senato.it/composizione/19> {
+              ?sen osr:interviene ?int .
+              ?int a osr:Intervento ; osr:seduta ?sed .
+              OPTIONAL { ?int <http://www.w3.org/2000/01/rdf-schema#label> ?ogg . }
+              FILTER(isIRI(?int))
+            }
+            # la dataSeduta è in un altro graph: fuori dal GRAPH
+            OPTIONAL { ?sed osr:dataSeduta ?data . }
+          }
+          GROUP BY ?int
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: latest
+  required_columns: [intervento_id, senatore_id, data]
+  validate:
+    not_null: [intervento_id, senatore_id]
+    primary_key: [intervento_id]
+    min_rows: 20000
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_top_parlanti"
+      sql: "sql/mart_top_parlanti.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [anno, n_interventi]
+        primary_key: [anno]
+        min_rows: 1
+      mart_top_parlanti:
+        required_columns: [senatore_id, n_interventi]
+        primary_key: [senatore_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true

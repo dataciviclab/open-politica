@@ -2,8 +2,81 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-08-12",
+  "updated_at": "2026-08-13",
   "datasets": [
+    {
+      "slug": "camera_commissioni",
+      "name": "Camera Commissioni",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "commissioni",
+        "membership",
+        "iter"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "deputato_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "organo_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "carica",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_inizio",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_fine",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_commissioni/2026/camera_commissioni_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_commissioni__mart_sintesi",
+        "camera_commissioni__mart_membro_organo"
+      ]
+    },
     {
       "slug": "camera_deputati_legislature",
       "name": "Camera Deputati Legislature",
@@ -227,6 +300,128 @@
       "mart_refs": [
         "camera_incarichi__mart_ruoli_legislatura",
         "camera_incarichi__mart_top_deputati"
+      ]
+    },
+    {
+      "slug": "camera_interventi",
+      "name": "Camera Interventi",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "interventi",
+        "attivita",
+        "parlamento"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "intervento_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "deputato_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_interventi/*/camera_interventi_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_interventi__mart_sintesi",
+        "camera_interventi__mart_top_parlanti"
+      ]
+    },
+    {
+      "slug": "camera_relatori",
+      "name": "Camera Relatori",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "relatori",
+        "iter",
+        "produzione"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "relatore_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "deputato_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/camera_relatori/2026/camera_relatori_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_relatori__mart_sintesi",
+        "camera_relatori__mart_top_relatori"
       ]
     },
     {
@@ -577,6 +772,79 @@
         "dait_amministratori_locali__mart_profilo_carica",
         "dait_amministratori_locali__mart_profilo_demografico",
         "dait_amministratori_locali__mart_territorio"
+      ]
+    },
+    {
+      "slug": "decreti_legge",
+      "name": "Decreti Legge",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "governo",
+        "decreti-legge",
+        "conversione",
+        "iter"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "dl_numero",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "dl_anno",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_presentazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_conversione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "esito",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "giorni_conversione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/decreti_legge/2026/decreti_legge_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "decreti_legge__mart_sintesi",
+        "decreti_legge__mart_dettaglio"
       ]
     },
     {
@@ -1405,6 +1673,67 @@
       ]
     },
     {
+      "slug": "osservatorio_parlamento",
+      "name": "Osservatorio Parlamento",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "osservatorio",
+        "kpi",
+        "parlamento",
+        "benchmark"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "periodo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "month"
+        },
+        {
+          "name": "dimensione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "kpi",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "valore",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "fonte",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/osservatorio_parlamento/2026/osservatorio_parlamento_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "osservatorio_parlamento__mart_kpi"
+      ]
+    },
+    {
       "slug": "ponte_persona",
       "name": "Ponte Persona",
       "description": "",
@@ -1550,6 +1879,42 @@
           "type": "BOOLEAN",
           "role": "dimension",
           "description": ""
+        },
+        {
+          "name": "n_commissioni_attuali",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "presidente_commissione",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "commissioni_attuali",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "n_relatori",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "anni_relatore",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_interventi",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
         }
       ],
       "location": {
@@ -1627,6 +1992,92 @@
       "mart_refs": [
         "senato_anagrafica__mart_nascita_anno",
         "senato_anagrafica__mart_luogo_nascita"
+      ]
+    },
+    {
+      "slug": "senato_commissioni",
+      "name": "Senato Commissioni",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "commissioni",
+        "membership",
+        "iter"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "commissione_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "materia",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "categoria",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "carica",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_inizio",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_fine",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_commissioni/2026/senato_commissioni_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_commissioni__mart_sintesi",
+        "senato_commissioni__mart_membro_commissione"
       ]
     },
     {
@@ -1998,6 +2449,68 @@
       ]
     },
     {
+      "slug": "senato_interventi",
+      "name": "Senato Interventi",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "interventi",
+        "attivita",
+        "parlamento"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "intervento_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "oggetto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/senato_interventi/2026/senato_interventi_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_interventi__mart_sintesi",
+        "senato_interventi__mart_top_parlanti"
+      ]
+    },
+    {
       "slug": "senato_votazioni",
       "name": "Senato Votazioni",
       "description": "",
@@ -2128,6 +2641,26 @@
   ],
   "marts": [
     {
+      "slug": "camera_commissioni__mart_membro_organo",
+      "dataset": "camera_commissioni",
+      "table": "mart_membro_organo",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_commissioni/2026/mart_membro_organo.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_commissioni__mart_sintesi",
+      "dataset": "camera_commissioni",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_commissioni/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_deputati_legislature__mart_legislatura_genere",
       "dataset": "camera_deputati_legislature",
       "table": "mart_legislatura_genere",
@@ -2174,6 +2707,46 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/camera_incarichi/2026/mart_top_deputati.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_interventi__mart_sintesi",
+      "dataset": "camera_interventi",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_interventi/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_interventi__mart_top_parlanti",
+      "dataset": "camera_interventi",
+      "table": "mart_top_parlanti",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_interventi/2026/mart_top_parlanti.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_relatori__mart_sintesi",
+      "dataset": "camera_relatori",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_relatori/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_relatori__mart_top_relatori",
+      "dataset": "camera_relatori",
+      "table": "mart_top_relatori",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/camera_relatori/2026/mart_top_relatori.parquet",
         "multi_file": false
       }
     },
@@ -2234,6 +2807,26 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/dait_amministratori_locali/2026/mart_territorio.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "decreti_legge__mart_dettaglio",
+      "dataset": "decreti_legge",
+      "table": "mart_dettaglio",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/decreti_legge/2026/mart_dettaglio.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "decreti_legge__mart_sintesi",
+      "dataset": "decreti_legge",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/decreti_legge/2026/mart_sintesi.parquet",
         "multi_file": false
       }
     },
@@ -2368,6 +2961,16 @@
       }
     },
     {
+      "slug": "osservatorio_parlamento__mart_kpi",
+      "dataset": "osservatorio_parlamento",
+      "table": "mart_kpi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/osservatorio_parlamento/2026/mart_kpi.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "ponte_persona__mart_match",
       "dataset": "ponte_persona",
       "table": "mart_match",
@@ -2404,6 +3007,26 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/senato_anagrafica/2026/mart_nascita_anno.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_commissioni__mart_membro_commissione",
+      "dataset": "senato_commissioni",
+      "table": "mart_membro_commissione",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_commissioni/2026/mart_membro_commissione.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_commissioni__mart_sintesi",
+      "dataset": "senato_commissioni",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_commissioni/2026/mart_sintesi.parquet",
         "multi_file": false
       }
     },
@@ -2478,6 +3101,26 @@
       }
     },
     {
+      "slug": "senato_interventi__mart_sintesi",
+      "dataset": "senato_interventi",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_interventi/2026/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_interventi__mart_top_parlanti",
+      "dataset": "senato_interventi",
+      "table": "mart_top_parlanti",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_interventi/2026/mart_top_parlanti.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "senato_votazioni__mart_sintesi",
       "dataset": "senato_votazioni",
       "table": "mart_sintesi",
@@ -2499,6 +3142,36 @@
     }
   ],
   "signals": [
+    {
+      "id": "compose:decreti_legge",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "decreti_legge",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260813T131541Z_fb67d4c7",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 108,
+          "mart": 113
+        },
+        "output_bytes": {
+          "raw": 422837,
+          "clean": 8954,
+          "mart": 10060
+        },
+        "started_at": "2026-08-13T13:15:41.817968+00:00",
+        "finished_at": "2026-08-13T13:15:42.209037+00:00",
+        "duration_seconds": 0.391
+      }
+    },
     {
       "id": "compose:elezioni_voto",
       "source_id": "dataciviclab_composite",
@@ -2530,14 +3203,14 @@
       }
     },
     {
-      "id": "compose:profilo_politico",
+      "id": "compose:osservatorio_parlamento",
       "source_id": "dataciviclab_composite",
       "status": "ok",
-      "label": "profilo_politico",
+      "label": "osservatorio_parlamento",
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260812T183017Z_8286ff07",
+        "run_id": "20260813T131731Z_e1989cda",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -2546,17 +3219,78 @@
           "mart": 100
         },
         "output_rows": {
+          "clean": 156,
+          "mart": 156
+        },
+        "output_bytes": {
+          "raw": 42050203,
+          "clean": 2309,
+          "mart": 2114
+        },
+        "started_at": "2026-08-13T13:17:31.829746+00:00",
+        "finished_at": "2026-08-13T13:17:35.984601+00:00",
+        "duration_seconds": 4.155
+      }
+    },
+    {
+      "id": "compose:profilo_politico",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "profilo_politico",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260813T155601Z_05d7abb5",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
           "clean": 622,
           "mart": 622
         },
         "output_bytes": {
-          "raw": 41840960,
-          "clean": 17943,
-          "mart": 17623
+          "raw": 42349788,
+          "clean": 31431,
+          "mart": 31313
         },
-        "started_at": "2026-08-12T18:30:17.127196+00:00",
-        "finished_at": "2026-08-12T18:30:19.376716+00:00",
-        "duration_seconds": 2.25
+        "started_at": "2026-08-13T15:56:01.260621+00:00",
+        "finished_at": "2026-08-13T15:56:04.396442+00:00",
+        "duration_seconds": 3.136
+      }
+    },
+    {
+      "id": "camera_commissioni",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_commissioni",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T205608Z_8d6950c7",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 778,
+          "clean": 778,
+          "mart": 376
+        },
+        "output_bytes": {
+          "raw": 217019,
+          "clean": 9144,
+          "mart": 5019
+        },
+        "started_at": "2026-08-12T20:56:08.242856+00:00",
+        "finished_at": "2026-08-12T20:56:06.955694+00:00",
+        "duration_seconds": -1.287
       }
     },
     {
@@ -2650,6 +3384,67 @@
         "started_at": "2026-08-12T12:24:00.290331+00:00",
         "finished_at": "2026-08-12T12:24:03.358310+00:00",
         "duration_seconds": 3.068
+      }
+    },
+    {
+      "id": "camera_interventi",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_interventi",
+      "detail": "anni 2022-2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260813T155018Z_11c12c38",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 7481,
+          "mart": 351
+        },
+        "output_bytes": {
+          "raw": 1076609,
+          "clean": 56736,
+          "mart": 3059
+        },
+        "started_at": "2026-08-13T15:50:18.226009+00:00",
+        "finished_at": "2026-08-13T15:50:27.991576+00:00",
+        "duration_seconds": 9.766
+      }
+    },
+    {
+      "id": "camera_relatori",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_relatori",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260813T132437Z_0d06f091",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 10360,
+          "clean": 10360,
+          "mart": 283
+        },
+        "output_bytes": {
+          "raw": 1302254,
+          "clean": 89993,
+          "mart": 3053
+        },
+        "started_at": "2026-08-13T13:24:37.224947+00:00",
+        "finished_at": "2026-08-13T13:24:41.209082+00:00",
+        "duration_seconds": 3.984
       }
     },
     {
@@ -2988,6 +3783,37 @@
       }
     },
     {
+      "id": "senato_commissioni",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_commissioni",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260812T204444Z_c5724e10",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 1052,
+          "clean": 1052,
+          "mart": 258
+        },
+        "output_bytes": {
+          "raw": 244811,
+          "clean": 12716,
+          "mart": 6170
+        },
+        "started_at": "2026-08-12T20:44:44.615559+00:00",
+        "finished_at": "2026-08-12T20:44:47.134144+00:00",
+        "duration_seconds": 2.519
+      }
+    },
+    {
       "id": "senato_ddl",
       "source_id": "dati_senato",
       "status": "ok",
@@ -3078,6 +3904,36 @@
         "started_at": "2026-08-12T12:55:23.126619+00:00",
         "finished_at": "2026-08-12T12:55:25.390147+00:00",
         "duration_seconds": 2.264
+      }
+    },
+    {
+      "id": "senato_interventi",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_interventi",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260813T155322Z_a31505e9",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 36168,
+          "mart": 210
+        },
+        "output_bytes": {
+          "raw": 4853271,
+          "clean": 349383,
+          "mart": 2498
+        },
+        "started_at": "2026-08-13T15:53:22.693644+00:00",
+        "finished_at": "2026-08-13T15:53:44.732082+00:00",
+        "duration_seconds": 22.038
       }
     },
     {
@@ -3282,6 +4138,12 @@
             "semantic_type": "senator_id"
           },
           {
+            "slug": "senato_commissioni",
+            "name": "Senato Commissioni",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
             "slug": "senato_firmatari",
             "name": "Senato Firmatari",
             "column": "senatore_id",
@@ -3294,6 +4156,12 @@
             "semantic_type": "senator_id"
           },
           {
+            "slug": "senato_interventi",
+            "name": "Senato Interventi",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
             "slug": "senato_votazioni",
             "name": "Senato Votazioni",
             "column": "senatore_id",
@@ -3302,7 +4170,7 @@
         ],
         "types": {
           "person_id": 5,
-          "senator_id": 5
+          "senator_id": 7
         }
       },
       "Provincia": {
@@ -3416,10 +4284,17 @@
             "name": "Dait Amministratori Locali",
             "column": "anno",
             "semantic_type": "year"
+          },
+          {
+            "slug": "osservatorio_parlamento",
+            "name": "Osservatorio Parlamento",
+            "column": "periodo",
+            "semantic_type": "month"
           }
         ],
         "types": {
-          "year": 1
+          "year": 1,
+          "month": 1
         }
       }
     },

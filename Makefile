@@ -6,7 +6,7 @@ TOOLKIT = TOOLKIT_ALLOW_SCRIPT_SOURCE=1 $(PYTHON) -m toolkit.cli.app
 
 # --- Dataset ---
 
-.PHONY: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-camera-voti run-senato-anagrafica run-senato-ddl run-senato-firmatari run-senato-gruppi run-senato-commissioni run-camera-commissioni run-camera-relatori run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni run-ponte-persona run-camera-voti run-profilo-politico run-osservatorio-parlamento run-decreti-legge extract-senato-votazioni extract-camera-voti build-ponte-persona run-all
+.PHONY: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-camera-voti run-senato-anagrafica run-senato-ddl run-senato-firmatari run-senato-gruppi run-senato-commissioni run-camera-commissioni run-camera-relatori run-camera-interventi run-senato-interventi run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni run-ponte-persona run-camera-voti run-profilo-politico run-osservatorio-parlamento run-decreti-legge extract-senato-votazioni extract-camera-voti build-ponte-persona run-all
 
 run-elezioni-politiche:
 	$(TOOLKIT) run --config datasets/elezioni-politiche/dataset.yml
@@ -67,6 +67,12 @@ run-camera-commissioni:
 
 run-camera-relatori:
 	$(TOOLKIT) run --config datasets/camera-relatori/dataset.yml
+
+run-camera-interventi:
+	$(TOOLKIT) run --config datasets/camera-interventi/dataset.yml
+
+run-senato-interventi:
+	$(TOOLKIT) run --config datasets/senato-interventi/dataset.yml
 
 extract-senato-votazioni:
 	python3 scripts/extract_senato_votazioni.py --legislature 19
