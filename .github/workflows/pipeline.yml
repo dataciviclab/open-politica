@@ -66,6 +66,7 @@ jobs:
         run: |
           pip install git+https://github.com/dataciviclab/toolkit.git@main
           pip install git+https://github.com/dataciviclab/lab-connectors.git
+          pip install -r requirements.txt
 
       # ── Determinare i dataset da processare ─────────────────────────
       - name: Detect datasets to run
