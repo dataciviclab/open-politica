@@ -97,32 +97,61 @@ jobs:
           else
             echo "compose_changed=false" >> "$GITHUB_OUTPUT"
           fi
-          # Filtra solo dir con dataset.yml
-          DIRS=""
+          # Filtra solo dir con dataset.yml; separa datasets/ (escluso ponte,
+          # costruito a parte dopo i sorgenti) da compose/
+          DATA_DIRS=""
+          COMPOSE_DIRS=""
+          INCLUDE_PONTE=false
           while read -r d; do
-            [ -n "$d" ] && [ -f "$d/dataset.yml" ] && DIRS="$DIRS $d"
+            [ -f "$d/dataset.yml" ] || continue
+            case "$d" in
+              datasets/ponte-persona) INCLUDE_PONTE=true ;;
+              datasets/*) DATA_DIRS="$DATA_DIRS $d" ;;
+              compose/*) COMPOSE_DIRS="$COMPOSE_DIRS $d" ;;
+            esac
           done < dirs.txt
-          echo "dirs=$DIRS" >> "$GITHUB_OUTPUT"
+          echo "data_dirs=$DATA_DIRS" >> "$GITHUB_OUTPUT"
+          echo "compose_dirs=$COMPOSE_DIRS" >> "$GITHUB_OUTPUT"
+          echo "include_ponte=$INCLUDE_PONTE" >> "$GITHUB_OUTPUT"
 
       # ── Estrazioni pesanti (SOLO full: schedule o dispatch senza slug) ──
-      # camera_voti è ~30 min e WAF-bound: nel full mensile.
+      # camera_voti è ~30 min e WAF-bound: nel full mensile. Il ponte persona
+      # NO: legge i clean dei sorgenti, costruito dopo il run dei dataset.
       - name: Extract heavy sources
         if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
         run: |
           python3 scripts/extract_senato_votazioni.py --legislature 19
           python3 scripts/extract_camera_voti.py --legislature 19 --batch 200
-          python3 scripts/build_ponte_persona.py
 
-      # ── Run pipeline: datasets/ prima, compose/ dopo ─────────────────
+      # ── Run pipeline: datasets → ponte → compose ───────────────────
+      # Ordine per dipendenze: i dataset producono i clean, poi il ponte
+      # persona (legge i clean di camera_deputati/senato_anagrafica), poi i
+      # compose (che leggono i clean dei sorgenti, ponte incluso).
       # NB: NIENTE `--years $(date +%Y)`: i dataset dichiarano i propri anni
-      # nel config (es. elezioni comunali [2016..2024], votazioni [2026]) e
-      # forzare l'anno corrente farebbe fallire i multi-anno.
+      # nel config (es. elezioni comunali [2016..2024]) e forzare l'anno
+      # corrente farebbe fallire i multi-anno.
       - name: Run datasets
-        if: steps.detect.outputs.dirs != ''
+        if: steps.detect.outputs.data_dirs != ''
         env:
           SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
         run: |
-          for dir in ${{ steps.detect.outputs.dirs }}; do
+          for dir in ${{ steps.detect.outputs.data_dirs }}; do
+            echo "=== $dir ==="
+            toolkit run -c "$dir/dataset.yml" $SMOKE
+          done
+
+      - name: Build ponte persona
+        if: ${{ !inputs.smoke && steps.detect.outputs.include_ponte == 'true' }}
+        run: |
+          python3 scripts/build_ponte_persona.py
+          toolkit run -c datasets/ponte-persona/dataset.yml
+
+      - name: Run compose
+        if: steps.detect.outputs.compose_dirs != ''
+        env:
+          SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
+        run: |
+          for dir in ${{ steps.detect.outputs.compose_dirs }}; do
             echo "=== $dir ==="
             toolkit run -c "$dir/dataset.yml" $SMOKE
           done
@@ -148,9 +177,11 @@ jobs:
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
       - name: Sync to GCS
-        if: ${{ !inputs.smoke && steps.gcs.outputs.ready == 'true' && steps.detect.outputs.dirs != '' }}
+        if: ${{ !inputs.smoke && steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '') }}
         run: |
-          for slug_dir in ${{ steps.detect.outputs.dirs }}; do
+          ALL_DIRS="${{ steps.detect.outputs.data_dirs }} ${{ steps.detect.outputs.compose_dirs }}"
+          [ "${{ steps.detect.outputs.include_ponte }}" = "true" ] && ALL_DIRS="$ALL_DIRS datasets/ponte-persona"
+          for slug_dir in $ALL_DIRS; do
             slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
             year=$(ls "out/data/clean/$slug/" 2>/dev/null | sort -rn | head -1)
             [ -z "$year" ] && echo "⚠️ No clean output for $slug" && continue
