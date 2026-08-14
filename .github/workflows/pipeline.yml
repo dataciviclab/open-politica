@@ -115,13 +115,18 @@ jobs:
           echo "include_ponte=$INCLUDE_PONTE" >> "$GITHUB_OUTPUT"
 
       # ── Estrazioni pesanti (SOLO full: schedule o dispatch senza slug) ──
-      # camera_voti è ~30 min e WAF-bound: nel full mensile. Il ponte persona
-      # NO: legge i clean dei sorgenti, costruito dopo il run dei dataset.
+      # senato e camera colpiscono endpoint diversi → WAF indipendenti: si
+      # lanciano in PARALLELO (70 min → ~40 min). Il ponte persona NO: legge
+      # i clean dei sorgenti, costruito dopo il run dei dataset.
       - name: Extract heavy sources
         if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
         run: |
-          python3 scripts/extract_senato_votazioni.py --legislature 19
-          python3 scripts/extract_camera_voti.py --legislature 19 --batch 200
+          python3 scripts/extract_senato_votazioni.py --legislature 19 &
+          SEN=$!
+          python3 scripts/extract_camera_voti.py --legislature 19 --batch 200 &
+          CAM=$!
+          wait $SEN
+          wait $CAM
 
       # ── Run pipeline: datasets → ponte → compose ───────────────────
       # Ordine per dipendenze: i dataset producono i clean, poi il ponte
