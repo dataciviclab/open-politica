@@ -229,6 +229,11 @@ def main() -> int:
         dates_path,
     )
     globs = ", ".join(f"'{p}'" for p in sorted(chunk_dir.glob("chunk_*.parquet")))
+    # UNION con l'esistente SOLO in incremental (il file esiste per definizione);
+    # in full non va referenziato: su un runner fresco non c'è.
+    existing_union = (
+        f"UNION ALL SELECT * FROM read_parquet('{final_path}')" if incremental_existing else ""
+    )
     with duckdb.connect() as con:
         con.execute(f"""
             CREATE OR REPLACE TABLE finale AS
@@ -247,10 +252,8 @@ def main() -> int:
                     ) AS data
                 FROM read_parquet([{globs}]) v
                 LEFT JOIN read_parquet('{dates_path}') d ON v.votazione = d.votazione
-                UNION ALL
-                SELECT * FROM read_parquet('{final_path}')
-                WHERE '{incremental_existing or ""}' != ''
-            )
+                {existing_union}
+            ) q
         """)
         con.execute(f"COPY (SELECT * FROM finale) TO '{final_path}' (FORMAT PARQUET)")
         n = con.execute("SELECT count(*) FROM finale").fetchone()[0]
