@@ -114,16 +114,30 @@ jobs:
           echo "compose_dirs=$COMPOSE_DIRS" >> "$GITHUB_OUTPUT"
           echo "include_ponte=$INCLUDE_PONTE" >> "$GITHUB_OUTPUT"
 
+      # ── Cache del derived (per l'incremental) ──────────────────────
+      # Il runner è effimero: senza cache, l'incremental torna full. La cache
+      # di GitHub evita a 7 giorni senza accesso — utile se i run sono
+      # frequenti; per lo schedule mensile può scadere (→ full extract).
+      - name: Cache derived parquet
+        if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
+        uses: actions/cache@v4
+        with:
+          path: out/data/derived
+          key: open-politica-derived-v1-${{ github.run_id }}
+          restore-keys: |
+            open-politica-derived-v1-
+
       # ── Estrazioni pesanti (SOLO full: schedule o dispatch senza slug) ──
       # senato e camera colpiscono endpoint diversi → WAF indipendenti: si
-      # lanciano in PARALLELO (70 min → ~40 min). Il ponte persona NO: legge
-      # i clean dei sorgenti, costruito dopo il run dei dataset.
+      # lanciano in PARALLELO (70 min → ~40 min). --incremental: se la cache
+      # ha il parquet, estrae solo le votazioni nuove (minuti). Il ponte NO:
+      # legge i clean dei sorgenti, costruito dopo il run dei dataset.
       - name: Extract heavy sources
         if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
         run: |
-          python3 scripts/extract_senato_votazioni.py --legislature 19 &
+          python3 scripts/extract_senato_votazioni.py --legislature 19 --incremental &
           SEN=$!
-          python3 scripts/extract_camera_voti.py --legislature 19 --batch 200 &
+          python3 scripts/extract_camera_voti.py --legislature 19 --batch 200 --incremental &
           CAM=$!
           wait $SEN
           wait $CAM

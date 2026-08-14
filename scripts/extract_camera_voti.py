@@ -130,14 +130,46 @@ def main() -> int:
     parser.add_argument("--legislature", type=int, default=19)
     parser.add_argument("--out", default="out/data/derived/camera_voti")
     parser.add_argument("--batch", type=int, default=200)
+    parser.add_argument("--incremental", action="store_true",
+                        help="estrae solo le votazioni successive alla max data già presente nel parquet")
     args = parser.parse_args()
 
     out_dir = Path(args.out)
     chunk_dir = out_dir / "chunks"
     chunk_dir.mkdir(parents=True, exist_ok=True)
+    final_path = out_dir / f"camera_voti.parquet"
+
+    # ── Incremental: solo votazioni con data > max esistente ──────────
+    incremental_existing = None
+    if args.incremental and final_path.exists():
+        import duckdb as _ddb
+        with _ddb.connect() as con:
+            last = con.execute(
+                f"SELECT max(data) FROM read_parquet('{final_path}')"
+            ).fetchone()[0]
+        if last is None:
+            log.info("incremental: parquet esistente ma senza date → full")
+        else:
+            incremental_existing = str(last)
+            log.info("incremental: max data esistente = %s", last)
 
     votazioni = fetch_votazioni(args.legislature)
-    log.info("votazioni XIX: %d", len(votazioni))
+    if incremental_existing:
+        # filtra solo le votazioni con data > last (mappa date prima del filtro)
+        dates = fetch_votazione_dates(args.legislature)
+        new_dates = {
+            d["vr"] for d in dates
+            if d["d"] and str(d["d"])[:8] > incremental_existing.replace("-", "")
+        }
+        votazioni = sorted(votazioni, key=lambda x: x)
+        votazioni = [v for v in votazioni if v in new_dates]
+        log.info("incremental: %d/%d votazioni nuove (data > %s)",
+                 len(votazioni), len(dates), incremental_existing)
+        if not votazioni:
+            log.info("niente di nuovo — parquet invariato: %s", final_path)
+            return 0
+    else:
+        log.info("votazioni XIX: %d", len(votazioni))
     if not votazioni:
         return 1
 
@@ -200,28 +232,33 @@ def main() -> int:
     with duckdb.connect() as con:
         con.execute(f"""
             CREATE OR REPLACE TABLE finale AS
-            SELECT DISTINCT
-                v.voto AS voto_uri,
-                TRY_CAST(REGEXP_EXTRACT(v.deputato, 'deputato\\.rdf/d(\\d+)_', 1) AS BIGINT) AS deputato_id,
-                v.votazione,
-                v.tipo AS voto,
-                v.sigla,
-                v.gruppo,
-                TRY_CAST(
-                    CASE WHEN length(d.data_raw) = 8
-                         THEN substr(d.data_raw,1,4)||'-'||substr(d.data_raw,5,2)||'-'||substr(d.data_raw,7,2)
-                    END AS DATE
-                ) AS data
-            FROM read_parquet([{globs}]) v
-            LEFT JOIN read_parquet('{dates_path}') d ON v.votazione = d.votazione
+            SELECT DISTINCT * FROM (
+                SELECT DISTINCT
+                    v.voto AS voto_uri,
+                    TRY_CAST(REGEXP_EXTRACT(v.deputato, 'deputato\\.rdf/d(\\d+)_', 1) AS BIGINT) AS deputato_id,
+                    v.votazione,
+                    v.tipo AS voto,
+                    v.sigla,
+                    v.gruppo,
+                    TRY_CAST(
+                        CASE WHEN length(d.data_raw) = 8
+                             THEN substr(d.data_raw,1,4)||'-'||substr(d.data_raw,5,2)||'-'||substr(d.data_raw,7,2)
+                        END AS DATE
+                    ) AS data
+                FROM read_parquet([{globs}]) v
+                LEFT JOIN read_parquet('{dates_path}') d ON v.votazione = d.votazione
+                UNION ALL
+                SELECT * FROM read_parquet('{final_path}')
+                WHERE '{incremental_existing or ""}' != ''
+            )
         """)
         con.execute(f"COPY (SELECT * FROM finale) TO '{final_path}' (FORMAT PARQUET)")
         n = con.execute("SELECT count(*) FROM finale").fetchone()[0]
         nd = con.execute("SELECT count(DISTINCT deputato_id) FROM finale").fetchone()[0]
         nv = con.execute("SELECT count(DISTINCT votazione) FROM finale").fetchone()[0]
         null_data = con.execute("SELECT count(*) FROM finale WHERE data IS NULL").fetchone()[0]
-    log.info("OK: %d voti, %d deputati, %d/%d votazioni, NULL data %d → %s",
-             n, nd, nv, len(votazioni), null_data, final_path)
+    log.info("OK: %d voti, %d deputati, %d votazioni, NULL data %d → %s",
+             n, nd, nv, null_data, final_path)
     return 0
 
 

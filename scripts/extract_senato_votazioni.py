@@ -184,6 +184,35 @@ def fetch_voti(graph: str) -> list[dict]:
     return voti
 
 
+def fetch_voti_filtered(graph: str, votazioni: set[str], batch: int = 200) -> list[dict]:
+    """Voti individuali SOLO per un set di votazioni (incremental).
+
+    Deterministico: IN-list fissa per batch → OFFSET stabile dentro il batch
+    (nessun overlap come la paginazione globale).
+    """
+    voti: list[dict] = []
+    vlist = sorted(votazioni)
+    for bi in range(0, len(vlist), batch):
+        batch_v = vlist[bi:bi + batch]
+        in_list = "<" + ">,<".join(batch_v) + ">"
+        offset = 0
+        while True:
+            rows = query(f"""
+                SELECT ?v ?sen ?p WHERE {{
+                  GRAPH <{graph}> {{
+                    ?v ?p ?sen .
+                    FILTER(?p IN {VOTO_IN} && ?v IN ({in_list}))
+                  }}
+                }}
+                LIMIT 10000 OFFSET {offset}
+            """)
+            voti.extend(rows)
+            if len(rows) < 10000:
+                break
+            offset += 10000
+    return voti
+
+
 def fetch_sedute(legislatura: int) -> list[dict]:
     return query(f"""
         PREFIX osr: <{OSR}>
@@ -201,13 +230,17 @@ def main() -> int:
     parser.add_argument("--out", default="out/data/derived/senato_votazioni")
     parser.add_argument("--merge-only", action="store_true",
                         help="salta l'estrazione SPARQL e ri-merge i parquet già estratti")
+    parser.add_argument("--incremental", action="store_true",
+                        help="estrae solo le votazioni successive alla max data già presente")
     args = parser.parse_args()
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
+    final_path = out_dir / "senato_votazioni.parquet"
 
     all_meta: list[dict] = []
     voti_files: list[Path] = []
+    last_date = None  # set in modalità incremental (per l'UNION nel merge)
 
     if not args.merge_only:
         graphs = discover_graphs(args.legislature)
@@ -217,10 +250,46 @@ def main() -> int:
         log.info("legislatura %d — %d graph: %s", args.legislature, len(graphs),
                  ", ".join(g.split("/")[-1] for g in graphs))
 
+        # ── Incremental: determina le votazioni nuove (data > max esistente) ──
+        last_date = None
+        if args.incremental and final_path.exists():
+            with duckdb.connect() as con:
+                last_date = con.execute(
+                    f"SELECT max(data) FROM read_parquet('{final_path}')"
+                ).fetchone()[0]
+            if last_date is None:
+                log.info("incremental: parquet esistente senza date → full")
+            else:
+                log.info("incremental: max data esistente = %s", last_date)
+
         for g in graphs:
             meta = fetch_votazioni_meta(g)
             all_meta.extend(meta)
-            voti = fetch_voti(g)
+
+        # mappa votazione → data (via seduta) per filtrare le nuove
+        if last_date is not None:
+            sedute_map = {s["s"]: s["d"] for s in fetch_sedute(args.legislature)}
+            new_votazioni = {
+                m["v"] for m in all_meta
+                if sedute_map.get(m["seduta"]) and str(sedute_map[m["seduta"]]) > str(last_date)
+            }
+            log.info("incremental: %d votazioni nuove (data > %s)", len(new_votazioni), last_date)
+            if not new_votazioni:
+                log.info("niente di nuovo — parquet invariato: %s", final_path)
+                return 0
+        else:
+            new_votazioni = None
+
+        for g in graphs:
+            if last_date is not None:
+                # solo i voti delle votazioni nuove presenti in questo graph
+                meta_in_g = [m for m in all_meta if m["seduta"]]
+                voti = fetch_voti_filtered(g, new_votazioni)
+                voti = [v for v in voti if v["v"] in new_votazioni]
+                log.info("  graph %s: %d voti nuovi", g.split("/")[-1], len(voti))
+            else:
+                meta_in_g = meta
+                voti = fetch_voti(g)
             if not voti:
                 log.warning("  graph %s: nessun voto", g.split("/")[-1])
                 continue
@@ -274,10 +343,14 @@ def main() -> int:
 
     final_path = out_dir / f"senato_votazioni.parquet"
     log.info("merge in %s", final_path)
+    existing_union = (
+        f"UNION ALL SELECT * FROM read_parquet('{final_path}')" if last_date is not None else ""
+    )
     with duckdb.connect() as con:
         globs = ", ".join(f"'{p}'" for p in voti_files)
         con.execute(f"""
             CREATE OR REPLACE TABLE finale AS
+            SELECT * FROM (
             SELECT v.votazione,
                    TRY_CAST(REGEXP_EXTRACT(v.senatore, '(\\d+)$', 1) AS BIGINT) AS senatore_id,
                    v.voto,
@@ -293,6 +366,8 @@ def main() -> int:
             FROM read_parquet([{globs}]) v
             JOIN read_parquet('{meta_path}') m ON v.votazione = m.votazione
             LEFT JOIN read_parquet('{sed_path}') s ON m.seduta = s.seduta
+            {existing_union}
+            ) q
         """)
         con.execute(f"COPY (SELECT * FROM finale) TO '{final_path}' (FORMAT PARQUET)")
         n = con.execute("SELECT count(*) FROM finale").fetchone()[0]
