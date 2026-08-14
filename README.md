@@ -85,6 +85,23 @@ out/         # output runtime — mai versionato
 - **dati.senato.it** — OpenData SPARQL (senatori, gruppi, commissioni, ddl, voti)
 - **dati.gov.it** — anagrafica PA
 
+## Licenze
+
+- **Codice**: MIT
+- **Dati**: licenze originali delle fonti (CC BY per Camera e Senato;
+  dati Eligendo/DAIT del Ministero dell'Interno) — vedi notes.md dei singoli
+  dataset per la fonte di provenienza
+
+## Pubblicazione (Fase 2)
+
+I dataset pubblicati (clean/mart) andranno su GCS con prefisso `open-politica/`:
+
+- `gs://dataciviclab-clean/open-politica/<slug>/`
+- `gs://dataciviclab-mart/open-politica/<slug>/`
+
+CI: `ci.yml` (preflight su PR) + `pipeline.yml` (post-merge + schedule mensile
+con estrazioni pesanti + sync GCS + registry PR).
+
 ## Stato
 
 Progetto di dominio del DataCivicLab (in incubazione). I dataset sono in
