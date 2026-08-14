@@ -204,14 +204,14 @@ jobs:
             slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
             year=$(ls "out/data/clean/$slug/" 2>/dev/null | sort -rn | head -1)
             [ -z "$year" ] && echo "⚠️ No clean output for $slug" && continue
-            gsutil -m rsync -r "out/data/clean/$slug/$year/" "gs://dataciviclab-clean/open-politica/$slug/"
+            gsutil -m rsync -r "out/data/clean/$slug/$year/" "gs://dataciviclab-clean/open-politica/$slug/$year/"
             echo "✅ $slug clean synced"
           done
           for slug_dir in ${{ steps.detect.outputs.dirs }}; do
             slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
             year=$(ls "out/data/mart/$slug/" 2>/dev/null | sort -rn | head -1)
             [ -z "$year" ] && echo "⚠️ No mart output for $slug" && continue
-            gsutil -m rsync -r "out/data/mart/$slug/$year/" "gs://dataciviclab-mart/open-politica/$slug/"
+            gsutil -m rsync -r "out/data/mart/$slug/$year/" "gs://dataciviclab-mart/open-politica/$slug/$year/"
             echo "✅ $slug mart synced"
           done
 
