@@ -198,21 +198,25 @@ jobs:
       - name: Sync to GCS
         if: ${{ !inputs.smoke && steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '') }}
         run: |
+          # Pattern rna: loop su TUTTI gli anni per slug (i multi-anno come
+          # le elezioni hanno più year dir), escludendo run/validate/metadata.
           ALL_DIRS="${{ steps.detect.outputs.data_dirs }} ${{ steps.detect.outputs.compose_dirs }}"
           [ "${{ steps.detect.outputs.include_ponte }}" = "true" ] && ALL_DIRS="$ALL_DIRS datasets/ponte-persona"
           for slug_dir in $ALL_DIRS; do
             slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
-            year=$(ls "out/data/clean/$slug/" 2>/dev/null | sort -rn | head -1)
-            [ -z "$year" ] && echo "⚠️ No clean output for $slug" && continue
-            gsutil -m rsync -r "out/data/clean/$slug/$year/" "gs://dataciviclab-clean/open-politica/$slug/$year/"
-            echo "✅ $slug clean synced"
+            for year in $(ls "out/data/clean/$slug/" 2>/dev/null); do
+              gsutil -m rsync -r -x ".*/_(run|validate)/.*|.*/metadata\.json$" \
+                "out/data/clean/$slug/$year/" "gs://dataciviclab-clean/open-politica/$slug/$year/"
+              echo "✅ $slug/$year clean synced"
+            done
           done
-          for slug_dir in ${{ steps.detect.outputs.dirs }}; do
+          for slug_dir in $ALL_DIRS; do
             slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
-            year=$(ls "out/data/mart/$slug/" 2>/dev/null | sort -rn | head -1)
-            [ -z "$year" ] && echo "⚠️ No mart output for $slug" && continue
-            gsutil -m rsync -r "out/data/mart/$slug/$year/" "gs://dataciviclab-mart/open-politica/$slug/$year/"
-            echo "✅ $slug mart synced"
+            for year in $(ls "out/data/mart/$slug/" 2>/dev/null); do
+              gsutil -m rsync -r -x ".*/_(run|validate)/.*|.*/metadata\.json$" \
+                "out/data/mart/$slug/$year/" "gs://dataciviclab-mart/open-politica/$slug/$year/"
+              echo "✅ $slug/$year mart synced"
+            done
           done
 
       # ── Registry + PR draft (pattern collettivo) ─────────────────────
