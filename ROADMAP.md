@@ -32,9 +32,13 @@ chiave:
 - [x] B. Interventi (`camera_interventi` 94k + `senato_interventi` 36k — chi parla in aula)
 
 ### Fase 2 — infrastruttura (rendere sostenibile)
-- [ ] PR toolkit: source `sparql` robusto (branch locale `fix/sparql-pagination` — keyset + anti-troncamento)
-- [ ] Publish GCS + CI schedulata (estrazioni pesanti come job notturni)
-- [ ] Compose riproducibili (leggono da GCS, non da path locali)
+- [x] PR toolkit: source `sparql` robusto (**merged #472** — keyset + anti-troncamento)
+- [x] CI: `ci.yml` (preflight) + `pipeline.yml` (post-merge + schedule, estrazioni, GCS, registry PR)
+- [ ] **Publish GCS via pipeline** (nessun upload manuale):
+      1. impostare il secret `GCP_SA_KEY_OPEN_POLITICA` (SA con accesso a `dataciviclab-*`)
+      2. `workflow_dispatch` del pipeline (senza slug) → extract + run + sync `open-politica/` + registry PR
+      3. primo run = publish; run mensili = refresh
+- [ ] Compose riproducibili (leggono da GCS, non da path locali) — da fare dopo il primo publish
 
 ### Fase 3 — estendere
 - [ ] F. Legislature storiche
@@ -66,3 +70,4 @@ chiave:
 - **`camera_votazioni_sparql`**: cattura solo le votazioni con `dc:date` nel formato atteso; per l'esito usa `approvato`
 - **Elezioni**: source `script` richiede `TOOLKIT_ALLOW_SCRIPT_SOURCE=1`; il preprocess di `elezioni_politiche` genera comunque l'intera serie (il parametro anno è un'etichetta)
 - **`camera_commissioni`**: grano = ruoli di organo (non membership completa); predicato fine = `dc:date`; serve `?dep a ocd:deputato`
+- **CI (validato localmente 27/27)**: NIENTE `--years $(date +%Y)` nel pipeline — i dataset dichiarano i propri anni (elezioni multi-anno, votazioni [2026]); forzare l'anno corrente farebbe fallire le elezioni. La sequenza datasets→compose funziona.

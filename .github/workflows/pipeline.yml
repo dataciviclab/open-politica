@@ -113,15 +113,17 @@ jobs:
           python3 scripts/build_ponte_persona.py
 
       # ── Run pipeline: datasets/ prima, compose/ dopo ─────────────────
+      # NB: NIENTE `--years $(date +%Y)`: i dataset dichiarano i propri anni
+      # nel config (es. elezioni comunali [2016..2024], votazioni [2026]) e
+      # forzare l'anno corrente farebbe fallire i multi-anno.
       - name: Run datasets
         if: steps.detect.outputs.dirs != ''
         env:
           SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
         run: |
-          YEAR=$(date +%Y)
           for dir in ${{ steps.detect.outputs.dirs }}; do
             echo "=== $dir ==="
-            toolkit run -c "$dir/dataset.yml" --years $YEAR $SMOKE
+            toolkit run -c "$dir/dataset.yml" $SMOKE
           done
 
       # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────
