@@ -198,26 +198,31 @@ jobs:
       - name: Sync to GCS
         if: ${{ !inputs.smoke && steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '') }}
         run: |
-          # Pattern rna: loop su TUTTI gli anni per slug (i multi-anno come
-          # le elezioni hanno più year dir), escludendo run/validate/metadata.
+          # Pattern rna + gestione layout eterogenei:
+          # - dir anni (es. clean/elezioni_comunali/2016..2024) → $slug/$year/
+          # - file parquet flat (es. mart multi-anno camera_votazioni) → $slug/
+          # Esclusi _run/_validate/metadata (solo parquet pubblici).
+          sync_layer() {
+            local layer="$1" bucket="$2"
+            for slug_dir in $ALL_DIRS; do
+              slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
+              base="out/data/$layer/$slug"
+              [ -d "$base" ] || continue
+              for year in $(find "$base" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | grep -vE '^_' | sort -rn); do
+                gsutil -m rsync -r -x ".*/_(run|validate)/.*|.*/metadata\.json$" \
+                  "$base/$year/" "$bucket/open-politica/$slug/$year/"
+                echo "✅ $slug/$year $layer synced"
+              done
+              for f in $(find "$base" -maxdepth 1 -type f -name '*.parquet' 2>/dev/null); do
+                gsutil -m cp "$f" "$bucket/open-politica/$slug/$(basename "$f")"
+                echo "✅ $slug/$(basename "$f") $layer synced"
+              done
+            done
+          }
           ALL_DIRS="${{ steps.detect.outputs.data_dirs }} ${{ steps.detect.outputs.compose_dirs }}"
           [ "${{ steps.detect.outputs.include_ponte }}" = "true" ] && ALL_DIRS="$ALL_DIRS datasets/ponte-persona"
-          for slug_dir in $ALL_DIRS; do
-            slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
-            for year in $(ls "out/data/clean/$slug/" 2>/dev/null); do
-              gsutil -m rsync -r -x ".*/_(run|validate)/.*|.*/metadata\.json$" \
-                "out/data/clean/$slug/$year/" "gs://dataciviclab-clean/open-politica/$slug/$year/"
-              echo "✅ $slug/$year clean synced"
-            done
-          done
-          for slug_dir in $ALL_DIRS; do
-            slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
-            for year in $(ls "out/data/mart/$slug/" 2>/dev/null); do
-              gsutil -m rsync -r -x ".*/_(run|validate)/.*|.*/metadata\.json$" \
-                "out/data/mart/$slug/$year/" "gs://dataciviclab-mart/open-politica/$slug/$year/"
-              echo "✅ $slug/$year mart synced"
-            done
-          done
+          sync_layer clean gs://dataciviclab-clean
+          sync_layer mart gs://dataciviclab-mart
 
       # ── Registry + PR draft (pattern collettivo) ─────────────────────
       - name: Build registry
