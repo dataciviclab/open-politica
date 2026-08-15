@@ -1,0 +1,68 @@
+# Senato Corpus Parlamento — il testo degli atti agganciato all'iter legislativo
+# Join del corpus Akoma Ntoso (prodotto da senato-akn, parquet derivato) con
+# senato_ddl (iter legislativo) via atto_num ↔ /ddl/N.
+# Una riga = un atto con la sua dimensione documentale (famiglie, peso testo).
+#
+# raw: parquet clean del corpus di senato-akn (fonte esterna; in CI si punta
+#      alla copia GCS pubblicata). support: senato_ddl (dataset nativo).
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_corpus_parlamento"
+  source_id: "dataciviclab_composite"
+  tags: [politica, senato, corpus, iter, peso-documentale]
+  category: politica
+  years: [2026]
+  time_coverage:
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: "overwrite"
+  sources:
+    - name: "senato_corpus"
+      type: "local_file"
+      args:
+        path: "../../../senato-akn/out/data/clean/senato_corpus/2026/senato_corpus_2026_clean.parquet"
+        filename: "senato_corpus.parquet"
+      primary: true
+
+support:
+  - type: dataset
+    name: senato_ddl
+    config: ../../datasets/senato-ddl/dataset.yml
+    years: [2026]
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: latest
+  required_columns: [atto_num, fase, stato, natura, famiglie, testo_totale, articoli_totali]
+  validate:
+    not_null: [atto_num, fase]
+    min_rows: 1000
+
+mart:
+  tables:
+    # Un atto con la sua dimensione documentale (bridge corpus ↔ iter)
+    - name: "mart_atto_corpus"
+      sql: "sql/mart_atto_corpus.sql"
+    # Decreti-legge: esito dell'iter per peso documentale (finding senato-akn)
+    - name: "mart_decreti_peso"
+      sql: "sql/mart_decreti_peso.sql"
+  required_tables:
+    - "mart_atto_corpus"
+  validate:
+    table_rules:
+      mart_atto_corpus:
+        required_columns: [atto_num, fase, stato, famiglie, testo_totale]
+        primary_key: [atto_num]
+        min_rows: 1000
+      mart_decreti_peso:
+        required_columns: [atto_num, fase, esito, testo_totale]
+        min_rows: 10
+
+validation:
+  fail_on_error: true
