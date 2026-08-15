@@ -53,12 +53,13 @@ e referendum. Per capire com'è cambiato il voto, territorio per territorio.
 
 ## Come si usa
 
-I dati sono interrogabili con SQL (DuckDB) sui parquet o via MCP del toolkit:
+I dati sono pubblici su GCS e interrogabili con SQL (DuckDB) o via MCP del
+toolkit. Anche i parquet locali in `out/data/` funzionano allo stesso modo:
 
 ```sql
 -- Chi vota MENO col proprio partito? (i "ribelli")
 SELECT nome, cognome, pct_col_gruppo, ramo
-FROM read_parquet('out/data/mart/profilo_politico/2026/mart_profilo.parquet')
+FROM read_parquet('https://storage.googleapis.com/dataciviclab-mart/open-politica/profilo_politico/2026/mart_profilo.parquet')
 ORDER BY pct_col_gruppo;
 ```
 
@@ -72,7 +73,7 @@ make registry-write   # aggiorna il catalogo
 
 ```
 datasets/    # un dataset per cartella (dataset.yml + sql/)
-compose/     # dataset compositi: profilo_politico, osservatorio_parlamento, elezioni_voto
+compose/     # dataset compositi: profilo_politico, osservatorio_parlamento, elezioni_voto, decreti_legge
 registry/    # catalogo degli artifact
 scripts/     # estrazione SPARQL, preprocessing elezioni
 out/         # output runtime — mai versionato
@@ -92,19 +93,23 @@ out/         # output runtime — mai versionato
   dati Eligendo/DAIT del Ministero dell'Interno) — vedi notes.md dei singoli
   dataset per la fonte di provenienza
 
-## Pubblicazione (Fase 2)
+## Pubblicazione
 
-I dataset pubblicati (clean/mart) andranno su GCS con prefisso `open-politica/`:
+I dataset pubblicati (clean/mart) sono su GCS con prefisso `open-politica/`,
+una cartella per anno (i multi-anno coprono tutta la serie storica):
 
-- `gs://dataciviclab-clean/open-politica/<slug>/`
-- `gs://dataciviclab-mart/open-politica/<slug>/`
+- `gs://dataciviclab-clean/open-politica/<slug>/<anno>/`
+- `gs://dataciviclab-mart/open-politica/<slug>/<anno>/`
+
+Eccezione: i mart multi-anno flat (es. `camera_votazioni_sparql`) stanno
+direttamente in `gs://dataciviclab-mart/open-politica/<slug>/`.
 
 CI: `ci.yml` (preflight su PR) + `pipeline.yml` (post-merge + schedule mensile
 con estrazioni pesanti + sync GCS + registry PR).
 
 ## Stato
 
-Progetto di dominio del DataCivicLab (in incubazione). I dataset sono in
-sviluppo locale; la pubblicazione su GCS ed Explorer è in roadmap. Prossimi
-passi: decreti-legge (per completare il "decide o ratifica"), interventi in
-aula, estensione alle legislature precedenti.
+Progetto di dominio del DataCivicLab (in incubazione). I dataset sono
+sviluppati, validati e **pubblicati** su GCS in layout `$slug/$anno/`. Prossimi
+passi: compositi leggibili da GCS (oggi usano i path locali), estensione alle
+legislature precedenti, prime analisi pubbliche.
