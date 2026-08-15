@@ -38,9 +38,8 @@ Tutti i deputati di tutte le legislature della Repubblica Italiana (fino alla XI
 ## Run
 
 ```bash
-cd dataset-incubator
-python -m toolkit.cli.app run all \
-  --config candidates/camera-deputati-legislature/dataset.yml --years 2024
+cd open-politica
+toolkit run -c datasets/camera-deputati-legislature/dataset.yml
 ```
 
 ## Perché vale la pena

@@ -42,7 +42,6 @@ Tutte le votazioni della Camera dal 2018 a oggi (XVIII e XIX legislatura). Ogni 
 ## Run
 
 ```bash
-cd dataset-incubator
-python -m toolkit.cli.app run all \
-  --config candidates/camera-votazioni-sparql/dataset.yml --years 2024
+cd open-politica
+toolkit run -c datasets/camera-votazioni-sparql/dataset.yml
 ```

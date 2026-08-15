@@ -37,8 +37,8 @@ Rispondono alle domande del README: profilo demografico della classe politica lo
 ## Esecuzione
 
 ```bash
-cd dataset-incubator
-toolkit run -c candidates/dait-amministratori-locali/dataset.yml
+cd open-politica
+toolkit run -c datasets/dait-amministratori-locali/dataset.yml
 ```
 
 ## Issue di riferimento

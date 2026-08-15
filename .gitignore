@@ -27,3 +27,6 @@ venv/
 .DS_Store
 Thumbs.db
 .coverage
+
+# Note locali (non versionate)
+_local/

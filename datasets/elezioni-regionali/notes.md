@@ -3,7 +3,7 @@
 ## Struttura
 
 ```
-candidates/elezioni-regionali/
+datasets/elezioni-regionali/
 ├── dataset.yml        # script source multi-anno
 ├── preprocess.py      # download, unzip, normalizza
 ├── sql/
@@ -84,9 +84,9 @@ Va attivato con `TOOLKIT_ALLOW_SCRIPT_SOURCE=1` nell'ambiente di run.
 ## Verifica
 
 ```bash
-cd dataset-incubator
+cd open-politica
 TOOLKIT_ALLOW_SCRIPT_SOURCE=1 toolkit run full \
-  --config candidates/elezioni-regionali/dataset.yml \
+  --config datasets/elezioni-regionali/dataset.yml \
   --years 2018,2019,2020,2021,2023,2024
 ```
 
