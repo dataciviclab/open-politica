@@ -9,70 +9,59 @@ dataset:
   category: politica
   years: [2026]
   time_coverage:
-    # XIX legislatura — dai clean locali di senato_votazioni, anagrafica,
-    # ponte persona e membri_governo
+    # XIX legislatura — dai clean dei sorgenti
     start_year: 2022
     end_year: 2026
 
-raw:
-  output_policy: overwrite
-  sources:
-    - name: "senato_votazioni"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
-        filename: "senato_votazioni.parquet"
-      primary: true
-    - name: "senato_anagrafica"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet"
-        filename: "senato_anagrafica.parquet"
-    - name: "ponte_persona"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/ponte_persona/2026/ponte_persona_2026_clean.parquet"
-        filename: "ponte_persona.parquet"
-    - name: "membri_governo"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet"
-        filename: "membri_governo.parquet"
-    - name: "senato_gruppi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
-        filename: "senato_gruppi.parquet"
-    - name: "camera_voti"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet"
-        filename: "camera_voti.parquet"
-    - name: "camera_deputati"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
-        filename: "camera_deputati.parquet"
-    - name: "senato_commissioni"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_commissioni/2026/senato_commissioni_2026_clean.parquet"
-        filename: "senato_commissioni.parquet"
-    - name: "camera_relatori"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_relatori/2026/camera_relatori_2026_clean.parquet"
-        filename: "camera_relatori.parquet"
-    - name: "camera_interventi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_interventi/2026/camera_interventi_2026_clean.parquet"
-        filename: "camera_interventi.parquet"
-    - name: "senato_interventi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_interventi/2026/senato_interventi_2026_clean.parquet"
-        filename: "senato_interventi.parquet"
+support:
+  - type: dataset
+    name: senato_votazioni
+    config: ../../datasets/senato-votazioni/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_anagrafica
+    config: ../../datasets/senato-anagrafica/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: ponte_persona
+    config: ../../datasets/ponte-persona/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: membri_governo
+    config: ../../datasets/membri-governo/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_gruppi
+    config: ../../datasets/senato-gruppi/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_voti
+    config: ../../datasets/camera-voti/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_deputati
+    config: ../../datasets/camera-deputati-legislature/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_commissioni
+    config: ../../datasets/senato-commissioni/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_relatori
+    config: ../../datasets/camera-relatori/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_interventi
+    config: ../../datasets/camera-interventi/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_interventi
+    config: ../../datasets/senato-interventi/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_commissioni
+    config: ../../datasets/camera-commissioni/dataset.yml
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"

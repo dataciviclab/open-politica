@@ -13,15 +13,11 @@ dataset:
     start_year: 2022
     end_year: 2026
 
-raw:
-  output_policy: overwrite
-  sources:
-    - name: "senato_ddl"
-      type: "local_file"
-      primary: true
-      args:
-        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
-        filename: "senato_ddl.parquet"
+support:
+  - type: dataset
+    name: senato_ddl
+    config: ../../datasets/senato-ddl/dataset.yml
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"

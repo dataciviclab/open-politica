@@ -7,7 +7,7 @@
 -- restituito > in esame). La data di presentazione coincide con quella del DL.
 WITH conv AS (
     SELECT *
-    FROM raw_input
+    FROM read_parquet('{support.senato_ddl.clean}')
     WHERE natura = 'di conversione di decreto-legge'
       AND regexp_extract(titolo, 'n\.\s*(\d+)', 1) != ''
 )

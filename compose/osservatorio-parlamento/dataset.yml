@@ -13,45 +13,31 @@ dataset:
     start_year: 2022
     end_year: 2026
 
-raw:
-  output_policy: overwrite
-  sources:
-    - name: "senato_ddl"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
-        filename: "senato_ddl.parquet"
-      primary: true
-    - name: "camera_votazioni"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_votazioni_sparql/2026/camera_votazioni_sparql_2026_clean.parquet"
-        filename: "camera_votazioni.parquet"
-    - name: "camera_voti"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet"
-        filename: "camera_voti.parquet"
-    - name: "senato_votazioni"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
-        filename: "senato_votazioni.parquet"
-    - name: "senato_gruppi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
-        filename: "senato_gruppi.parquet"
-    - name: "camera_deputati"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
-        filename: "camera_deputati.parquet"
-    - name: "decreti_legge"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/decreti_legge/2026/decreti_legge_2026_clean.parquet"
-        filename: "decreti_legge.parquet"
+support:
+  - type: dataset
+    name: senato_ddl
+    config: ../../datasets/senato-ddl/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_voti
+    config: ../../datasets/camera-voti/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_votazioni
+    config: ../../datasets/senato-votazioni/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_gruppi
+    config: ../../datasets/senato-gruppi/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: camera_deputati
+    config: ../../datasets/camera-deputati-legislature/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: decreti_legge
+    config: ../../compose/decreti-legge/dataset.yml
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"

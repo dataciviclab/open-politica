@@ -8,25 +8,25 @@
 WITH
 
 ddl AS (
-    SELECT * FROM read_parquet('out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet')
+    SELECT * FROM read_parquet('{support.senato_ddl.clean}')
 ),
 cam_vot AS (
-    SELECT * FROM read_parquet('out/data/clean/camera_votazioni_sparql/*/*_clean.parquet')
+    SELECT * FROM read_parquet('{root_posix}/data/clean/camera_votazioni_sparql/*/*_clean.parquet')
 ),
 cam_voti AS (
-    SELECT * FROM read_parquet('out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet')
+    SELECT * FROM read_parquet('{support.camera_voti.clean}')
 ),
 sen_vot AS (
-    SELECT * FROM read_parquet('out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet')
+    SELECT * FROM read_parquet('{support.senato_votazioni.clean}')
 ),
 gruppi AS (
-    SELECT * FROM read_parquet('out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet')
+    SELECT * FROM read_parquet('{support.senato_gruppi.clean}')
 ),
 deputati AS (
-    SELECT * FROM read_parquet('out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet')
+    SELECT * FROM read_parquet('{support.camera_deputati.clean}')
 ),
 dl AS (
-    SELECT * FROM read_parquet('out/data/clean/decreti_legge/2026/decreti_legge_2026_clean.parquet')
+    SELECT * FROM read_parquet('{support.decreti_legge.clean}')
 ),
 
 kpi AS (

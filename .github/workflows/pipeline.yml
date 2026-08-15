@@ -172,7 +172,9 @@ jobs:
         run: |
           for dir in ${{ steps.detect.outputs.compose_dirs }}; do
             echo "=== $dir ==="
-            toolkit run -c "$dir/dataset.yml" $SMOKE
+            # i compose leggono i clean dei sorgenti via {support.*}: niente raw
+            toolkit run clean -c "$dir/dataset.yml" $SMOKE
+            toolkit run mart -c "$dir/dataset.yml" $SMOKE
           done
 
       # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────
