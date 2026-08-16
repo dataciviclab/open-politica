@@ -172,9 +172,11 @@ jobs:
         run: |
           for dir in ${{ steps.detect.outputs.compose_dirs }}; do
             echo "=== $dir ==="
-            if grep -q '^raw:' "$dir/dataset.yml"; then
-              # compose con fonte raw (es. senato_corpus_parlamento, che
-              # ingerisce il parquet del corpus di senato-akn): run completa
+            # compose con raw.sources (es. senato_corpus_parlamento, che ingerisce
+            # il parquet del corpus di senato-akn): run completa. Detection robusto
+            # via YAML (non grep): raw è la chiave top-level dello schema.
+            HAS_RAW=$(python3 -c "import yaml,sys; print('yes' if yaml.safe_load(open('$dir/dataset.yml')).get('raw',{}).get('sources') else 'no')")
+            if [ "$HAS_RAW" = "yes" ]; then
               toolkit run -c "$dir/dataset.yml" $SMOKE
             else
               # i compose leggono i clean dei sorgenti via {support.*}: niente raw

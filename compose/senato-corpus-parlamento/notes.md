@@ -36,6 +36,14 @@ integrale, date, frbr) vengono scartate — il dettaglio vive nel dataset
 - Solo XIX legislatura e solo lato Senato.
 - `testo_totale` = somma dei caratteri dei documenti dell'atto; un atto con 2
   versioni conta entrambe.
+- **`famiglie` = prima famiglia per documento** (`split_part(famiglia, ';', 1)`):
+  il corpus di senato-akn ha famiglie multi-valore; qui si tiene la principale.
+  I conteggi per famiglia possono differire leggermente da quelli di
+  senato-akn (che fa explode delle famiglie).
+- **`warn_removed_columns: false`**: il drop di 17 colonne (documenti → atti)
+  è il cambio di granularità del compose. Trade-off: una futura rimozione
+  accidentale di colonne informative non verrebbe segnalata dal monitor di
+  transizione — va monitorato con la review del config (come da #4).
 
 ## Rebuild
 
