@@ -1,9 +1,15 @@
 # Pipeline — open-politica
 #
-# Orchestratore sottile (ADR-001: la logica non vive in YAML). Trigger:
-# schedule mensile + dispatch manuale. Ogni config (dataset o compose) gira
-# con `toolkit run` full: i compose dichiarano raw.sources (i loro input) e
-# il toolkit materializza i support una volta (skip-if-exists).
+# Orchestratore sottile (ADR-001: la logica non vive in YAML). Ogni config
+# (dataset o compose) gira con `toolkit run` full: i compose dichiarano
+# raw.sources (i loro input) e il toolkit materializza i support una volta
+# (skip-if-exists).
+#
+# Trigger:
+#   - schedule mensile → run completo
+#   - PR merged su datasets/** o compose/** → run completo (path filter
+#     dichiarativo, nessuna detection: si gira tutto, non solo il cambiato)
+#   - workflow_dispatch → manuale
 #
 # Flusso:
 #   1. estrazioni pesanti (senato_votazioni, camera_voti) via script
@@ -14,12 +20,17 @@
 
 name: Pipeline
 on:
+  pull_request:
+    types: [closed]
+    paths:
+      - "datasets/**"
+      - "compose/**"
   schedule:
     - cron: '0 6 1 * *'
   workflow_dispatch:
 
 concurrency:
-  group: open-politica-pipeline-${{ github.ref || 'schedule' }}
+  group: open-politica-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
   cancel-in-progress: false
 
 env:
@@ -27,6 +38,7 @@ env:
 
 jobs:
   pipeline:
+    if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
