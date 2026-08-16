@@ -78,22 +78,42 @@ jobs:
           EVENT: ${{ github.event_name }}
         run: |
           if [ "$EVENT" = "pull_request" ]; then
-            # PR merged: i file cambiati (datasets/ e compose/)
+            # PR merged: i file cambiati (datasets/ e compose/).
+            # NB: cut -f1-2 mantiene il prefisso (compose/xxx, datasets/xxx) —
+            # il vecchio -f2 lo stripava e il grep '^compose/' non trovava nulla
+            # → il pipeline girava a vuoto su ogni merge. Niente espansione:
+            # su merge girano solo i cambi (i compose auto-materializzano i
+            # support); i dataset pesanti (senato_votazioni/camera_voti/ponte)
+            # hanno raw dagli script "Extract heavy sources", esclusi qui.
             gh pr view "$PR_NUMBER" --json files --jq ".files[].path" | \
-              grep -E '^(datasets|compose)/' | cut -d/ -f2 | sort -u > dirs.txt
+              grep -E '^(datasets|compose)/' | cut -d/ -f1-2 | sort -u > dirs.txt
           elif [ -n "$INPUT_DATASETS" ]; then
-            echo "$INPUT_DATASETS" | tr ',' '\n' | sed 's/_/-/g' > dirs.txt
+            # Dispatch con slug: risolvi verso il path reale (datasets/ o
+            # compose/) — lo slug nudo verrebbe scartato dal case qui sotto.
+            echo "$INPUT_DATASETS" | tr ',' '\n' | sed 's/_/-/g' | while read -r slug; do
+              [ -n "$slug" ] || continue
+              if [ -f "datasets/$slug/dataset.yml" ]; then
+                echo "datasets/$slug"
+              elif [ -f "compose/$slug/dataset.yml" ]; then
+                echo "compose/$slug"
+              else
+                echo "WARN slug sconosciuto: $slug" >&2
+              fi
+            done > dirs.txt
           else
             # Schedule/manuale senza slug: tutti (datasets + compose)
             find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
             find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
           fi
-          # Se un compose è tra i selezionati → run completo (i compose leggono
-          # i clean dei sorgenti, che vanno prodotti nello stesso run)
+          # Se un compose è tra i selezionati → compose_changed (i suoi support
+          # vengono materializzati dal run del compose stesso). Su PR-merge NON
+          # si espande a tutti i dataset (i pesanti mancherebbero delle estrazioni).
           if grep -q '^compose/' dirs.txt; then
             echo "compose_changed=true" >> "$GITHUB_OUTPUT"
-            find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
-            find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
+            if [ "$EVENT" != "pull_request" ]; then
+              find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
+              find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
+            fi
           else
             echo "compose_changed=false" >> "$GITHUB_OUTPUT"
           fi
@@ -173,11 +193,17 @@ jobs:
           for dir in ${{ steps.detect.outputs.compose_dirs }}; do
             echo "=== $dir ==="
             # compose con raw.sources (es. senato_corpus_parlamento, che ingerisce
-            # il parquet del corpus di senato-akn): run completa. Detection robusto
-            # via YAML (non grep): raw è la chiave top-level dello schema.
+            # il parquet del corpus di senato-akn): run completa (auto-materializza
+            # i support). Detection robusto via YAML (non grep): raw è chiave top-level.
             HAS_RAW=$(python3 -c "import yaml,sys; print('yes' if yaml.safe_load(open('$dir/dataset.yml')).get('raw',{}).get('sources') else 'no')")
             if [ "$HAS_RAW" = "yes" ]; then
               toolkit run -c "$dir/dataset.yml" $SMOKE
+            elif [ "${{ github.event_name }}" = "pull_request" ]; then
+              # su merge i compose support-only si SKIPPANO: senza l'espansione a
+              # tutti i dataset i loro support non sono prodotti (e quelli pesanti
+              # richiedono "Extract heavy sources", escluso dal merge). Girano nel
+              # full (schedule/dispatch), dove i support sono pre-prodotti.
+              echo "support-only compose su merge: skip (gira su schedule/dispatch)"
             else
               # i compose leggono i clean dei sorgenti via {support.*}: niente raw
               toolkit run clean -c "$dir/dataset.yml" $SMOKE
