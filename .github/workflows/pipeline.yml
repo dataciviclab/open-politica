@@ -172,9 +172,17 @@ jobs:
         run: |
           for dir in ${{ steps.detect.outputs.compose_dirs }}; do
             echo "=== $dir ==="
-            # i compose leggono i clean dei sorgenti via {support.*}: niente raw
-            toolkit run clean -c "$dir/dataset.yml" $SMOKE
-            toolkit run mart -c "$dir/dataset.yml" $SMOKE
+            # compose con raw.sources (es. senato_corpus_parlamento, che ingerisce
+            # il parquet del corpus di senato-akn): run completa. Detection robusto
+            # via YAML (non grep): raw è la chiave top-level dello schema.
+            HAS_RAW=$(python3 -c "import yaml,sys; print('yes' if yaml.safe_load(open('$dir/dataset.yml')).get('raw',{}).get('sources') else 'no')")
+            if [ "$HAS_RAW" = "yes" ]; then
+              toolkit run -c "$dir/dataset.yml" $SMOKE
+            else
+              # i compose leggono i clean dei sorgenti via {support.*}: niente raw
+              toolkit run clean -c "$dir/dataset.yml" $SMOKE
+              toolkit run mart -c "$dir/dataset.yml" $SMOKE
+            fi
           done
 
       # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────

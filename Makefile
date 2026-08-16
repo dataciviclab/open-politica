@@ -98,6 +98,9 @@ run-osservatorio-parlamento:
 run-decreti-legge:
 	$(TOOLKIT) run --config compose/decreti-legge/dataset.yml
 
+run-senato-corpus-parlamento:
+	$(TOOLKIT) run --config compose/senato-corpus-parlamento/dataset.yml
+
 run-all: run-elezioni-politiche run-elezioni-europee run-elezioni-comunali run-elezioni-regionali run-elezioni-referendum run-camera-deputati-legislature run-camera-gruppi run-camera-incarichi run-camera-votazioni-sparql run-senato-anagrafica run-senato-ddl run-senato-firmatari run-membri-governo run-dait-amministratori-locali run-elezioni-voto run-senato-votazioni
 
 # --- Validazione config ---
