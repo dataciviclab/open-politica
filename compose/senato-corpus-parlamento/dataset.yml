@@ -1,10 +1,10 @@
 # Senato Corpus Parlamento — il testo degli atti agganciato all'iter legislativo
-# Join del corpus Akoma Ntoso (prodotto da senato-akn, parquet derivato) con
+# Join del corpus Akoma Ntoso (prodotto da senato-akn, pubblicato su GCS) con
 # senato_ddl (iter legislativo) via atto_num ↔ /ddl/N.
 # Una riga = un atto con la sua dimensione documentale (famiglie, peso testo).
 #
-# raw: parquet clean del corpus di senato-akn (fonte esterna; in CI si punta
-#      alla copia GCS pubblicata). support: senato_ddl (dataset nativo).
+# raw: parquet clean del corpus di senato-akn (http_file su GCS — bucket
+#      pubblico, interrogabile). support: senato_ddl (dataset nativo).
 root: "../../out"
 schema_version: 1
 
@@ -22,9 +22,9 @@ raw:
   output_policy: "overwrite"
   sources:
     - name: "senato_corpus"
-      type: "local_file"
+      type: "http_file"
       args:
-        path: "../../../senato-akn/out/data/clean/senato_corpus/2026/senato_corpus_2026_clean.parquet"
+        url: "https://storage.googleapis.com/dataciviclab-clean/senato_corpus/2026/senato_corpus_2026_clean.parquet"
         filename: "senato_corpus.parquet"
       primary: true
 
@@ -41,6 +41,13 @@ clean:
     mode: latest
   required_columns: [atto_num, fase, stato, natura, famiglie, testo_totale, articoli_totali]
   validate:
+    # Transizione raw→clean: cambio di granularità INTENZIONALE (documenti → atti).
+    # Le 17 colonne rimosse sono i campi a livello documento (titolo, testo,
+    # date, frbr) — il dettaglio vive nel dataset senato_corpus di senato-akn
+    # (GCS). Qui restano le aggregazioni per atto (13 colonne, net -4). Il drop
+    # righe (~0.1%) è la dedup doc→atto (2 atti con 2 versioni).
+    transition:
+      warn_removed_columns: false
     not_null: [atto_num, fase]
     min_rows: 1000
 
