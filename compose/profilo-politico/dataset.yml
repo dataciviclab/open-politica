@@ -13,11 +13,20 @@ dataset:
     start_year: 2022
     end_year: 2026
 
+# # raw: 1 fonte logica (l'input principale del compose — senato_votazioni).
+# Le altre vanno di support ({support.*} nel SQL). Con raw.sources il
+# compose gira con `toolkit run` full come ogni dataset.
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_votazioni"
+      type: "local_file"
+      primary: true
+      args:
+        path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
+        filename: "senato_votazioni.parquet"
+
 support:
-  - type: dataset
-    name: senato_votazioni
-    config: ../../datasets/senato-votazioni/dataset.yml
-    years: [2026]
   - type: dataset
     name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml

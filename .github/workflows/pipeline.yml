@@ -1,22 +1,24 @@
 # Pipeline — open-politica
 #
-# Run post-merge + refresh (pattern collettivo eurostat/dcl-bologna, adattato):
-#   1. (full) estrazioni pesanti: senato_votazioni, camera_voti, ponte_persona
-#   2. run dei dataset (datasets/ poi compose/ — i compose leggono i clean
-#      dei sorgenti prodotti nello stesso run)
-#   3. sync GCS (clean + mart) con prefisso open-politica/ — GRACEFUL se
-#      le chiavi non ci sono
-#   4. `toolkit registry build --write` → PR draft se diff
+# Orchestratore sottile (ADR-001: la logica non vive in YAML). Ogni config
+# (dataset o compose) gira con `toolkit run` full: i compose dichiarano
+# raw.sources (i loro input) e il toolkit materializza i support una volta
+# (skip-if-exists).
 #
-# Triggers:
-#   - pull_request closed (merged) su datasets/** o compose/** → run dei
-#     dataset cambiati (se un compose è cambiato → run completo: i suoi
-#     sorgenti servono nello stesso run)
-#   - schedule mensile (1° del mese 06:00 UTC) → full-extract + run completo
-#   - workflow_dispatch → manuale, slug opzionale
+# Trigger:
+#   - schedule mensile → run completo
+#   - PR merged su datasets/** o compose/** → run completo (path filter
+#     dichiarativo, nessuna detection: si gira tutto, non solo il cambiato)
+#   - workflow_dispatch → manuale
+#
+# Flusso:
+#   1. estrazioni pesanti (senato_votazioni, camera_voti) via script
+#   2. run dei dataset (datasets/ poi compose/)
+#   3. ponte persona (legge i clean di camera_deputati/senato_anagrafica)
+#   4. sync GCS (clean + mart) con prefisso open-politica/ — GRACEFUL
+#   5. toolkit registry build --write → PR draft se diff
 
 name: Pipeline
-
 on:
   pull_request:
     types: [closed]
@@ -26,16 +28,6 @@ on:
   schedule:
     - cron: '0 6 1 * *'
   workflow_dispatch:
-    inputs:
-      datasets:
-        description: "Dataset slugs (comma-separated) o vuoto per tutti"
-        required: false
-        type: string
-      smoke:
-        description: "Smoke mode (--sample-rows 1000, skips GCS sync)"
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: open-politica-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
@@ -55,7 +47,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.merge_commit_sha || github.ref }}
           fetch-depth: 0
 
       - uses: actions/setup-python@v5
@@ -68,72 +59,8 @@ jobs:
           pip install git+https://github.com/dataciviclab/lab-connectors.git
           pip install -r requirements.txt
 
-      # ── Determinare i dataset da processare ─────────────────────────
-      - name: Detect datasets to run
-        id: detect
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          INPUT_DATASETS: ${{ inputs.datasets }}
-          EVENT: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT" = "pull_request" ]; then
-            # PR merged: i file cambiati (datasets/ e compose/)
-            gh pr view "$PR_NUMBER" --json files --jq ".files[].path" | \
-              grep -E '^(datasets|compose)/' | cut -d/ -f2 | sort -u > dirs.txt
-          elif [ -n "$INPUT_DATASETS" ]; then
-            echo "$INPUT_DATASETS" | tr ',' '\n' | sed 's/_/-/g' > dirs.txt
-          else
-            # Schedule/manuale senza slug: tutti (datasets + compose)
-            find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
-            find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
-          fi
-          # Se un compose è tra i selezionati → run completo (i compose leggono
-          # i clean dei sorgenti, che vanno prodotti nello stesso run)
-          if grep -q '^compose/' dirs.txt; then
-            echo "compose_changed=true" >> "$GITHUB_OUTPUT"
-            find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
-            find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
-          else
-            echo "compose_changed=false" >> "$GITHUB_OUTPUT"
-          fi
-          # Filtra solo dir con dataset.yml; separa datasets/ (escluso ponte,
-          # costruito a parte dopo i sorgenti) da compose/
-          DATA_DIRS=""
-          COMPOSE_DIRS=""
-          INCLUDE_PONTE=false
-          while read -r d; do
-            [ -f "$d/dataset.yml" ] || continue
-            case "$d" in
-              datasets/ponte-persona) INCLUDE_PONTE=true ;;
-              datasets/*) DATA_DIRS="$DATA_DIRS $d" ;;
-              compose/*) COMPOSE_DIRS="$COMPOSE_DIRS $d" ;;
-            esac
-          done < dirs.txt
-          echo "data_dirs=$DATA_DIRS" >> "$GITHUB_OUTPUT"
-          echo "compose_dirs=$COMPOSE_DIRS" >> "$GITHUB_OUTPUT"
-          echo "include_ponte=$INCLUDE_PONTE" >> "$GITHUB_OUTPUT"
-
-      # ── Cache del derived (per l'incremental) ──────────────────────
-      # Il runner è effimero: senza cache, l'incremental torna full. La cache
-      # di GitHub evita a 7 giorni senza accesso — utile se i run sono
-      # frequenti; per lo schedule mensile può scadere (→ full extract).
-      - name: Cache derived parquet
-        if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
-        uses: actions/cache@v4
-        with:
-          path: out/data/derived
-          key: open-politica-derived-v1-${{ github.run_id }}
-          restore-keys: |
-            open-politica-derived-v1-
-
-      # ── Estrazioni pesanti (SOLO full: schedule o dispatch senza slug) ──
-      # senato e camera colpiscono endpoint diversi → WAF indipendenti: si
-      # lanciano in PARALLELO (70 min → ~40 min). --incremental: se la cache
-      # ha il parquet, estrae solo le votazioni nuove (minuti). Il ponte NO:
-      # legge i clean dei sorgenti, costruito dopo il run dei dataset.
+      # ── Estrazioni pesanti (Senato e Camera in parallelo: WAF indipendenti) ──
       - name: Extract heavy sources
-        if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
         run: |
           python3 scripts/extract_senato_votazioni.py --legislature 19 --incremental &
           SEN=$!
@@ -142,53 +69,30 @@ jobs:
           wait $SEN
           wait $CAM
 
-      # ── Run pipeline: datasets → ponte → compose ───────────────────
-      # Ordine per dipendenze: i dataset producono i clean, poi il ponte
-      # persona (legge i clean di camera_deputati/senato_anagrafica), poi i
-      # compose (che leggono i clean dei sorgenti, ponte incluso).
-      # NB: NIENTE `--years $(date +%Y)`: i dataset dichiarano i propri anni
-      # nel config (es. elezioni comunali [2016..2024]) e forzare l'anno
-      # corrente farebbe fallire i multi-anno.
+      # ── Run pipeline: dataset → ponte → compose (ordine per dipendenze) ──
       - name: Run datasets
-        if: steps.detect.outputs.data_dirs != ''
-        env:
-          SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
         run: |
-          for dir in ${{ steps.detect.outputs.data_dirs }}; do
-            echo "=== $dir ==="
-            toolkit run -c "$dir/dataset.yml" $SMOKE
+          for f in datasets/*/dataset.yml; do
+            case "$f" in datasets/ponte-persona/*) continue ;; esac
+            echo "=== $f ==="
+            toolkit run -c "$f"
           done
 
       - name: Build ponte persona
-        if: ${{ !inputs.smoke && steps.detect.outputs.include_ponte == 'true' }}
         run: |
           python3 scripts/build_ponte_persona.py
           toolkit run -c datasets/ponte-persona/dataset.yml
 
       - name: Run compose
-        if: steps.detect.outputs.compose_dirs != ''
-        env:
-          SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
         run: |
-          for dir in ${{ steps.detect.outputs.compose_dirs }}; do
-            echo "=== $dir ==="
-            # compose con raw.sources (es. senato_corpus_parlamento, che ingerisce
-            # il parquet del corpus di senato-akn): run completa. Detection robusto
-            # via YAML (non grep): raw è la chiave top-level dello schema.
-            HAS_RAW=$(python3 -c "import yaml,sys; print('yes' if yaml.safe_load(open('$dir/dataset.yml')).get('raw',{}).get('sources') else 'no')")
-            if [ "$HAS_RAW" = "yes" ]; then
-              toolkit run -c "$dir/dataset.yml" $SMOKE
-            else
-              # i compose leggono i clean dei sorgenti via {support.*}: niente raw
-              toolkit run clean -c "$dir/dataset.yml" $SMOKE
-              toolkit run mart -c "$dir/dataset.yml" $SMOKE
-            fi
+          for f in compose/*/dataset.yml; do
+            echo "=== $f ==="
+            toolkit run -c "$f"
           done
 
       # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────
       - name: Auth GCP
         id: gcs
-        if: ${{ !inputs.smoke }}
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_OPEN_POLITICA }}
         run: |
@@ -206,11 +110,11 @@ jobs:
           echo "ready=true" >> "$GITHUB_OUTPUT"
 
       - name: Sync to GCS
-        if: ${{ !inputs.smoke && steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '') }}
+        if: steps.gcs.outputs.ready == 'true'
         run: |
           # Pattern rna + gestione layout eterogenei:
-          # - dir anni (es. clean/elezioni_comunali/2016..2024) → $slug/$year/
-          # - file parquet flat (es. mart multi-anno camera_votazioni) → $slug/
+          # - dir anni → $slug/$year/
+          # - file parquet flat (es. mart multi-anno) → $slug/
           # Esclusi _run/_validate/metadata (solo parquet pubblici).
           sync_layer() {
             local layer="$1" bucket="$2"
@@ -229,18 +133,15 @@ jobs:
               done
             done
           }
-          ALL_DIRS="${{ steps.detect.outputs.data_dirs }} ${{ steps.detect.outputs.compose_dirs }}"
-          [ "${{ steps.detect.outputs.include_ponte }}" = "true" ] && ALL_DIRS="$ALL_DIRS datasets/ponte-persona"
+          ALL_DIRS="datasets/* compose/*"
           sync_layer clean gs://dataciviclab-clean
           sync_layer mart gs://dataciviclab-mart
 
-      # ── Registry + PR draft (pattern collettivo) ─────────────────────
+      # ── Registry (artifact catalogo) ────────────────────────────────────
       - name: Build registry
-        if: ${{ !inputs.smoke }}
         run: toolkit registry build --write
 
       - name: Check registry diff
-        if: ${{ !inputs.smoke }}
         id: diff
         run: |
           if git status --porcelain -- registry/ | grep -q .; then
@@ -250,30 +151,31 @@ jobs:
           fi
 
       - name: Create draft registry PR
-        if: ${{ !inputs.smoke && steps.diff.outputs.changed == 'true' }}
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number || 'schedule' }}
+        if: steps.diff.outputs.changed == 'true'
         run: |
-          BRANCH="post-merge-registry/${PR_NUMBER}-registry"
+          BRANCH="post-merge-registry/${GITHUB_RUN_ID}"
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -B "$BRANCH"
           git add registry/
-          git commit -m "chore(post-merge): aggiorna registry ($PR_NUMBER)" || exit 0
+          git commit -m "chore(post-merge): aggiorna registry" || exit 0
           git push --force-with-lease -u origin "$BRANCH"
-          EXISTING_PR=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number // empty')
-          if [ -n "$EXISTING_PR" ]; then
-            gh pr edit "$EXISTING_PR" \
-              --title "chore(post-merge): aggiorna registry ($PR_NUMBER)" \
-              --body "Registry artifacts updated after pipeline run." \
-              --add-label post-merge
-          else
-            gh pr create \
-              --base main \
-              --head "$BRANCH" \
-              --title "chore(post-merge): aggiorna registry ($PR_NUMBER)" \
-              --body "Registry artifacts updated after pipeline run." \
-              --label post-merge \
-              --draft
-          fi
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+      - name: Create/update draft registry PR
+        if: steps.diff.outputs.changed == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const branch = `post-merge-registry/${context.runId}`;
+            const { repo, owner } = context.repo;
+            const existing = await github.rest.pulls.list({ owner, repo, head: branch, state: 'open' });
+            const params = { owner, repo, title: 'chore(post-merge): aggiorna registry',
+              body: 'Registry artifacts updated after pipeline run.', head: branch, base: 'main' };
+            if (existing.data.length > 0) {
+              await github.rest.pulls.update({ owner, repo, pull_number: existing.data[0].number,
+                title: params.title, body: params.body });
+            } else {
+              params.draft = true;
+              await github.rest.pulls.create(params);
+            }
