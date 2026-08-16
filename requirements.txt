@@ -1,4 +1,6 @@
-# Dipendenze degli script di estrazione (scripts/extract_*.py, build_ponte_persona.py)
+# Dipendenze runtime del repo: toolkit (engine) + deps dirette degli script
+# di estrazione. lab-connectors arriva transitivamente da toolkit.
+dataciviclab-toolkit @ git+https://github.com/dataciviclab/toolkit.git
 pyarrow>=14
 duckdb>=1.0
 requests>=2.28
