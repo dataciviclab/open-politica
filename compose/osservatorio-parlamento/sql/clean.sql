@@ -8,7 +8,7 @@
 WITH
 
 ddl AS (
-    SELECT * FROM read_parquet('{support.senato_ddl.clean}')
+    SELECT * FROM raw_input
 ),
 cam_vot AS (
     SELECT * FROM read_parquet('{root_posix}/data/clean/camera_votazioni_sparql/*/*_clean.parquet')

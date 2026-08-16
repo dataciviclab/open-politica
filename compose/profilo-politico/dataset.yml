@@ -13,10 +13,9 @@ dataset:
     start_year: 2022
     end_year: 2026
 
-# raw: gli input del compose (i parquet dei support). Con raw.sources il
-# compose gira con `toolkit run` full come qualsiasi dataset — niente
-# clean+mart separato. I support restano per i placeholder {support.*}
-# (anti-drift); `toolkit run` li materializza una volta (skip-if-exists).
+# # raw: 1 fonte logica (l'input principale del compose — senato_votazioni).
+# Le altre vanno di support ({support.*} nel SQL). Con raw.sources il
+# compose gira con `toolkit run` full come ogni dataset.
 raw:
   output_policy: overwrite
   sources:
@@ -26,67 +25,8 @@ raw:
       args:
         path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
         filename: "senato_votazioni.parquet"
-    - name: "senato_anagrafica"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet"
-        filename: "senato_anagrafica.parquet"
-    - name: "ponte_persona"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/ponte_persona/2026/ponte_persona_2026_clean.parquet"
-        filename: "ponte_persona.parquet"
-    - name: "membri_governo"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/membri_governo/2026/membri_governo_2026_clean.parquet"
-        filename: "membri_governo.parquet"
-    - name: "senato_gruppi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
-        filename: "senato_gruppi.parquet"
-    - name: "camera_voti"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet"
-        filename: "camera_voti.parquet"
-    - name: "camera_deputati"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
-        filename: "camera_deputati.parquet"
-    - name: "senato_commissioni"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_commissioni/2026/senato_commissioni_2026_clean.parquet"
-        filename: "senato_commissioni.parquet"
-    - name: "camera_relatori"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_relatori/2026/camera_relatori_2026_clean.parquet"
-        filename: "camera_relatori.parquet"
-    - name: "camera_interventi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_interventi/2026/camera_interventi_2026_clean.parquet"
-        filename: "camera_interventi.parquet"
-    - name: "senato_interventi"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/senato_interventi/2026/senato_interventi_2026_clean.parquet"
-        filename: "senato_interventi.parquet"
-    - name: "camera_commissioni"
-      type: "local_file"
-      args:
-        path: "../../out/data/clean/camera_commissioni/2026/camera_commissioni_2026_clean.parquet"
-        filename: "camera_commissioni.parquet"
 
 support:
-  - type: dataset
-    name: senato_votazioni
-    config: ../../datasets/senato-votazioni/dataset.yml
-    years: [2026]
   - type: dataset
     name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml

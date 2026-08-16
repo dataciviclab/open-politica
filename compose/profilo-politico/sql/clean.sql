@@ -20,7 +20,7 @@ WITH
 -- ─────────────────────────── SENATO ───────────────────────────
 senato_voti AS (
     SELECT senatore_id, votazione, voto, data, esito
-    FROM read_parquet('{support.senato_votazioni.clean}')
+    FROM raw_input
 ),
 senato_membr AS (
     SELECT senatore_id, gruppo_id, data_inizio, data_fine
