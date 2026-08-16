@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-08-14",
+  "updated_at": "2026-08-16",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -3031,6 +3031,26 @@
       }
     },
     {
+      "slug": "senato_corpus_parlamento__mart_atto_corpus",
+      "dataset": "senato_corpus_parlamento",
+      "table": "mart_atto_corpus",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_atto_corpus.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_corpus_parlamento__mart_decreti_peso",
+      "dataset": "senato_corpus_parlamento",
+      "table": "mart_decreti_peso",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_decreti_peso.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "senato_ddl__mart_anno",
       "dataset": "senato_ddl",
       "table": "mart_anno",
@@ -3261,6 +3281,14 @@
         "finished_at": "2026-08-14T19:29:29.385864+00:00",
         "duration_seconds": 1.768
       }
+    },
+    {
+      "id": "compose:senato_corpus_parlamento",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "senato_corpus_parlamento",
+      "detail": "anno 2026 — mart: si",
+      "action": ""
     },
     {
       "id": "camera_commissioni",
