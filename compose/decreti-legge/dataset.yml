@@ -13,6 +13,21 @@ dataset:
     start_year: 2022
     end_year: 2026
 
+# raw: gli input del compose (i parquet dei support). Con raw.sources il
+# compose gira con `toolkit run` full come qualsiasi dataset — niente
+# clean+mart separato. I support restano dichiarati per i placeholder
+# {support.*} nel SQL (anti-drift); `toolkit run` li materializza una volta
+# (skip-if-exists) e riusa le tabelle.
+raw:
+  output_policy: "overwrite"
+  sources:
+    - name: "senato_ddl"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
+        filename: "senato_ddl.parquet"
+      primary: true
+
 support:
   - type: dataset
     name: senato_ddl

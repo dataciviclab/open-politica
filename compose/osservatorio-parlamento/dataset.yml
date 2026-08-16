@@ -13,6 +13,45 @@ dataset:
     start_year: 2022
     end_year: 2026
 
+# raw: gli input del compose (i parquet dei support). Con raw.sources il
+# compose gira con `toolkit run` full come qualsiasi dataset — niente
+# clean+mart separato. I support restano per i placeholder {support.*}
+# (anti-drift); `toolkit run` li materializza una volta (skip-if-exists).
+raw:
+  output_policy: "overwrite"
+  sources:
+    - name: "senato_ddl"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
+        filename: "senato_ddl.parquet"
+      primary: true
+    - name: "camera_voti"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_voti/2026/camera_voti_2026_clean.parquet"
+        filename: "camera_voti.parquet"
+    - name: "senato_votazioni"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
+        filename: "senato_votazioni.parquet"
+    - name: "senato_gruppi"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/senato_gruppi/2026/senato_gruppi_2026_clean.parquet"
+        filename: "senato_gruppi.parquet"
+    - name: "camera_deputati"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
+        filename: "camera_deputati.parquet"
+    - name: "decreti_legge"
+      type: "local_file"
+      args:
+        path: "../../out/data/clean/decreti_legge/2026/decreti_legge_2026_clean.parquet"
+        filename: "decreti_legge.parquet"
+
 support:
   - type: dataset
     name: senato_ddl
