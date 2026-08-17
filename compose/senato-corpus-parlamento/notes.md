@@ -28,6 +28,9 @@ integrale, date, frbr) vengono scartate — il dettaglio vive nel dataset
 - **`mart_decreti_peso`**: i DDL di conversione per peso documentale
   (finding senato-akn applicato all'iter: 120 convertiti, 8 decaduti,
   3 restituiti, 4 in esame)
+- **`mart_intensita_emendativa`**: dossier per atto con l'intensità
+  emendativa (F3): n_emend, testo emendamenti, split Aula/Commissione,
+  agganciato su `fase` (support file da GCS di senato-akn)
 
 ## Note / limiti
 
