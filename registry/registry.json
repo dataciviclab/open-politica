@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-08-16",
+  "updated_at": "2026-08-17",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -3163,6 +3163,16 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_decreti_peso.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_corpus_parlamento__mart_intensita_emendativa",
+      "dataset": "senato_corpus_parlamento",
+      "table": "mart_intensita_emendativa",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_intensita_emendativa.parquet",
         "multi_file": false
       }
     },
