@@ -33,6 +33,16 @@ support:
     name: senato_ddl
     config: ../../datasets/senato-ddl/dataset.yml
     years: [2026]
+  # Intensità emendativa per atto (senato-akn) — file pubblico su GCS.
+  # Materializzato con curl (bucket pubblico) nel support layer; il SQL lo
+  # legge via {support.senato_emendamenti.path}.
+  - type: file
+    name: senato_emendamenti
+    path: ../../out/data/support/senato_emendamenti/mart_emendamenti_per_atto.parquet
+    command: >-
+      mkdir -p out/data/support/senato_emendamenti &&
+      curl -sL -o out/data/support/senato_emendamenti/mart_emendamenti_per_atto.parquet
+      https://storage.googleapis.com/dataciviclab-mart/senato_emendamenti/2026/mart_emendamenti_per_atto.parquet
 
 clean:
   sql: "sql/clean.sql"
@@ -59,6 +69,9 @@ mart:
     # Decreti-legge: esito dell'iter per peso documentale (finding senato-akn)
     - name: "mart_decreti_peso"
       sql: "sql/mart_decreti_peso.sql"
+    # Dossier per atto con intensità emendativa (F3, bridge fase)
+    - name: "mart_intensita_emendativa"
+      sql: "sql/mart_intensita_emendativa.sql"
   required_tables:
     - "mart_atto_corpus"
   validate:
@@ -70,6 +83,9 @@ mart:
       mart_decreti_peso:
         required_columns: [atto_num, fase, esito, testo_totale]
         min_rows: 10
+      mart_intensita_emendativa:
+        required_columns: [atto_num, fase, n_emend, testo_emendamenti]
+        min_rows: 1000
 
 validation:
   fail_on_error: true

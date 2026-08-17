@@ -7,9 +7,15 @@
 -- Il corpus viene aggregato per atto (tipologie, famiglie, peso testo,
 -- articoli); senato_ddl ha più righe per atto (una per fase dell'iter) →
 -- si prende la fase più recente e l'esito migliore (numero_legge se c'è).
+-- L'intensità emendativa (senato_emendamenti, seconda source raw) si aggancia
+-- su fase (S.NNN) — la metrica F3 "quanto un atto è stato emendato".
 
 WITH doc AS (
     SELECT * FROM raw_input
+),
+emend AS (
+    SELECT fase, n_emend, testo_totale, n_aula, n_commissione
+    FROM read_parquet('{support.senato_emendamenti.path}')
 ),
 atto AS (
     SELECT
@@ -53,7 +59,13 @@ SELECT
     i.data_presentazione,
     i.numero_legge,
     i.data_legge,
-    i.ddl_url
+    i.ddl_url,
+    e.n_emend,
+    e.testo_totale             AS testo_emendamenti,
+    e.n_aula,
+    e.n_commissione
 FROM atto a
 LEFT JOIN iter_agg i
   ON i.ddl_url = 'http://dati.senato.it/ddl/' || CAST(a.atto_num AS VARCHAR)
+LEFT JOIN emend e
+  ON e.fase = i.fase
