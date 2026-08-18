@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-08-16",
+  "updated_at": "2026-08-18",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -2183,6 +2183,30 @@
           "type": "VARCHAR",
           "role": "dimension",
           "description": ""
+        },
+        {
+          "name": "n_emend",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "testo_emendamenti",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_aula",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "n_commissione",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
         }
       ],
       "location": {
@@ -2193,7 +2217,8 @@
       "stage": "incubating",
       "mart_refs": [
         "senato_corpus_parlamento__mart_atto_corpus",
-        "senato_corpus_parlamento__mart_decreti_peso"
+        "senato_corpus_parlamento__mart_decreti_peso",
+        "senato_corpus_parlamento__mart_intensita_emendativa"
       ]
     },
     {
@@ -3167,6 +3192,16 @@
       }
     },
     {
+      "slug": "senato_corpus_parlamento__mart_intensita_emendativa",
+      "dataset": "senato_corpus_parlamento",
+      "table": "mart_intensita_emendativa",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_intensita_emendativa.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "senato_ddl__mart_anno",
       "dataset": "senato_ddl",
       "table": "mart_anno",
@@ -3406,7 +3441,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260816T213531Z_f85f68ca",
+        "run_id": "20260818T075053Z_9c91ea18",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -3416,16 +3451,16 @@
         },
         "output_rows": {
           "clean": 1889,
-          "mart": 2024
+          "mart": 3913
         },
         "output_bytes": {
           "raw": 5552462,
-          "clean": 34735,
-          "mart": 27089
+          "clean": 40759,
+          "mart": 56616
         },
-        "started_at": "2026-08-16T21:35:31.301898+00:00",
-        "finished_at": "2026-08-16T21:35:33.881374+00:00",
-        "duration_seconds": 2.579
+        "started_at": "2026-08-18T07:50:53.834560+00:00",
+        "finished_at": "2026-08-18T07:50:55.810682+00:00",
+        "duration_seconds": 1.976
       }
     },
     {
@@ -3987,7 +4022,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260816T213329Z_fa5622dd",
+        "run_id": "20260818T075034Z_1638f376",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4002,12 +4037,12 @@
         },
         "output_bytes": {
           "raw": 3744822,
-          "clean": 422759,
-          "mart": 22489
+          "clean": 422260,
+          "mart": 22507
         },
-        "started_at": "2026-08-16T21:33:29.986149+00:00",
-        "finished_at": "2026-08-16T21:33:59.057610+00:00",
-        "duration_seconds": 29.071
+        "started_at": "2026-08-18T07:50:34.754945+00:00",
+        "finished_at": "2026-08-18T07:50:53.560605+00:00",
+        "duration_seconds": 18.806
       }
     },
     {
