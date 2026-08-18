@@ -1,17 +1,17 @@
 # Pipeline — open-politica
 #
 # Run post-merge + refresh (pattern collettivo eurostat/dcl-bologna, adattato):
-#   1. (full) estrazioni pesanti: senato_votazioni, camera_voti, ponte_persona
-#   2. run dei dataset (datasets/ poi compose/ — i compose leggono i clean
-#      dei sorgenti prodotti nello stesso run)
+#   1. estrazioni pesanti SOLO se servono (senato_votazioni, camera_voti:
+#      raw local_file da script — il derived non esiste senza)
+#   2. run dei dataset toccati (datasets/ poi compose/) — i support dei
+#      compose li risolve `toolkit run` (ADR-005), niente espansione
 #   3. sync GCS (clean + mart) con prefisso open-politica/ — GRACEFUL se
 #      le chiavi non ci sono
 #   4. `toolkit registry build --write` → PR draft se diff
 #
 # Triggers:
 #   - pull_request closed (merged) su datasets/** o compose/** → run dei
-#     dataset cambiati (se un compose è cambiato → run completo: i suoi
-#     sorgenti servono nello stesso run)
+#     dataset cambiati (i support dei compose li risolve il toolkit)
 #   - schedule mensile (1° del mese 06:00 UTC) → full-extract + run completo
 #   - workflow_dispatch → manuale, slug opzionale
 
@@ -31,11 +31,6 @@ on:
         description: "Dataset slugs (comma-separated) o vuoto per tutti"
         required: false
         type: string
-      smoke:
-        description: "Smoke mode (--sample-rows 1000, skips GCS sync)"
-        required: false
-        default: false
-        type: boolean
 
 concurrency:
   group: open-politica-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
@@ -92,15 +87,39 @@ jobs:
             find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
             find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
           fi
-          # Se un compose è tra i selezionati → run completo (i compose leggono
-          # i clean dei sorgenti, che vanno prodotti nello stesso run)
-          if grep -q '^compose/' dirs.txt; then
-            echo "compose_changed=true" >> "$GITHUB_OUTPUT"
-            find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
-            find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
-          else
-            echo "compose_changed=false" >> "$GITHUB_OUTPUT"
-          fi
+
+          # I dataset pesanti (senato_votazioni, camera_voti) hanno raw
+          # local_file su out/data/derived: il parquet esiste SOLO se lo
+          # script di estrazione è girato prima. need_extract=true se un
+          # dataset pesante è selezionato direttamente, o se un compose lo
+          # dichiara come support (il toolkit lo runnerebbe da solo →
+          # serve il derived pronto).
+          NEED_EXTRACT=$(python3 - <<'EOF'
+          import os, yaml
+
+          HEAVY = {"senato-votazioni", "camera-voti"}
+          need = False
+          for d in open("dirs.txt"):
+              d = d.strip()
+              cfg = os.path.join(d, "dataset.yml")
+              if not os.path.isfile(cfg):
+                  continue
+              slug = d.split("/", 1)[1]
+              if d.startswith("datasets/") and slug in HEAVY:
+                  need = True
+              if d.startswith("compose/"):
+                  c = yaml.safe_load(open(cfg)) or {}
+                  for s in (c.get("support") or []):
+                      if s.get("type") != "dataset":
+                          continue
+                      dep = os.path.normpath(os.path.join(d, os.path.dirname(s.get("config", ""))))
+                      if dep.split("/")[-1] in HEAVY:
+                          need = True
+          print("true" if need else "false")
+          EOF
+          )
+          echo "need_extract=$NEED_EXTRACT" >> "$GITHUB_OUTPUT"
+
           # Filtra solo dir con dataset.yml; separa datasets/ (escluso ponte,
           # costruito a parte dopo i sorgenti) da compose/
           DATA_DIRS=""
@@ -123,7 +142,7 @@ jobs:
       # di GitHub evita a 7 giorni senza accesso — utile se i run sono
       # frequenti; per lo schedule mensile può scadere (→ full extract).
       - name: Cache derived parquet
-        if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
+        if: steps.detect.outputs.need_extract == 'true'
         uses: actions/cache@v4
         with:
           path: out/data/derived
@@ -131,13 +150,13 @@ jobs:
           restore-keys: |
             open-politica-derived-v1-
 
-      # ── Estrazioni pesanti (SOLO full: schedule o dispatch senza slug) ──
+      # ── Estrazioni pesanti (solo quando servono) ───────────────────
       # senato e camera colpiscono endpoint diversi → WAF indipendenti: si
       # lanciano in PARALLELO (70 min → ~40 min). --incremental: se la cache
       # ha il parquet, estrae solo le votazioni nuove (minuti). Il ponte NO:
       # legge i clean dei sorgenti, costruito dopo il run dei dataset.
       - name: Extract heavy sources
-        if: ${{ !inputs.smoke && !startsWith(github.event_name, 'pull_request') && inputs.datasets == '' }}
+        if: steps.detect.outputs.need_extract == 'true'
         run: |
           python3 scripts/extract_senato_votazioni.py --legislature 19 --incremental &
           SEN=$!
@@ -155,50 +174,39 @@ jobs:
       # corrente farebbe fallire i multi-anno.
       - name: Run datasets
         if: steps.detect.outputs.data_dirs != ''
-        env:
-          SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
         run: |
           for dir in ${{ steps.detect.outputs.data_dirs }}; do
             echo "=== $dir ==="
-            toolkit run -c "$dir/dataset.yml" $SMOKE
+            toolkit run -c "$dir/dataset.yml"
           done
 
       - name: Build ponte persona
-        if: ${{ !inputs.smoke && steps.detect.outputs.include_ponte == 'true' }}
+        if: steps.detect.outputs.include_ponte == 'true'
         run: |
           python3 scripts/build_ponte_persona.py
           toolkit run -c datasets/ponte-persona/dataset.yml
 
+      # ── Run compose: un solo `toolkit run` per compose ─────────────
+      # I compose dichiarano raw + support: `toolkit run` risolve lui i
+      # support (ADR-005: reuse se gli output esistono, altrimenti li
+      # esegue) — niente espansione a tutti i dataset nel workflow.
       - name: Run compose
         if: steps.detect.outputs.compose_dirs != ''
-        env:
-          SMOKE: ${{ inputs.smoke && '--sample-rows 1000' || '' }}
         run: |
           for dir in ${{ steps.detect.outputs.compose_dirs }}; do
             echo "=== $dir ==="
-            # compose con raw.sources (es. senato_corpus_parlamento, che ingerisce
-            # il parquet del corpus di senato-akn): run completa. Detection robusto
-            # via YAML (non grep): raw è la chiave top-level dello schema.
-            HAS_RAW=$(python3 -c "import yaml,sys; print('yes' if yaml.safe_load(open('$dir/dataset.yml')).get('raw',{}).get('sources') else 'no')")
-            if [ "$HAS_RAW" = "yes" ]; then
-              toolkit run -c "$dir/dataset.yml" $SMOKE
-            else
-              # i compose leggono i clean dei sorgenti via {support.*}: niente raw
-              toolkit run clean -c "$dir/dataset.yml" $SMOKE
-              toolkit run mart -c "$dir/dataset.yml" $SMOKE
-            fi
+            toolkit run -c "$dir/dataset.yml"
           done
 
       # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────
       - name: Auth GCP
         id: gcs
-        if: ${{ !inputs.smoke }}
         uses: dataciviclab/.github/actions/gcs-auth@main
         env:
           GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_OPEN_POLITICA }}
 
       - name: Sync to GCS
-        if: ${{ !inputs.smoke && steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '') }}
+        if: steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '')
         run: |
           # Pattern rna + gestione layout eterogenei:
           # - dir anni (es. clean/elezioni_comunali/2016..2024) → $slug/$year/
@@ -228,7 +236,6 @@ jobs:
 
       # ── Registry → draft PR (composite, nello stesso job del run) ────
       - name: Registry update PR
-        if: ${{ !inputs.smoke }}
         uses: dataciviclab/.github/actions/registry-update-pr@main
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
