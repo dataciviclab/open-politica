@@ -13,6 +13,7 @@ from lab_connectors.duckdb.queries import (
 )
 
 PREFIX = "open-politica/"
+YEARS = list(range(2022, 2027))  # 2022–2026
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
