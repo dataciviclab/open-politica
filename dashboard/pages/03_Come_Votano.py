@@ -15,13 +15,13 @@ except Exception as e:
     st.error(f"Errore: {e}")
     st.stop()
 
-# ── Filtri ──────────────────────────────────────────────────────────────────
+# -- Filtri ------------------------------------------------------------------
 
 ramo = st.selectbox("Ramo", ["Tutti", "Camera", "Senato"], key="cv_ramo")
 if ramo != "Tutti":
     df = df[df["ramo"] == ramo.lower()]
 
-# ── Distribuzione fedeltà ──────────────────────────────────────────────────
+# -- Distribuzione fedeltà ---------------------------------------------------
 
 st.subheader("Distribuzione fedeltà al gruppo")
 
@@ -42,7 +42,7 @@ st.info(f"📊 Fedeltà media: **{fmt_pct(media)}** — {len(df)} parlamentari")
 
 st.markdown("---")
 
-# ── I ribelli ──────────────────────────────────────────────────────────────
+# -- I ribelli ---------------------------------------------------------------
 
 st.subheader("🔥 I ribelli (fedeltà < 90%)")
 
@@ -57,20 +57,24 @@ else:
 
 st.markdown("---")
 
-# ── Coerenza vs Fedeltà ───────────────────────────────────────────────────
+# -- Coerenza vs Fedeltà (con opacity) ---------------------------------------
 
 st.subheader("Coerenza vs Fedeltà al gruppo")
 
 chart_scatter = (
     alt.Chart(df)
-    .mark_circle(size=30, opacity=0.5)
+    .mark_circle(opacity=0.4, size=40)
     .encode(
         x=alt.X("pct_col_gruppo:Q", title="Fedeltà al gruppo %"),
         y=alt.Y("pct_coerente:Q", title="Coerenza %"),
-        color=alt.Color("ramo:N", scale=alt.Scale(domain=["camera", "senato"], range=["#3b82f6", "#f59e0b"])),
+        color=alt.Color(
+            "ramo:N",
+            scale=alt.Scale(domain=["camera", "senato"], range=["#3b82f6", "#f59e0b"]),
+            title="Ramo",
+        ),
         tooltip=["cognome", "nome", "pct_col_gruppo", "pct_coerente", "n_voti"],
     )
-    .properties(height=350)
+    .properties(height=400)
 )
 st.altair_chart(chart_scatter, width="stretch")
 

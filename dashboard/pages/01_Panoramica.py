@@ -9,8 +9,6 @@ from sources import fmt_num, fmt_pct, load_kpi
 st.title("🏛️ Osservatorio Parlamento")
 st.markdown("La \"pagella\" del Parlamento italiano — dati della XIX legislatura.")
 
-# ── Carica KPI ──────────────────────────────────────────────────────────────
-
 try:
     df_kpi = load_kpi()
 except Exception as e:
@@ -21,29 +19,25 @@ if df_kpi.empty:
     st.info("Nessun KPI disponibile.")
     st.stop()
 
-# ── KPI principali ──────────────────────────────────────────────────────────
+# -- KPI principali (solo XIX legislatura) -----------------------------------
 
-# Trova i KPI chiave
-kpi_map = {}
-for _, row in df_kpi.iterrows():
-    kpi_map[row["kpi"]] = row["valore"]
+df_leg = df_kpi[df_kpi["periodo"] == "repubblica_19"]
+kpi_map = dict(zip(df_leg["kpi"], df_leg["valore"]))
 
-k1, k2, k3, k4, k5 = st.columns(5)
+k1, k2, k3, k4 = st.columns(4)
 k1.metric("DDL presentati", fmt_num(kpi_map.get("ddl_presentati", 0)))
 k2.metric("DDL approvati", fmt_num(kpi_map.get("ddl_approvati", 0)))
-k3.metric("% Approvati", fmt_pct(kpi_map.get("pct_approvati_governativi", 0)))
-k4.metric("Giorni iter medio", f"{kpi_map.get('giorni_iter_medio', 0):.0f}")
-k5.metric("% Leggi governo", fmt_pct(kpi_map.get("pct_iniziativa_governativa", 0)))
+k3.metric("Giorni iter medio", f"{kpi_map.get('giorni_iter_medio', 0):.0f}")
+k4.metric("Deputati", fmt_num(kpi_map.get("n_deputati", 0)))
 
 st.markdown("---")
 
-# ── Trend votazioni Camera ──────────────────────────────────────────────────
+# -- Trend votazioni Camera --------------------------------------------------
 
-st.subheader("📈 Trend votazioni Camera")
+st.subheader("📈 Votazioni Camera per anno")
 
 votazioni = df_kpi[
     (df_kpi["dimensione"] == "votazioni") &
-    (df_kpi["fonte"] == "camera_votazioni") &
     (df_kpi["kpi"] == "n_votazioni")
 ].copy()
 
@@ -51,7 +45,7 @@ if not votazioni.empty:
     votazioni["periodo"] = votazioni["periodo"].astype(str)
     chart_vot = (
         alt.Chart(votazioni)
-        .mark_line(point=True, color="#6366f1", strokeWidth=2)
+        .mark_bar(cornerRadiusTopLeft=3, cornerRadiusTopRight=3, color="#6366f1")
         .encode(
             x=alt.X("periodo:O", title="Anno"),
             y=alt.Y("valore:Q", title="N. votazioni"),
@@ -61,7 +55,7 @@ if not votazioni.empty:
     )
     st.altair_chart(chart_vot, width="stretch")
 
-# ── Fiducie per anno ───────────────────────────────────────────────────────
+# -- Fiducie per anno --------------------------------------------------------
 
 st.subheader("🗳️ Voti di fiducia per anno")
 
@@ -84,7 +78,7 @@ if not fiducia.empty:
     )
     st.altair_chart(chart_fid, width="stretch")
 
-# ── Partecipazione ai voti ─────────────────────────────────────────────────
+# -- Partecipazione ai voti --------------------------------------------------
 
 st.subheader("👥 Partecipazione ai voti Camera")
 
@@ -107,7 +101,7 @@ if not partec.empty:
     )
     st.altair_chart(chart_part, width="stretch")
 
-# ── Rappresentanza storica ─────────────────────────────────────────────────
+# -- Donne in Parlamento — storia -------------------------------------------
 
 st.subheader("📉 Donne in Parlamento — storia")
 
@@ -118,6 +112,7 @@ donne = df_kpi[
 ].copy()
 
 if not donne.empty:
+    donne = donne[donne["periodo"].notna()]
     donne = donne.sort_values("periodo")
     chart_donne = (
         alt.Chart(donne)
