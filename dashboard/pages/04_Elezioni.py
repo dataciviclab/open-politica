@@ -83,20 +83,29 @@ with tab_aff:
     # Trend affluenza
     if tipo != "Tutti":
         trend = df_aff.groupby("anno", as_index=False).agg(affluenza=("affluenza_pct", "mean"))
+        chart_trend = (
+            alt.Chart(trend)
+            .mark_line(point=True, color="#6366f1", strokeWidth=2)
+            .encode(
+                x=alt.X("anno:O", title="Anno"),
+                y=alt.Y("affluenza:Q", title="Affluenza %", axis=alt.Axis(format=".1f")),
+                tooltip=["anno", alt.Tooltip("affluenza:Q", format=".1f")],
+            )
+            .properties(height=300)
+        )
     else:
         trend = df_aff.groupby(["anno", "tipo_elezione"], as_index=False).agg(affluenza=("affluenza_pct", "mean"))
-
-    chart_trend = (
-        alt.Chart(trend)
-        .mark_line(point=True, strokeWidth=2)
-        .encode(
-            x=alt.X("anno:O", title="Anno"),
-            y=alt.Y("affluenza:Q", title="Affluenza %", axis=alt.Axis(format=".1f")),
-            color=alt.Color("tipo_elezione:N" if "tipo_elezione" in trend.columns else alt.value("#6366f1"), legend=None if tipo != "Tutti" else alt.Legend(title="Tipo")),
-            tooltip=["anno", alt.Tooltip("affluenza:Q", format=".1f")],
+        chart_trend = (
+            alt.Chart(trend)
+            .mark_line(point=True, strokeWidth=2)
+            .encode(
+                x=alt.X("anno:O", title="Anno"),
+                y=alt.Y("affluenza:Q", title="Affluenza %", axis=alt.Axis(format=".1f")),
+                color=alt.Color("tipo_elezione:N", title="Tipo"),
+                tooltip=["tipo_elezione", "anno", alt.Tooltip("affluenza:Q", format=".1f")],
+            )
+            .properties(height=300)
         )
-        .properties(height=300)
-    )
     st.altair_chart(chart_trend, width="stretch")
 
     # Affluenza per regione
