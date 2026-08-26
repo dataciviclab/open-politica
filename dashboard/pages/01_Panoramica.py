@@ -113,6 +113,8 @@ donne = df_kpi[
 
 if not donne.empty:
     donne = donne[donne["periodo"].notna()]
+    donne = donne[donne["periodo"].str.startswith("repubblica_")]
+    donne["periodo"] = donne["periodo"].str.replace("repubblica_", "Rep. ")
     donne = donne.sort_values("periodo")
     chart_donne = (
         alt.Chart(donne)
