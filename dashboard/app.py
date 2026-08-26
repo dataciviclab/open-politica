@@ -27,6 +27,9 @@ pages = {
     "Legislazione": [
         st.Page("pages/05_DDL.py", title="DDL & Governo", icon="📜"),
     ],
+    "Strumenti": [
+        st.Page("pages/06_SQL.py", title="Query SQL", icon="🧪"),
+    ],
 }
 
 pg = st.navigation(pages, position="sidebar")
