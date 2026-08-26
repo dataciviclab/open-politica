@@ -22,14 +22,14 @@ def load_mart(slug: str, table: str, year: int = 2026):
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart_flat(slug: str, table: str):
-    """Carica un mart flat (senza partizione anno) da GCS.
+def load_mart_flat(slug: str, table: str, year: int = 2026):
+    """Carica un mart flat da GCS.
 
-    URL diretto: {PREFIX}{slug}/{table}.parquet
+    URL: {PREFIX}{slug}/{year}/{table}.parquet
     """
     import duckdb
 
-    url = f"https://storage.googleapis.com/dataciviclab-mart/{PREFIX}{slug}/{table}.parquet"
+    url = f"https://storage.googleapis.com/dataciviclab-mart/{PREFIX}{slug}/{year}/{table}.parquet"
     with duckdb.connect() as con:
         return con.sql(f"SELECT * FROM read_parquet('{url}')").df()
 
