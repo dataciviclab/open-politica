@@ -92,7 +92,7 @@ with tab_aff:
         .encode(
             x=alt.X("anno:O", title="Anno"),
             y=alt.Y("affluenza:Q", title="Affluenza %", axis=alt.Axis(format=".1f")),
-            color=alt.Color("tipo_elezione:N" if "tipo_elezione" in trend.columns else alt.Value("#6366f1"), legend=None if tipo != "Tutti" else alt.Legend(title="Tipo")),
+            color=alt.Color("tipo_elezione:N" if "tipo_elezione" in trend.columns else alt.value("#6366f1"), legend=None if tipo != "Tutti" else alt.Legend(title="Tipo")),
             tooltip=["anno", alt.Tooltip("affluenza:Q", format=".1f")],
         )
         .properties(height=300)
