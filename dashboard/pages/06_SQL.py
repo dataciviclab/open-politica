@@ -12,7 +12,7 @@ from lab_connectors.registry import load_registry
 render_sql_query(
     years=YEARS,
     prefix=PREFIX,
-    registry=load_registry(Path("../open-politica/registry/registry.json")),
+    registry=load_registry(Path(__file__).parent.parent.parent / "registry" / "registry.json"),
     title="🧪 Query SQL",
     description="Interroga direttamente i dati di Open Politica.",
     example_queries=[
