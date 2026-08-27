@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart_flat
+from sources import fmt_num, fmt_pct, load_mart
 
 st.title("📜 DDL & Governo")
 st.markdown("La macchina legislativa: decreti-legge, conversioni, tempi medi.")
@@ -12,7 +12,7 @@ st.markdown("La macchina legislativa: decreti-legge, conversioni, tempi medi.")
 # ── Carica dati ─────────────────────────────────────────────────────────────
 
 try:
-    df = load_mart_flat("decreti_legge", "mart_sintesi")
+    df = load_mart("decreti_legge", "mart_sintesi")
 except Exception as e:
     st.error(f"Errore: {e}")
     st.stop()

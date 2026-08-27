@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart_flat
+from sources import fmt_num, fmt_pct, load_mart
 
 st.title("🗳️ Elezioni")
 st.markdown("Risultati elettorali, affluenza e trend storici.")
@@ -18,7 +18,7 @@ with tab_pol:
     st.caption("Dati dal 1948 — voto per lista/comune")
 
     try:
-        df_pol = load_mart_flat("elezioni_politiche", "mart_voti_elezioni_politiche", year=2022)
+        df_pol = load_mart("elezioni_politiche", "mart_voti_elezioni_politiche", year=2022)
     except Exception as e:
         st.error(f"Errore: {e}")
         st.stop()
@@ -66,7 +66,7 @@ with tab_aff:
     st.subheader("Affluenza alle urne")
 
     try:
-        df_aff = load_mart_flat("elezioni_voto", "mart_sintesi")
+        df_aff = load_mart("elezioni_voto", "mart_sintesi")
     except Exception as e:
         st.error(f"Errore: {e}")
         st.stop()
@@ -134,7 +134,7 @@ with tab_trend:
     st.caption("I comuni che votano di più o di meno nel tempo")
 
     try:
-        df_trend = load_mart_flat("elezioni_voto", "mart_trend")
+        df_trend = load_mart("elezioni_voto", "mart_trend")
     except Exception as e:
         st.error(f"Errore: {e}")
         st.stop()

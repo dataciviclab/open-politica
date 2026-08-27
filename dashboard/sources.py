@@ -11,6 +11,7 @@ import streamlit as st
 from lab_connectors.duckdb.queries import (
     load_mart_table as _load_mart_table,
 )
+from lab_connectors.formatters import fmt_eur, fmt_num, fmt_pct
 
 PREFIX = "open-politica/"
 YEARS = list(range(2022, 2027))  # 2022–2026
@@ -23,41 +24,9 @@ def load_mart(slug: str, table: str, year: int = 2026):
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def load_mart_flat(slug: str, table: str, year: int = 2026):
-    """Carica un mart flat da GCS.
-
-    URL: {PREFIX}{slug}/{year}/{table}.parquet
-    """
-    import duckdb
-
-    url = f"https://storage.googleapis.com/dataciviclab-mart/{PREFIX}{slug}/{year}/{table}.parquet"
-    with duckdb.connect() as con:
-        return con.sql(f"SELECT * FROM read_parquet('{url}')").df()
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def load_kpi(dimensione: str = None):
+def load_kpi(dimensione: str = None, year: int = 2026):
     """Carica KPI dall'osservatorio, filtrato per dimensione."""
-    df = load_mart_flat("osservatorio_parlamento", "mart_kpi")
+    df = load_mart("osservatorio_parlamento", "mart_kpi", year)
     if dimensione:
         df = df[df["dimensione"] == dimensione]
     return df
-
-
-# ── Formattazione ───────────────────────────────────────────────────────────
-
-
-def fmt_eur(value: float) -> str:
-    if abs(value) >= 1_000_000_000:
-        return f"€{value / 1_000_000_000:,.1f} mld"
-    if abs(value) >= 1_000_000:
-        return f"€{value / 1_000_000:,.1f} M"
-    return f"€{value:,.0f}"
-
-
-def fmt_num(value: float) -> str:
-    return f"{value:,.0f}"
-
-
-def fmt_pct(value: float) -> str:
-    return f"{value:.1f}%"

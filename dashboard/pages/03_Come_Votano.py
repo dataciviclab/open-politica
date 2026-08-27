@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart, load_mart_flat
+from sources import fmt_num, fmt_pct, load_mart
 
 st.title("🗳️ Come Votano")
 st.markdown("Disciplina di partito, ribelli del Parlamento e chi parla più spesso.")
@@ -76,7 +76,7 @@ st.markdown("---")
 st.subheader("🎤 Chi parla più spesso in Camera")
 
 try:
-    df_top = load_mart_flat("camera_interventi", "mart_top_parlanti")
+    df_top = load_mart("camera_interventi", "mart_top_parlanti")
     df_profilo = load_mart("profilo_politico", "mart_profilo")
 
     # Join per avere nomi
