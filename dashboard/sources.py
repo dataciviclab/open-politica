@@ -6,15 +6,24 @@ Prefix: "open-politica/" (tutti i dataset pubblicati sotto questa subdirectory).
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import streamlit as st
 
 from lab_connectors.duckdb.queries import (
     load_mart_table as _load_mart_table,
 )
 from lab_connectors.formatters import fmt_eur, fmt_num, fmt_pct
+from lab_connectors.registry import load_registry
 
 PREFIX = "open-politica/"
 YEARS = list(range(2022, 2027))  # 2022–2026
+
+_registry = load_registry(Path(__file__).parent.parent / "registry" / "registry.json")
+
+
+def get_registry():
+    return _registry
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
