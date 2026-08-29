@@ -40,6 +40,8 @@ mart:
   tables:
     - name: "mart_voti_elezioni_politiche"
       sql: "sql/mart_voti_elezioni_politiche.sql"
+    - name: "mart_voti_per_lista"
+      sql: "sql/mart_voti_per_lista.sql"
     - name: "mart_candidati"
       sql: "sql/mart_candidati.sql"
     - name: "mart_trend"
@@ -50,6 +52,8 @@ mart:
     table_rules:
       mart_voti_elezioni_politiche:
         min_rows: 10000
+      mart_voti_per_lista:
+        min_rows: 100
       mart_candidati:
         min_rows: 50
         # Nota: candidati uninominali disponibili solo per 2018 e 2022
