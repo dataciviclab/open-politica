@@ -18,7 +18,7 @@ with tab_pol:
     st.caption("Dati dal 1948 — voto per lista/comune")
 
     try:
-        df_pol = load_mart("elezioni_politiche", "mart_voti_elezioni_politiche", year=2022)
+        df_pol = load_mart("elezioni_politiche", "mart_voti_per_lista", year=2022)
     except Exception as e:
         st.error(f"Errore: {e}")
         st.stop()
