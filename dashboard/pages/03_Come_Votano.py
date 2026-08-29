@@ -42,7 +42,7 @@ ribelli_df = df[df["pct_col_gruppo"] < 90].sort_values("pct_col_gruppo").head(20
 if not ribelli_df.empty:
     display = ribelli_df[["cognome", "nome", "ramo", "pct_col_gruppo", "n_voti", "n_contrari"]].copy()
     display.columns = ["Cognome", "Nome", "Ramo", "% Gruppo", "Voti", "Contrari"]
-    st.dataframe(display, use_container_width=True, height=400)
+    st.dataframe(display, width='stretch', height=400)
 else:
     st.info("Nessun parlamentare con fedeltà sotto il 90%.")
 
@@ -91,7 +91,7 @@ try:
 
     display_parlanti = df_parlanti[["cognome", "nome", "n_interventi"]].copy()
     display_parlanti.columns = ["Cognome", "Nome", "Interventi"]
-    st.dataframe(display_parlanti, use_container_width=True, hide_index=True)
+    st.dataframe(display_parlanti, width='stretch', hide_index=True)
 
     # Grafico top 10
     chart_parlanti = (

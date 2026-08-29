@@ -75,6 +75,6 @@ st.subheader("Dettaglio per anno")
 
 display = df_sorted[["anno", "n_dl", "n_convertiti", "n_decaduti", "pct_convertiti", "giorni_conversione_medio"]].copy()
 display.columns = ["Anno", "DDL", "Convertiti", "Decaduti", "% Conv.", "Giorni media"]
-st.dataframe(display, use_container_width=True, hide_index=True)
+st.dataframe(display, width='stretch', hide_index=True)
 
 st.caption("Dati: Senato della Repubblica · Camera dei Deputati · CC BY 4.0")

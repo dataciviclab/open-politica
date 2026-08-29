@@ -144,11 +144,11 @@ with tab_trend:
     with col1:
         st.markdown("**Comuni con più calo affluenza**")
         bottom = df_trend[df_trend["prima_affluenza_pct"] <= 100].nsmallest(10, "var_assoluta_punti")[["comune", "provincia", "n_tornate", "prima_affluenza_pct", "ultima_affluenza_pct", "var_assoluta_punti"]]
-        st.dataframe(bottom, use_container_width=True, hide_index=True)
+        st.dataframe(bottom, width='stretch', hide_index=True)
 
     with col2:
         st.markdown("**Comuni con più crescita affluenza**")
         top = df_trend[df_trend["prima_affluenza_pct"] <= 100].nlargest(10, "var_assoluta_punti")[["comune", "provincia", "n_tornate", "prima_affluenza_pct", "ultima_affluenza_pct", "var_assoluta_punti"]]
-        st.dataframe(top, use_container_width=True, hide_index=True)
+        st.dataframe(top, width='stretch', hide_index=True)
 
 st.caption("Dati: Camera, Senato, Ministero dell'Interno · CC BY 4.0")
