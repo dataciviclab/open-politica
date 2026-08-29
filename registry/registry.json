@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-08-18",
+  "updated_at": "2026-08-29",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -1212,6 +1212,7 @@
       "stage": "incubating",
       "mart_refs": [
         "elezioni_politiche__mart_voti_elezioni_politiche",
+        "elezioni_politiche__mart_voti_per_lista",
         "elezioni_politiche__mart_candidati",
         "elezioni_politiche__mart_trend"
       ]
@@ -3022,6 +3023,16 @@
       }
     },
     {
+      "slug": "elezioni_politiche__mart_voti_per_lista",
+      "dataset": "elezioni_politiche",
+      "table": "mart_voti_per_lista",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/elezioni_politiche/2022/mart_voti_per_lista.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "elezioni_referendum__mart_trend",
       "dataset": "elezioni_referendum",
       "table": "mart_trend",
@@ -3806,7 +3817,7 @@
       "detail": "anno 2022 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260816T213009Z_f1b7deb1",
+        "run_id": "20260829T163943Z_fff9dc7b",
         "year": 2022,
         "status": "SUCCESS",
         "quality_score": {
@@ -3817,16 +3828,16 @@
         "output_rows": {
           "raw": 3784837,
           "clean": 3784837,
-          "mart": 3648936
+          "mart": 3650236
         },
         "output_bytes": {
           "raw": 397449066,
           "clean": 20058389,
-          "mart": 32862107
+          "mart": 32877680
         },
-        "started_at": "2026-08-16T21:30:09.790922+00:00",
-        "finished_at": "2026-08-16T21:31:47.083298+00:00",
-        "duration_seconds": 97.292
+        "started_at": "2026-08-29T16:39:43.956428+00:00",
+        "finished_at": "2026-08-29T16:41:18.796396+00:00",
+        "duration_seconds": 94.84
       }
     },
     {
