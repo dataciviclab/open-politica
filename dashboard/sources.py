@@ -14,6 +14,7 @@ from lab_connectors.duckdb.queries import (
     load_mart_table as _load_mart_table,
 )
 from lab_connectors.registry import load_registry
+from lab_connectors.formatters import fmt_eur, fmt_num, fmt_pct
 
 PREFIX = "open-politica/"
 YEARS = list(range(2022, 2027))  # 2022–2026
