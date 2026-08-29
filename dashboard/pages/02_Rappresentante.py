@@ -37,9 +37,9 @@ df_f = df.copy()
 if ramo != "Tutti":
     df_f = df_f[df_f["ramo"] == ramo.lower()]
 if solo_governo:
-    df_f = df_f[df_f["in_governo"] == True]
+    df_f = df_f[df_f["in_governo"]]
 if solo_presidente:
-    df_f = df_f[df_f["presidente_commissione"] == True]
+    df_f = df_f[df_f["presidente_commissione"]]
 if fed_min > 0 or fed_max < 100:
     df_f = df_f[(df_f["pct_col_gruppo"] >= fed_min) & (df_f["pct_col_gruppo"] <= fed_max)]
 

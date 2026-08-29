@@ -4,7 +4,7 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart
+from sources import fmt_pct, load_mart
 
 st.title("🗳️ Come Votano")
 st.markdown("Disciplina di partito, ribelli del Parlamento e chi parla più spesso.")

@@ -1,10 +1,9 @@
 """Elezioni — politiche, affluenza, trend, confronti."""
 
 import altair as alt
-import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart
+from sources import fmt_pct, load_mart
 
 st.title("🗳️ Elezioni")
 st.markdown("Risultati elettorali, affluenza e trend storici.")

@@ -1,10 +1,9 @@
 """DDL & Governo — decreti-legge e macchina legislativa."""
 
 import altair as alt
-import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart
+from sources import load_mart
 
 st.title("📜 DDL & Governo")
 st.markdown("La macchina legislativa: decreti-legge, conversioni, tempi medi.")
