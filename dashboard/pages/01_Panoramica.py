@@ -1,10 +1,9 @@
 """Osservatorio — KPI del Parlamento italiano."""
 
 import altair as alt
-import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_kpi
+from sources import fmt_num, load_kpi
 
 st.title("🏛️ Osservatorio Parlamento")
 st.markdown("La \"pagella\" del Parlamento italiano — dati della XIX legislatura.")

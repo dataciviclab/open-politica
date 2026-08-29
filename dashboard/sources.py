@@ -13,7 +13,6 @@ import streamlit as st
 from lab_connectors.duckdb.queries import (
     load_mart_table as _load_mart_table,
 )
-from lab_connectors.formatters import fmt_eur, fmt_num, fmt_pct
 from lab_connectors.registry import load_registry
 
 PREFIX = "open-politica/"

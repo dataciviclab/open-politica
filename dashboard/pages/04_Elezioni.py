@@ -1,10 +1,9 @@
 """Elezioni — politiche, affluenza, trend, confronti."""
 
 import altair as alt
-import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart
+from sources import fmt_pct, load_mart
 
 st.title("🗳️ Elezioni")
 st.markdown("Risultati elettorali, affluenza e trend storici.")
@@ -18,7 +17,7 @@ with tab_pol:
     st.caption("Dati dal 1948 — voto per lista/comune")
 
     try:
-        df_pol = load_mart("elezioni_politiche", "mart_voti_elezioni_politiche", year=2022)
+        df_pol = load_mart("elezioni_politiche", "mart_voti_per_lista", year=2022)
     except Exception as e:
         st.error(f"Errore: {e}")
         st.stop()
@@ -144,11 +143,11 @@ with tab_trend:
     with col1:
         st.markdown("**Comuni con più calo affluenza**")
         bottom = df_trend[df_trend["prima_affluenza_pct"] <= 100].nsmallest(10, "var_assoluta_punti")[["comune", "provincia", "n_tornate", "prima_affluenza_pct", "ultima_affluenza_pct", "var_assoluta_punti"]]
-        st.dataframe(bottom, use_container_width=True, hide_index=True)
+        st.dataframe(bottom, width='stretch', hide_index=True)
 
     with col2:
         st.markdown("**Comuni con più crescita affluenza**")
         top = df_trend[df_trend["prima_affluenza_pct"] <= 100].nlargest(10, "var_assoluta_punti")[["comune", "provincia", "n_tornate", "prima_affluenza_pct", "ultima_affluenza_pct", "var_assoluta_punti"]]
-        st.dataframe(top, use_container_width=True, hide_index=True)
+        st.dataframe(top, width='stretch', hide_index=True)
 
 st.caption("Dati: Camera, Senato, Ministero dell'Interno · CC BY 4.0")
