@@ -211,11 +211,11 @@ jobs:
           service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - name: Setup gcloud
-        if: steps.gcs.outputs.outcome == 'success'
+        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != ''
         uses: google-github-actions/setup-gcloud@v3
 
       - name: Sync to GCS
-        if: steps.gcs.outputs.outcome == 'success' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '')
+        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != '' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '')
         run: |
           # Pattern rna + gestione layout eterogenei:
           # - dir anni (es. clean/elezioni_comunali/2016..2024) → $slug/$year/
