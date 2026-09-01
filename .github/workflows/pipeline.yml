@@ -37,6 +37,8 @@ concurrency:
   cancel-in-progress: false
 
 env:
+  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+  GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
   TOOLKIT_ALLOW_SCRIPT_SOURCE: "1"
 
 jobs:
@@ -199,14 +201,20 @@ jobs:
           done
 
       # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────
-      - name: Auth GCP
+      - name: GCP Auth (WIF)
         id: gcs
-        uses: dataciviclab/.github/actions/gcs-auth@main
-        env:
-          GCP_SA_KEY: ${{ secrets.GCP_SA_KEY_OPEN_POLITICA }}
+        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != "" && env.GCP_SERVICE_ACCOUNT != ""
+        uses: google-github-actions/auth@v3
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Setup gcloud
+        if: steps.gcs.outputs.outcome == "success"
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Sync to GCS
-        if: steps.gcs.outputs.ready == 'true' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '')
+        if: steps.gcs.outputs.outcome == "success" && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '')
         run: |
           # Pattern rna + gestione layout eterogenei:
           # - dir anni (es. clean/elezioni_comunali/2016..2024) → $slug/$year/
