@@ -126,10 +126,10 @@ clean-runs:
 
 .PHONY: registry registry-write
 registry:
-	toolkit registry build
+	toolkit registry build --prefix open-politica
 
 registry-write:
-	toolkit registry build --write
+	toolkit registry build --prefix open-politica --write
 
 .PHONY: help
 help:
