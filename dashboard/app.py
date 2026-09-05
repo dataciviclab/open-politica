@@ -6,12 +6,15 @@ La politica italiana in dati aperti: chi vota, come vota, cosa decide.
 
 import streamlit as st
 
-st.set_page_config(
-    page_title="Open Politica · Dashboard",
+from lab_connectors.branding import apply_branding
+
+st.set_page_config(    page_title="Open Politica · Dashboard",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded",
 )
+
+apply_branding(repo_name="open-politica", repo_url="https://github.com/dataciviclab/open-politica")
 
 pages = {
     "": [
@@ -33,9 +36,5 @@ pages = {
 }
 
 pg = st.navigation(pages, position="sidebar")
-
-st.sidebar.markdown("---")
-st.sidebar.caption("Dati: Camera, Senato, MIMIT · [dataciviclab/open-politica](https://github.com/dataciviclab/open-politica)")
-st.sidebar.caption("[DataCivicLab](https://dataciviclab.org/) · CC BY 4.0")
 
 pg.run()
