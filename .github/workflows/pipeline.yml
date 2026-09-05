@@ -246,5 +246,7 @@ jobs:
       # ── Registry → draft PR (composite, nello stesso job del run) ────
       - name: Registry update PR
         uses: dataciviclab/.github/actions/registry-update-pr@main
+        with:
+          prefix: "open-politica"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
