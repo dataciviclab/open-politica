@@ -5,10 +5,10 @@ La politica italiana in dati aperti: chi vota, come vota, cosa decide.
 """
 
 import streamlit as st
-
 from lab_connectors.branding import apply_branding
 
-st.set_page_config(    page_title="Open Politica · Dashboard",
+st.set_page_config(
+    page_title="Open Politica · Dashboard",
     page_icon="🏛️",
     layout="wide",
     initial_sidebar_state="expanded",
