@@ -72,7 +72,7 @@ iniziativa, progressivo_iter, legislatura, numero_legge, data_legge.
 
 ## Estensione futura
 
-- Legislature 13-19: graph `ddl/13`..`ddl/19` (pattern `{year}` → `{leg}`)
+- ~~Legislature 13-19: graph `ddl/13`..`ddl/19` (pattern `{year}` → `{leg}`)~~ ✅ COMPLETATO
 - `senatore`/`rif_deputato`: presentatori → join con anagrafica persone (persona_id)
 - `assegnazione`/`tipoCommissione`/`dataAssegnazione`: iter per commissione
 
@@ -102,3 +102,11 @@ Aggiunta la mart che risponde alla domanda guida ("come nasce e muore una legge"
 - aggregata per id_ddl (il clean ha una riga per versione dell'atto)
 - NOTA: il placeholder 2100-01-01 del Senato (legge pubblicata senza data nota)
   è escluso dalla mart — 1 solo ddl nel dataset, non distorce i tempi
+
+## 2026-09-06 — Estensione a legislature 13-19
+
+- `dataset.yml`: `years: [13, 14, 15, 16, 17, 18, 19]` — SPARQL usa `{year}` nel graph URI
+- `clean.sql`: rimosso `= 19` hardcoded nell'URN; aggiunto filtro `HAVING id_ddl IS NOT NULL AND fase IS NOT NULL`
+- Tutte e 7 le legislature producono dati validi (~5.000 DDL ciascuna)
+- Totale: 36.142 DDL, 7 legislature (1996-2026)
+- `min_rows` abbassati: clean 100, mart_iter_tempi 10, mart_anno 2

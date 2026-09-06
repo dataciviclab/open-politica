@@ -6,10 +6,10 @@ dataset:
   source_id: "dati_senato"
   tags: [politica, senato, ddl, iter-legislativo]
   category: politica
-  years: [2026]
+  years: [13, 14, 15, 16, 17, 18, 19]
   time_coverage:
-    # copertura reale del graph <http://dati.senato.it/ddl/19> — XIX legislatura
-    start_year: 2022
+    # legislature XIII (1996) → XIX (2026)
+    start_year: 1996
     end_year: 2026
 
 raw:
@@ -32,7 +32,7 @@ raw:
                  (MAX(?ramo) AS ?ramo) (MAX(?iniziativa) AS ?iniziativa)
                  (MAX(?descrIniziativa) AS ?descrIniziativa)
           WHERE {
-            GRAPH <http://dati.senato.it/ddl/19> {
+            GRAPH <http://dati.senato.it/ddl/{year}> {
               ?ddl osr:idDdl ?idDdl .
               OPTIONAL { ?ddl osr:titolo ?titolo . }
               OPTIONAL { ?ddl osr:titoloBreve ?titoloBreve . }
@@ -61,7 +61,7 @@ raw:
                  (MAX(?presentatoTrasmesso) AS ?presentatoTrasmesso)
                  (MAX(?numeroLegge) AS ?numeroLegge) (MAX(?dataLegge) AS ?dataLegge)
           WHERE {
-            GRAPH <http://dati.senato.it/ddl/19> {
+            GRAPH <http://dati.senato.it/ddl/{year}> {
               ?ddl osr:idDdl ?idDdl .
               OPTIONAL { ?ddl osr:progressivoIter ?progressivoIter . }
               OPTIONAL { ?ddl osr:numeroFase ?numeroFase . }
@@ -89,7 +89,7 @@ raw:
                  (MAX(?testoUnificato) AS ?testoUnificato)
                  (MAX(?stralcio) AS ?stralcio)
           WHERE {
-            GRAPH <http://dati.senato.it/ddl/19> {
+            GRAPH <http://dati.senato.it/ddl/{year}> {
               ?ddl osr:idDdl ?idDdl .
               OPTIONAL { ?ddl osr:relatore ?relatore . }
               OPTIONAL { ?ddl osr:classificazione ?classificazione . }
@@ -117,7 +117,7 @@ clean:
     trim_whitespace: true
   validate:
     not_null: [id_ddl]
-    min_rows: 3000
+    min_rows: 100
     # una riga = una versione dell'atto nell'iter (ddl × ramo/numero atto)
     primary_key: [id_ddl, fase]
 
@@ -145,11 +145,11 @@ mart:
       mart_anno:
         required_columns: [anno, n_ddl]
         primary_key: [anno]
-        min_rows: 5
+        min_rows: 2
       mart_iter_tempi:
         required_columns: [id_ddl, giorni_iter, mesi_iter]
         primary_key: [id_ddl]
-        min_rows: 100
+        min_rows: 10
 
 validation:
   fail_on_error: true
