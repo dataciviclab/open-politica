@@ -1,6 +1,6 @@
 -- clean.sql — senato_ddl
 --
--- Iter legislativo dei disegni di legge del Senato (XIX legislatura).
+-- Iter legislativo dei disegni di legge del Senato (Leg13–Leg19).
 -- Input: 3 sorgenti SPARQL (q1, q2a, q2b) unite con union_by_name via
 -- read.mode: all — ogni sorgente ha un sottoinsieme di colonne (il WAF
 -- Senato rifiuta query > ~15 colonne). L'unione produce 3 righe per ddl

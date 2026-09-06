@@ -139,15 +139,15 @@ mart:
   validate:
     table_rules:
       mart_stato:
-        required_columns: [stato, n_ddl]
-        primary_key: [stato]
+        required_columns: [legislatura, stato, n_ddl]
+        primary_key: [legislatura, stato]
         min_rows: 5
       mart_anno:
         required_columns: [anno, n_ddl]
         primary_key: [anno]
         min_rows: 2
       mart_iter_tempi:
-        required_columns: [id_ddl, giorni_iter, mesi_iter]
+        required_columns: [id_ddl, legislatura, giorni_iter, mesi_iter]
         primary_key: [id_ddl]
         min_rows: 10
 

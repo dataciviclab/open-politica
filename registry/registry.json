@@ -2225,11 +2225,11 @@
     {
       "slug": "senato_ddl",
       "name": "Senato Ddl",
-      "description": "",
+      "description": "Iter legislativo dei disegni di legge del Senato (Leg13–Leg19): stato, tempi, esiti.",
       "source": "",
       "source_id": "dati_senato",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
