@@ -106,7 +106,7 @@ raw:
 clean:
   sql: "sql/clean.sql"
   read_mode: robust
-  required_columns: [id_ddl, ddl_url, titolo, titolo_breve, stato, data_presentazione, data_stato_ddl, natura, fase, ramo, iniziativa, descr_iniziativa, progressivo_iter, numero_fase, numero_fase_compatto, id_fase, legislatura, presentato_trasmesso, numero_legge, data_legge, relatore, classificazione, assegnazione, testo_presentato, testo_approvato, testo_unificato, stralcio]
+  required_columns: [id_ddl, ddl_url, titolo, titolo_breve, stato, data_presentazione, data_stato_ddl, natura, fase, ramo, iniziativa, descr_iniziativa, progressivo_iter, numero_fase, numero_fase_compatto, id_fase, legislatura, presentato_trasmesso, numero_legge, data_legge, relatore, classificazione, assegnazione, testo_presentato, testo_approvato, testo_unificato, stralcio, urn_normattiva]
   read:
     source: auto
     mode: all

@@ -10,6 +10,8 @@
 
 Complementare a `italia-corpus` (Normattiva = leggi vigenti): questo dà l'**iter parlamentare** dal deposito all'approvazione. Ddl mai approvati, tempi per stato, produttività legislativa — il cuore del processo legislativo, oggi assente nel Lab (issue #781).
 
+Il campo `urn_normattiva` (aggiunto nella PR #N) collega ogni DDL diventato legge alla sua URN:NIR su Normattiva, abilitando il bridge con `italia-corpus` (F5).
+
 ## Output minimo atteso
 
 - `mart_stato`: ddl per stato dell'iter (approvati vs fermi)
