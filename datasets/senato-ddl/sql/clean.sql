@@ -52,7 +52,15 @@ SELECT
     MAX(normalize_string(testoPresentato))                            AS testo_presentato,
     MAX(normalize_string(testoApprovato))                             AS testo_approvato,
     MAX(normalize_string(testoUnificato))                             AS testo_unificato,
-    MAX(normalize_string(stralcio))                                   AS stralcio
+    MAX(normalize_string(stralcio))                                   AS stralcio,
+    -- URN:NIR for laws that became official (have numero_legge + data_legge)
+    MAX(CASE
+        WHEN numeroLegge IS NOT NULL AND dataLegge IS NOT NULL
+             AND CAST(CAST(legislatura AS VARCHAR) AS BIGINT) = 19
+        THEN 'urn:nir:stato:legge:' || CAST(TRY_CAST(dataLegge AS DATE) AS VARCHAR)
+             || ';' || CAST(CAST(numeroLegge AS VARCHAR) AS INTEGER)
+        ELSE NULL
+    END)                                                                AS urn_normattiva
 FROM raw_input
 WHERE ddl LIKE '%/ddl/%'
 GROUP BY ddl
