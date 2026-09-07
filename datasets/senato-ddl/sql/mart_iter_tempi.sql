@@ -1,10 +1,8 @@
--- mart_iter_tempi — Tempi dell'iter per i ddl diventati legge
+-- mart_iter_tempi — Tempi dell'iter per i ddl diventati legge, per legislatura
 --
--- 1 riga = 1 ddl approvato (con data_legge reale): giorni dall prima
--- presentazione alla legge, numero di versioni dell'atto (ping-pong
--- tra rami), ramo di partenza.
--- Risponde: quanto ci mette una legge a nascere in Italia?
--- (issue #781 — "come nasce e muore una legge")
+-- 1 riga = 1 ddl approvato (con data_legge reale): giorni dalla prima
+-- presentazione alla legge, numero di versioni dell'atto, ramo di partenza.
+-- Risponde: quanto ci mette una legge a nascere? Come cambia tra legislature?
 --
 -- Nota: esclude il placeholder '2100-01-01' (data fittizia del Senato
 -- per 'legge pubblicata' senza data nota). Aggrega per id_ddl perché
@@ -15,6 +13,7 @@
 WITH per_ddl AS (
     SELECT
         id_ddl,
+        legislatura,
         max(titolo)                                                    AS titolo,
         min(data_presentazione)                                        AS data_presentazione,
         max(data_legge)                                                AS data_legge,
@@ -24,10 +23,11 @@ WITH per_ddl AS (
     FROM clean_input
     WHERE data_legge IS NOT NULL
       AND data_legge != '2100-01-01'
-    GROUP BY id_ddl
+    GROUP BY id_ddl, legislatura
 )
 SELECT
     id_ddl,
+    legislatura,
     titolo,
     ramo,
     n_versioni,

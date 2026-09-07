@@ -1,6 +1,6 @@
 -- clean.sql — senato_ddl
 --
--- Iter legislativo dei disegni di legge del Senato (XIX legislatura).
+-- Iter legislativo dei disegni di legge del Senato (Leg13–Leg19).
 -- Input: 3 sorgenti SPARQL (q1, q2a, q2b) unite con union_by_name via
 -- read.mode: all — ogni sorgente ha un sottoinsieme di colonne (il WAF
 -- Senato rifiuta query > ~15 colonne). L'unione produce 3 righe per ddl
@@ -56,7 +56,6 @@ SELECT
     -- URN:NIR for laws that became official (have numero_legge + data_legge)
     MAX(CASE
         WHEN numeroLegge IS NOT NULL AND dataLegge IS NOT NULL
-             AND CAST(CAST(legislatura AS VARCHAR) AS BIGINT) = 19
         THEN 'urn:nir:stato:legge:' || CAST(TRY_CAST(dataLegge AS DATE) AS VARCHAR)
              || ';' || CAST(CAST(numeroLegge AS VARCHAR) AS INTEGER)
         ELSE NULL
@@ -64,3 +63,5 @@ SELECT
 FROM raw_input
 WHERE ddl LIKE '%/ddl/%'
 GROUP BY ddl
+HAVING id_ddl IS NOT NULL
+   AND fase IS NOT NULL
