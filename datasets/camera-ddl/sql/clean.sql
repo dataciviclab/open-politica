@@ -47,6 +47,9 @@ WITH raw_dedup AS (
                 CASE WHEN atto LIKE '%-B' THEN 1 ELSE 0 END DESC
         )                                                                   AS _rn
     FROM raw_input
+    WHERE tipo = 'Progetto di Legge'
+      AND atto NOT LIKE '%costituente%'
+      AND NULLIF(regexp_extract(normalize_string(atto), 'ac\d+_(\d+)', 1), '') IS NOT NULL
 )
 SELECT
     atto_camera, id_ddl, titolo, tipo, data_presentazione,

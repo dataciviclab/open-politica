@@ -7,10 +7,10 @@ dataset:
   source_id: "dati_camera"
   tags: [politica, camera, ddl, iter-legislativo]
   category: politica
-  years: [2026]
+  years: [13, 14, 15, 16, 17, 18, 19]
   time_coverage:
-    # XIX legislatura (2022-2026) — espandibile a legislature precedenti
-    start_year: 2022
+    # Tutte le legislature repubblicane (1948-2026)
+    start_year: 1948
     end_year: 2026
 
 raw:
@@ -33,11 +33,9 @@ raw:
                    dc:date ?data ; dc:type ?tipo ; ocd:rif_leg ?leg .
             OPTIONAL { ?atto ocd:rif_statoIter ?si . ?si rdfs:label ?stato_label . }
             OPTIONAL { ?atto ocd:primo_firmatario ?pf . ?pf rdfs:label ?primo_firm . }
-            ?atto ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_19> .
           }
           GROUP BY ?atto
-          ORDER BY DESC(?data)
-        pages: 1
+        pages: 25
         step: 10000
         accept_format: "sparql-results+json"
 
