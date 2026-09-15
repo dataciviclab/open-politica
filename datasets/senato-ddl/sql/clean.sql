@@ -19,6 +19,12 @@ SELECT
              THEN regexp_extract(CAST(idDdl AS VARCHAR), '(\d+)', 1)
         END AS BIGINT
     ))                                                                AS id_ddl,
+    -- alias esplicito per join cross-repo (atto_num == id_ddl)
+    MAX(TRY_CAST(
+        CASE WHEN idDdl IS NOT NULL
+             THEN regexp_extract(CAST(idDdl AS VARCHAR), '(\d+)', 1)
+        END AS BIGINT
+    ))                                                                AS atto_num,
     MAX(normalize_string(ddl))                                        AS ddl_url,
     MAX(normalize_string(titolo))                                     AS titolo,
     MAX(normalize_string(titoloBreve))                                AS titolo_breve,
@@ -43,6 +49,8 @@ SELECT
     MAX(normalize_string(numeroFaseCompatto))                         AS numero_fase_compatto,
     MAX(normalize_string(idFase))                                     AS id_fase,
     MAX(TRY_CAST(CAST(legislatura AS VARCHAR) AS BIGINT))             AS legislatura,
+    -- anno: estratto da data_presentazione, utile per contesto temporale
+    MAX(TRY_CAST(strftime(TRY_CAST(dataPresentazione AS DATE), '%Y') AS INTEGER)) AS anno,
     MAX(normalize_string(presentatoTrasmesso))                        AS presentato_trasmesso,
     MAX(TRY_CAST(CAST(numeroLegge AS VARCHAR) AS BIGINT))             AS numero_legge,
     MAX(TRY_CAST(dataLegge AS DATE))                                  AS data_legge,
