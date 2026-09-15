@@ -32,9 +32,10 @@ raw:
                    dc:date ?data ; dc:type ?tipo ; ocd:rif_leg ?leg_num .
             OPTIONAL { ?leg ocd:lex ?lex . }
             OPTIONAL { ?leg dc:publisher ?gu . }
+            ?leg ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
           }
           GROUP BY ?leg
-        pages: 4
+        pages: 1
         step: 10000
         accept_format: "sparql-results+json"
 

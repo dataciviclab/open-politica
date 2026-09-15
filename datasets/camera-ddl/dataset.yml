@@ -33,9 +33,10 @@ raw:
                    dc:date ?data ; dc:type ?tipo ; ocd:rif_leg ?leg .
             OPTIONAL { ?atto ocd:rif_statoIter ?si . ?si rdfs:label ?stato_label . }
             OPTIONAL { ?atto ocd:primo_firmatario ?pf . ?pf rdfs:label ?primo_firm . }
+            ?atto ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
           }
           GROUP BY ?atto
-        pages: 25
+        pages: 1
         step: 10000
         accept_format: "sparql-results+json"
 
@@ -74,8 +75,7 @@ mart:
     table_rules:
       mart_stato:
         required_columns: [stato, n_ddl]
-        primary_key: [stato]
-        min_rows: 3
+        min_rows: 0
       mart_anno:
         required_columns: [anno, n_ddl]
         primary_key: [anno]
