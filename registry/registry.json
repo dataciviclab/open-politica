@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-09-07",
+  "updated_at": "2026-09-16",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -75,6 +75,94 @@
       "mart_refs": [
         "camera_commissioni__mart_sintesi",
         "camera_commissioni__mart_membro_organo"
+      ]
+    },
+    {
+      "slug": "camera_ddl",
+      "name": "Camera Ddl",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1948,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "ddl",
+        "iter-legislativo"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_camera",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_ddl",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_presentazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "stato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "country_code"
+        },
+        {
+          "name": "primo_firmatario",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "anno",
+          "type": "INTEGER",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "year"
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_ddl/*/camera_ddl_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_ddl__mart_stato",
+        "camera_ddl__mart_anno",
+        "camera_ddl__mart_firmatari"
       ]
     },
     {
@@ -361,6 +449,99 @@
       "mart_refs": [
         "camera_interventi__mart_sintesi",
         "camera_interventi__mart_top_parlanti"
+      ]
+    },
+    {
+      "slug": "camera_leggi",
+      "name": "Camera Leggi",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1948,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "leggi",
+        "normattiva",
+        "gazzetta-ufficiale"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "legge_camera",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "id_legge",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_promulgazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "anno",
+          "type": "INTEGER",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "year"
+        },
+        {
+          "name": "urn_normattiva",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "gu_pubblicazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_numero",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_leggi/*/camera_leggi_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_leggi__mart_tipo",
+        "camera_leggi__mart_anno",
+        "camera_leggi__mart_normattiva"
       ]
     },
     {
@@ -2250,7 +2431,7 @@
         {
           "name": "atto_num",
           "type": "BIGINT",
-          "role": "dimension",
+          "role": "metric",
           "description": "Alias di id_ddl per join cross-repo con senato-akn (atto_num == id_ddl)",
           "semantic_type": "atto_num"
         },
@@ -2355,7 +2536,8 @@
           "name": "anno",
           "type": "INTEGER",
           "role": "dimension",
-          "description": "Anno di presentazione del DDL, estratto da data_presentazione"
+          "description": "Anno di presentazione del DDL, estratto da data_presentazione",
+          "semantic_type": "year"
         },
         {
           "name": "presentato_trasmesso",
@@ -2822,6 +3004,36 @@
       }
     },
     {
+      "slug": "camera_ddl__mart_anno",
+      "dataset": "camera_ddl",
+      "table": "mart_anno",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_ddl/19/mart_anno.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_ddl__mart_firmatari",
+      "dataset": "camera_ddl",
+      "table": "mart_firmatari",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_ddl/19/mart_firmatari.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_ddl__mart_stato",
+      "dataset": "camera_ddl",
+      "table": "mart_stato",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_ddl/19/mart_stato.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_deputati_legislature__mart_legislatura_genere",
       "dataset": "camera_deputati_legislature",
       "table": "mart_legislatura_genere",
@@ -2888,6 +3100,36 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/open-politica/camera_interventi/2026/mart_top_parlanti.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_leggi__mart_anno",
+      "dataset": "camera_leggi",
+      "table": "mart_anno",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/19/mart_anno.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_leggi__mart_normattiva",
+      "dataset": "camera_leggi",
+      "table": "mart_normattiva",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/19/mart_normattiva.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_leggi__mart_tipo",
+      "dataset": "camera_leggi",
+      "table": "mart_tipo",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/19/mart_tipo.parquet",
         "multi_file": false
       }
     },
@@ -3525,6 +3767,37 @@
       }
     },
     {
+      "id": "camera_ddl",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_ddl",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260916T105615Z_7342d366",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 3124,
+          "clean": 3099,
+          "mart": 366
+        },
+        "output_bytes": {
+          "raw": 1329238,
+          "clean": 199404,
+          "mart": 5732
+        },
+        "started_at": "2026-09-16T10:56:15.984844+00:00",
+        "finished_at": "2026-09-16T10:56:17.804750+00:00",
+        "duration_seconds": 1.82
+      }
+    },
+    {
       "id": "camera_deputati_legislature",
       "source_id": "dati_camera",
       "status": "ok",
@@ -3645,6 +3918,37 @@
         "started_at": "2026-08-16T21:28:16.929007+00:00",
         "finished_at": "2026-08-16T21:28:24.635599+00:00",
         "duration_seconds": 7.707
+      }
+    },
+    {
+      "id": "camera_leggi",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_leggi",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20260916T105624Z_3e70dede",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 349,
+          "clean": 188,
+          "mart": 8
+        },
+        "output_bytes": {
+          "raw": 161793,
+          "clean": 18266,
+          "mart": 1153
+        },
+        "started_at": "2026-09-16T10:56:24.235674+00:00",
+        "finished_at": "2026-09-16T10:56:25.064503+00:00",
+        "duration_seconds": 0.829
       }
     },
     {
@@ -4052,7 +4356,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260907T082358Z_c15aeae5",
+        "run_id": "20260916T105816Z_327cc068",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4061,18 +4365,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 9878,
-          "clean": 5170,
-          "mart": 374
+          "raw": 9936,
+          "clean": 5200,
+          "mart": 376
         },
         "output_bytes": {
-          "raw": 3749218,
-          "clean": 430268,
-          "mart": 22999
+          "raw": 3771117,
+          "clean": 441389,
+          "mart": 23074
         },
-        "started_at": "2026-09-07T08:23:58.280541+00:00",
-        "finished_at": "2026-09-07T08:24:13.941389+00:00",
-        "duration_seconds": 15.661
+        "started_at": "2026-09-16T10:58:16.073983+00:00",
+        "finished_at": "2026-09-16T10:58:35.899376+00:00",
+        "duration_seconds": 19.825
       }
     },
     {
@@ -4206,6 +4510,12 @@
         "label": "Atto legislativo / Disegno di legge",
         "datasets": [
           {
+            "slug": "camera_ddl",
+            "name": "Camera Ddl",
+            "column": "id_ddl",
+            "semantic_type": "ddl_id"
+          },
+          {
             "slug": "senato_ddl",
             "name": "Senato Ddl",
             "column": "id_ddl",
@@ -4219,7 +4529,7 @@
           }
         ],
         "types": {
-          "ddl_id": 2
+          "ddl_id": 3
         }
       },
       "Comune": {
@@ -4312,6 +4622,12 @@
         "label": "Nazione",
         "datasets": [
           {
+            "slug": "camera_ddl",
+            "name": "Camera Ddl",
+            "column": "stato",
+            "semantic_type": "country_code"
+          },
+          {
             "slug": "senato_corpus_parlamento",
             "name": "Senato Corpus Parlamento",
             "column": "stato",
@@ -4325,7 +4641,7 @@
           }
         ],
         "types": {
-          "country_code": 2
+          "country_code": 3
         }
       },
       "Persona": {
@@ -4512,10 +4828,37 @@
           "region_code": 6
         }
       },
+      "Sconosciuto": {
+        "entity": "Sconosciuto",
+        "label": "Sconosciuto",
+        "datasets": [
+          {
+            "slug": "senato_ddl",
+            "name": "Senato Ddl",
+            "column": "atto_num",
+            "semantic_type": "atto_num"
+          }
+        ],
+        "types": {
+          "atto_num": 1
+        }
+      },
       "Tempo": {
         "entity": "Tempo",
         "label": "Tempo / data",
         "datasets": [
+          {
+            "slug": "camera_ddl",
+            "name": "Camera Ddl",
+            "column": "anno",
+            "semantic_type": "year"
+          },
+          {
+            "slug": "camera_leggi",
+            "name": "Camera Leggi",
+            "column": "anno",
+            "semantic_type": "year"
+          },
           {
             "slug": "dait_amministratori_locali",
             "name": "Dait Amministratori Locali",
@@ -4527,10 +4870,16 @@
             "name": "Osservatorio Parlamento",
             "column": "periodo",
             "semantic_type": "month"
+          },
+          {
+            "slug": "senato_ddl",
+            "name": "Senato Ddl",
+            "column": "anno",
+            "semantic_type": "year"
           }
         ],
         "types": {
-          "year": 1,
+          "year": 4,
           "month": 1
         }
       }
