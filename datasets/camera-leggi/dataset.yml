@@ -1,0 +1,88 @@
+# Leggi approvate dalla Camera (XIX leg.) — ponte Normattiva/GU
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_leggi"
+  source_id: "dati_camera"
+  tags: [politica, camera, leggi, normattiva, gazzetta-ufficiale]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    # Tutte le legislature repubblicane (1948-2026)
+    start_year: 1948
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "camera_leggi_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          SELECT ?leg (MAX(REPLACE(REPLACE(?label, "\n", " "), "\r", " ")) AS ?label)
+                 (MAX(?num) AS ?num) (MAX(?data) AS ?data) (MAX(?tipo) AS ?tipo)
+                 (MAX(?lex) AS ?lex) (MAX(?gu) AS ?gu) (MAX(?leg_num) AS ?leg_num)
+          WHERE {
+            ?leg a ocd:legge ; rdfs:label ?label ; dc:identifier ?num ;
+                   dc:date ?data ; dc:type ?tipo ; ocd:rif_leg ?leg_num .
+            OPTIONAL { ?leg ocd:lex ?lex . }
+            OPTIONAL { ?leg dc:publisher ?gu . }
+            ?leg ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
+          }
+          GROUP BY ?leg
+        pages: 1
+        step: 10000
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [legge_camera, id_legge, titolo, tipo, data_promulgazione, legislatura, anno, urn_normattiva, gu_pubblicazione, ddl_numero]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+    delim: ","
+    parallel: false
+    null_padding: false
+  validate:
+    not_null: [legge_camera, id_legge]
+    primary_key: [id_legge]
+    min_rows: 100
+
+mart:
+  tables:
+    - name: "mart_tipo"
+      sql: "sql/mart_tipo.sql"
+    - name: "mart_anno"
+      sql: "sql/mart_anno.sql"
+    - name: "mart_normattiva"
+      sql: "sql/mart_normattiva.sql"
+  required_tables:
+    - "mart_tipo"
+    - "mart_anno"
+  validate:
+    table_rules:
+      mart_tipo:
+        required_columns: [tipo, n_leggi]
+        primary_key: [tipo]
+        min_rows: 2
+      mart_anno:
+        required_columns: [anno, n_leggi]
+        primary_key: [anno]
+        min_rows: 2
+      mart_normattiva:
+        required_columns: [con_urn, senza_urn]
+        min_rows: 1
+
+validation:
+  fail_on_error: true

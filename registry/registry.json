@@ -2248,6 +2248,13 @@
           "semantic_type": "ddl_id"
         },
         {
+          "name": "atto_num",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "Alias di id_ddl per join cross-repo con senato-akn (atto_num == id_ddl)",
+          "semantic_type": "atto_num"
+        },
+        {
           "name": "ddl_url",
           "type": "VARCHAR",
           "role": "dimension",
@@ -2343,6 +2350,12 @@
           "type": "BIGINT",
           "role": "metric",
           "description": ""
+        },
+        {
+          "name": "anno",
+          "type": "INTEGER",
+          "role": "dimension",
+          "description": "Anno di presentazione del DDL, estratto da data_presentazione"
         },
         {
           "name": "presentato_trasmesso",

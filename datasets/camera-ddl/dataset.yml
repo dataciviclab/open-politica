@@ -1,0 +1,88 @@
+# DDL Camera dei Deputati (XIX leg.) — iter legislativo
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_ddl"
+  source_id: "dati_camera"
+  tags: [politica, camera, ddl, iter-legislativo]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    # Tutte le legislature repubblicane (1948-2026)
+    start_year: 1948
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "camera_ddl_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          SELECT ?atto (MAX(?title) AS ?title) (MAX(?num) AS ?num)
+                 (MAX(?data) AS ?data) (MAX(?tipo) AS ?tipo)
+                 (MAX(?leg) AS ?leg) (MAX(?stato_label) AS ?stato_label)
+                 (MAX(?primo_firm) AS ?primo_firm)
+          WHERE {
+            ?atto a ocd:atto ; dc:title ?title ; dc:identifier ?num ;
+                   dc:date ?data ; dc:type ?tipo ; ocd:rif_leg ?leg .
+            OPTIONAL { ?atto ocd:rif_statoIter ?si . ?si rdfs:label ?stato_label . }
+            OPTIONAL { ?atto ocd:primo_firmatario ?pf . ?pf rdfs:label ?primo_firm . }
+            ?atto ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
+          }
+          GROUP BY ?atto
+        pages: 1
+        step: 10000
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [atto_camera, id_ddl, titolo, tipo, data_presentazione, legislatura, stato, primo_firmatario, anno]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+    delim: ","
+    parallel: false
+    null_padding: false
+  validate:
+    not_null: [atto_camera, id_ddl]
+    primary_key: [id_ddl]
+    min_rows: 1000
+
+mart:
+  tables:
+    - name: "mart_stato"
+      sql: "sql/mart_stato.sql"
+    - name: "mart_anno"
+      sql: "sql/mart_anno.sql"
+    - name: "mart_firmatari"
+      sql: "sql/mart_firmatari.sql"
+  required_tables:
+    - "mart_stato"
+    - "mart_anno"
+  validate:
+    table_rules:
+      mart_stato:
+        required_columns: [stato, n_ddl]
+        min_rows: 0
+      mart_anno:
+        required_columns: [anno, n_ddl]
+        primary_key: [anno]
+        min_rows: 2
+      mart_firmatari:
+        required_columns: [primo_firmatario, n_ddl]
+        min_rows: 10
+
+validation:
+  fail_on_error: true
