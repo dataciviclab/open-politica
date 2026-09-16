@@ -43,8 +43,9 @@ WITH raw_dedup AS (
         -- Pubblicazione GU
         normalize_string(gu)                                                AS gu_pubblicazione,
         -- DDL number: estratto dal titolo tra parentesi "(3053)" → 3053
+        -- Il regex gestisce anche suffissi XSD (^^http://...) dopo la parentesi
         TRY_CAST(
-            regexp_extract(normalize_string(label), '\((\d+)(?:-\w+)?\)\s*$', 1) AS BIGINT
+            regexp_extract(normalize_string(label), '\((\d+)(?:-\w+)?\)(?:\s*\^\^.*)?$', 1) AS BIGINT
         )                                                                   AS ddl_numero,
         ROW_NUMBER() OVER (
             PARTITION BY
