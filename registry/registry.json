@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-09-16",
+  "updated_at": "2026-09-26",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -247,7 +247,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -296,7 +296,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/camera_gruppi/2026/camera_gruppi_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/camera_gruppi/2026/camera_gruppi_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -381,7 +381,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/camera_incarichi/2026/camera_incarichi_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/camera_incarichi/2026/camera_incarichi_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -945,7 +945,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/dait_amministratori_locali/2026/dait_amministratori_locali_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/dait_amministratori_locali/2026/dait_amministratori_locali_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -1387,7 +1387,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/elezioni_politiche/2022/elezioni_politiche_2022_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/elezioni_politiche/2022/elezioni_politiche_2022_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -1735,7 +1735,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/elezioni_voto/2026/elezioni_voto_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/elezioni_voto/2026/elezioni_voto_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -1845,7 +1845,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/membri_governo/2026/membri_governo_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/membri_governo/2026/membri_governo_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -2167,7 +2167,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -2702,7 +2702,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/senato_firmatari/2026/senato_firmatari_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/open-politica/senato_firmatari/2026/senato_firmatari_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
