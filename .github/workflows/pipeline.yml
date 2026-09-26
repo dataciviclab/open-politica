@@ -1,19 +1,8 @@
 # Pipeline — open-politica
 #
-# Run post-merge + refresh (pattern collettivo eurostat/dcl-bologna, adattato):
-#   1. estrazioni pesanti SOLO se servono (senato_votazioni, camera_voti:
-#      raw local_file da script — il derived non esiste senza)
-#   2. run dei dataset toccati (datasets/ poi compose/) — i support dei
-#      compose li risolve `toolkit run` (ADR-005), niente espansione
-#   3. sync GCS (clean + mart) con prefisso open-politica/ — GRACEFUL se
-#      le chiavi non ci sono
-#   4. `toolkit registry build --write` → PR draft se diff
-#
-# Triggers:
-#   - pull_request closed (merged) su datasets/** o compose/** → run dei
-#     dataset cambiati (i support dei compose li risolve il toolkit)
-#   - schedule mensile (1° del mese 06:00 UTC) → full-extract + run completo
-#   - workflow_dispatch → manuale, slug opzionale
+# Post-merge + refresh. Usa pipeline-reusable.yml dell'org.
+# L'ordinamento (extract → datasets → ponte → compose) è gestito da
+# scripts/run_pipeline.sh, che la reusable chiama come run-command.
 
 name: Pipeline
 
@@ -23,230 +12,21 @@ on:
     paths:
       - "datasets/**"
       - "compose/**"
+      - "scripts/**"
   schedule:
     - cron: '0 6 1 * *'
   workflow_dispatch:
-    inputs:
-      datasets:
-        description: "Dataset slugs (comma-separated) o vuoto per tutti"
-        required: false
-        type: string
 
 concurrency:
   group: open-politica-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
   cancel-in-progress: false
 
-env:
-  GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-  GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-  TOOLKIT_ALLOW_SCRIPT_SOURCE: "1"
-
 jobs:
   pipeline:
     if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
-      id-token: write
-
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.merge_commit_sha || github.ref }}
-          fetch-depth: 0
-
-      - uses: dataciviclab/.github/actions/python-setup@main
-
-      # ── Determinare i dataset da processare ─────────────────────────
-      - name: Detect datasets to run
-        id: detect
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          INPUT_DATASETS: ${{ inputs.datasets }}
-          EVENT: ${{ github.event_name }}
-        run: |
-          if [ "$EVENT" = "pull_request" ]; then
-            # PR merged: i file cambiati (datasets/ e compose/).
-            # NB: cut -f1-2 mantiene il prefisso (compose/xxx, datasets/xxx) —
-            # il vecchio -f2 lo stripava e il grep '^compose/' non trovava nulla.
-            gh pr view "$PR_NUMBER" --json files --jq ".files[].path" | \
-              grep -E '^(datasets|compose)/' | cut -d/ -f1-2 | sort -u > dirs.txt
-          elif [ -n "$INPUT_DATASETS" ]; then
-            # Dispatch con slug: risolvi verso il path reale (datasets/ o compose/)
-            echo "$INPUT_DATASETS" | tr ',' '\n' | sed 's/_/-/g' | while read -r slug; do
-              [ -n "$slug" ] || continue
-              if [ -f "datasets/$slug/dataset.yml" ]; then
-                echo "datasets/$slug"
-              elif [ -f "compose/$slug/dataset.yml" ]; then
-                echo "compose/$slug"
-              else
-                echo "WARN slug sconosciuto: $slug" >&2
-              fi
-            done > dirs.txt
-          else
-            # Schedule/manuale senza slug: tutti (datasets + compose)
-            find datasets -maxdepth 1 -mindepth 1 -type d -printf 'datasets/%f\n' | sort > dirs.txt
-            find compose -maxdepth 1 -mindepth 1 -type d -printf 'compose/%f\n' | sort >> dirs.txt
-          fi
-
-          # I dataset pesanti (senato_votazioni, camera_voti) hanno raw
-          # local_file su out/data/derived: il parquet esiste SOLO se lo
-          # script di estrazione è girato prima. need_extract=true se un
-          # dataset pesante è selezionato direttamente, o se un compose lo
-          # dichiara come support (il toolkit lo runnerebbe da solo →
-          # serve il derived pronto).
-          NEED_EXTRACT=$(python3 - <<'EOF'
-          import os, yaml
-
-          HEAVY = {"senato-votazioni", "camera-voti"}
-          need = False
-          for d in open("dirs.txt"):
-              d = d.strip()
-              cfg = os.path.join(d, "dataset.yml")
-              if not os.path.isfile(cfg):
-                  continue
-              slug = d.split("/", 1)[1]
-              if d.startswith("datasets/") and slug in HEAVY:
-                  need = True
-              if d.startswith("compose/"):
-                  c = yaml.safe_load(open(cfg)) or {}
-                  for s in (c.get("support") or []):
-                      if s.get("type") != "dataset":
-                          continue
-                      dep = os.path.normpath(os.path.join(d, os.path.dirname(s.get("config", ""))))
-                      if dep.split("/")[-1] in HEAVY:
-                          need = True
-          print("true" if need else "false")
-          EOF
-          )
-          echo "need_extract=$NEED_EXTRACT" >> "$GITHUB_OUTPUT"
-
-          # Filtra solo dir con dataset.yml; separa datasets/ (escluso ponte,
-          # costruito a parte dopo i sorgenti) da compose/
-          DATA_DIRS=""
-          COMPOSE_DIRS=""
-          INCLUDE_PONTE=false
-          while read -r d; do
-            [ -f "$d/dataset.yml" ] || continue
-            case "$d" in
-              datasets/ponte-persona) INCLUDE_PONTE=true ;;
-              datasets/*) DATA_DIRS="$DATA_DIRS $d" ;;
-              compose/*) COMPOSE_DIRS="$COMPOSE_DIRS $d" ;;
-            esac
-          done < dirs.txt
-          echo "data_dirs=$DATA_DIRS" >> "$GITHUB_OUTPUT"
-          echo "compose_dirs=$COMPOSE_DIRS" >> "$GITHUB_OUTPUT"
-          echo "include_ponte=$INCLUDE_PONTE" >> "$GITHUB_OUTPUT"
-
-      # ── Cache del derived (per l'incremental) ──────────────────────
-      # Il runner è effimero: senza cache, l'incremental torna full. La cache
-      # di GitHub evita a 7 giorni senza accesso — utile se i run sono
-      # frequenti; per lo schedule mensile può scadere (→ full extract).
-      - name: Cache derived parquet
-        if: steps.detect.outputs.need_extract == 'true'
-        uses: actions/cache@v4
-        with:
-          path: out/data/derived
-          key: open-politica-derived-v1-${{ github.run_id }}
-          restore-keys: |
-            open-politica-derived-v1-
-
-      # ── Estrazioni pesanti (solo quando servono) ───────────────────
-      # senato e camera colpiscono endpoint diversi → WAF indipendenti: si
-      # lanciano in PARALLELO (70 min → ~40 min). --incremental: se la cache
-      # ha il parquet, estrae solo le votazioni nuove (minuti). Il ponte NO:
-      # legge i clean dei sorgenti, costruito dopo il run dei dataset.
-      - name: Extract heavy sources
-        if: steps.detect.outputs.need_extract == 'true'
-        run: |
-          python3 scripts/extract_senato_votazioni.py --legislature 19 --incremental &
-          SEN=$!
-          python3 scripts/extract_camera_voti.py --legislature 19 --batch 200 --incremental &
-          CAM=$!
-          wait $SEN
-          wait $CAM
-
-      # ── Run pipeline: datasets → ponte → compose ───────────────────
-      # Ordine per dipendenze: i dataset producono i clean, poi il ponte
-      # persona (legge i clean di camera_deputati/senato_anagrafica), poi i
-      # compose (che leggono i clean dei sorgenti, ponte incluso).
-      # NB: NIENTE `--years $(date +%Y)`: i dataset dichiarano i propri anni
-      # nel config (es. elezioni comunali [2016..2024]) e forzare l'anno
-      # corrente farebbe fallire i multi-anno.
-      - name: Run datasets
-        if: steps.detect.outputs.data_dirs != ''
-        run: |
-          for dir in ${{ steps.detect.outputs.data_dirs }}; do
-            echo "=== $dir ==="
-            toolkit run -c "$dir/dataset.yml"
-          done
-
-      - name: Build ponte persona
-        if: steps.detect.outputs.include_ponte == 'true'
-        run: |
-          python3 scripts/build_ponte_persona.py
-          toolkit run -c datasets/ponte-persona/dataset.yml
-
-      # ── Run compose: un solo `toolkit run` per compose ─────────────
-      # I compose dichiarano raw + support: `toolkit run` risolve lui i
-      # support (ADR-005: reuse se gli output esistono, altrimenti li
-      # esegue) — niente espansione a tutti i dataset nel workflow.
-      - name: Run compose
-        if: steps.detect.outputs.compose_dirs != ''
-        run: |
-          for dir in ${{ steps.detect.outputs.compose_dirs }}; do
-            echo "=== $dir ==="
-            toolkit run -c "$dir/dataset.yml"
-          done
-
-      # ── Sync GCS (clean + mart) con prefisso open-politica/ ─────────
-      - name: GCP Auth (WIF)
-        id: gcs
-        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != ''
-        uses: google-github-actions/auth@v3
-        with:
-          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
-
-      - name: Setup gcloud
-        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != ''
-        uses: google-github-actions/setup-gcloud@v3
-
-      - name: Sync to GCS
-        if: env.GCP_WORKLOAD_IDENTITY_PROVIDER != '' && env.GCP_SERVICE_ACCOUNT != '' && (steps.detect.outputs.data_dirs != '' || steps.detect.outputs.compose_dirs != '')
-        run: |
-          # Pattern rna + gestione layout eterogenei:
-          # - dir anni (es. clean/elezioni_comunali/2016..2024) → $slug/$year/
-          # - file parquet flat (es. mart multi-anno camera_votazioni) → $slug/
-          # Esclusi _run/_validate/metadata (solo parquet pubblici).
-          sync_layer() {
-            local layer="$1" bucket="$2"
-            for slug_dir in $ALL_DIRS; do
-              slug=$(grep '^  name:' "$slug_dir/dataset.yml" | sed 's/.*: "//;s/"//')
-              base="out/data/$layer/$slug"
-              [ -d "$base" ] || continue
-              for year in $(find "$base" -maxdepth 1 -mindepth 1 -type d -printf '%f\n' 2>/dev/null | grep -vE '^_' | sort -rn); do
-                gsutil -m rsync -r -x ".*/_(run|validate)/.*|.*/metadata\.json$" \
-                  "$base/$year/" "$bucket/open-politica/$slug/$year/"
-                echo "✅ $slug/$year $layer synced"
-              done
-              for f in $(find "$base" -maxdepth 1 -type f -name '*.parquet' 2>/dev/null); do
-                gsutil -m cp "$f" "$bucket/open-politica/$slug/$(basename "$f")"
-                echo "✅ $slug/$(basename "$f") $layer synced"
-              done
-            done
-          }
-          ALL_DIRS="${{ steps.detect.outputs.data_dirs }} ${{ steps.detect.outputs.compose_dirs }}"
-          [ "${{ steps.detect.outputs.include_ponte }}" = "true" ] && ALL_DIRS="$ALL_DIRS datasets/ponte-persona"
-          sync_layer clean gs://dataciviclab-clean
-          sync_layer mart gs://dataciviclab-mart
-
-      # ── Registry → draft PR (composite, nello stesso job del run) ────
-      - name: Registry update PR
-        uses: dataciviclab/.github/actions/registry-update-pr@main
-        with:
-          prefix: "open-politica"
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
+    with:
+      repo-slug: "open-politica"
+      run-command: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1 make run-all"
+      sync-pattern: "per-dataset"
+    secrets: inherit
