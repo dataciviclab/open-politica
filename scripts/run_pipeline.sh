@@ -48,11 +48,11 @@ if needs_extract; then
   wait $CAM || { echo "❌ extract_camera_voti fallito"; exit 1; }
 fi
 
-# ── 2. Run datasets ───────────────────────────────────────────────────
+# ── 2. Run datasets (escluso ponte-persona, gestito allo step 3) ──────
 echo "═══ Run datasets ═══"
 if [ ${#TARGETS[@]} -gt 0 ]; then
   for t in "${TARGETS[@]}"; do
-    if [ -f "$t/dataset.yml" ]; then
+    if [ -f "$t/dataset.yml" ] && [ "$(basename "$t")" != "ponte-persona" ]; then
       echo "→ $t"
       $TOOLKIT run -c "$t/dataset.yml"
     fi
@@ -60,6 +60,7 @@ if [ ${#TARGETS[@]} -gt 0 ]; then
 else
   find datasets -name dataset.yml | sort | while read -r cfg; do
     dir=$(dirname "$cfg")
+    [ "$(basename "$dir")" = "ponte-persona" ] && continue
     echo "→ $dir"
     $TOOLKIT run -c "$cfg"
   done
@@ -67,7 +68,7 @@ fi
 
 # ── 3. Build ponte persona ────────────────────────────────────────────
 # Il ponte legge i clean di camera_deputati + senato_anagrafica.
-# Costruiscilo solo se quei dataset esistono come target.
+# DEVE girare dopo i dataset che producono quei clean.
 if [ ${#TARGETS[@]} -eq 0 ]; then
   echo "═══ Build ponte persona ═══"
   python3 "$SCRIPT_DIR/build_ponte_persona.py"
