@@ -13,6 +13,7 @@ license = "MIT"
 dependencies = [
     "duckdb>=1.0,<2",
     "pyarrow>=14",
+    "pyyaml>=6.0",
     "requests>=2.28",
 ]
 
