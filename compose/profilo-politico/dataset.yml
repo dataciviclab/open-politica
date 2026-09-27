@@ -28,10 +28,6 @@ raw:
 
 support:
   - type: dataset
-    name: camera_votazioni_sparql
-    config: ../../datasets/camera-votazioni-sparql/dataset.yml
-    years: [2026]
-  - type: dataset
     name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml
     years: [2026]
