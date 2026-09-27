@@ -11,7 +11,7 @@ ddl AS (
     SELECT * FROM raw_input
 ),
 cam_vot AS (
-    SELECT * FROM read_parquet('{root_posix}/data/clean/camera_votazioni_sparql/*/*_clean.parquet')
+    SELECT * FROM read_parquet('{support.camera_votazioni_sparql.clean}')
 ),
 cam_voti AS (
     SELECT * FROM read_parquet('{support.camera_voti.clean}')

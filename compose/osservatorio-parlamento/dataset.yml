@@ -22,11 +22,15 @@ raw:
     - name: "senato_ddl"
       type: "local_file"
       args:
-        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
+        path: "../../out/data/clean/senato_ddl/19/senato_ddl_19_clean.parquet"
         filename: "senato_ddl.parquet"
       primary: true
 
 support:
+  - type: dataset
+    name: camera_votazioni_sparql
+    config: ../../datasets/camera-votazioni-sparql/dataset.yml
+    years: [2026]
   - type: dataset
     name: camera_voti
     config: ../../datasets/camera-voti/dataset.yml
