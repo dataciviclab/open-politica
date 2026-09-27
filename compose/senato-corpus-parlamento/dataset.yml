@@ -18,6 +18,16 @@ dataset:
     start_year: 2022
     end_year: 2026
 
+raw:
+  output_policy: "overwrite"
+  sources:
+    - name: "senato_corpus"
+      type: "http_file"
+      args:
+        url: "https://storage.googleapis.com/dataciviclab-clean/senato-akn/senato_corpus/2026/senato_corpus_2026_clean.parquet"
+        filename: "senato_corpus.parquet"
+      primary: true
+
 support:
   - type: dataset
     name: senato_ddl
