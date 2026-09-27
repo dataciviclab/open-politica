@@ -11,7 +11,7 @@
 -- su fase (S.NNN) — la metrica F3 "quanto un atto è stato emendato".
 
 WITH doc AS (
-    SELECT * FROM raw_input
+    SELECT * FROM read_parquet('{support.senato_corpus.clean}')
 ),
 emend AS (
     SELECT fase, n_emend, testo_totale, n_aula, n_commissione

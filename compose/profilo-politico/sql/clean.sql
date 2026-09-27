@@ -124,7 +124,7 @@ senato_profilo AS (
 -- esito (approvato) di ogni votazione dalla serie multi-anno
 camera_esito AS (
     SELECT DISTINCT votazione, approvato
-    FROM read_parquet('{root_posix}/data/clean/camera_votazioni_sparql/*/*_clean.parquet')
+    FROM read_parquet('{support.camera_votazioni_sparql.clean}')
 ),
 camera_voti AS (
     SELECT v.deputato_id, v.votazione, v.voto, v.sigla_gruppo,

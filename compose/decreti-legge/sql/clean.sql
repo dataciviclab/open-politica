@@ -5,10 +5,9 @@
 -- senato_ddl ha più righe per DDL (una per fase dell'iter) → si aggrega
 -- per (numero, anno) prendendo l'esito "migliore" (convertito > decaduto >
 -- restituito > in esame). La data di presentazione coincide con quella del DL.
--- senato_ddl è la fonte raw del compose (raw_input).
 WITH conv AS (
     SELECT *
-    FROM raw_input
+    FROM read_parquet('{support.senato_ddl.clean}')
     WHERE natura = 'di conversione di decreto-legge'
       AND regexp_extract(titolo, 'n\.\s*(\d+)', 1) != ''
 )
