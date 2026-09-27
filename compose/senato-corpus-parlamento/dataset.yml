@@ -24,7 +24,7 @@ raw:
     - name: "senato_corpus"
       type: "http_file"
       args:
-        url: "https://storage.googleapis.com/dataciviclab-clean/senato_corpus/2026/senato_corpus_2026_clean.parquet"
+        url: "https://storage.googleapis.com/dataciviclab-clean/senato-akn/senato_corpus/2026/senato_corpus_2026_clean.parquet"
         filename: "senato_corpus.parquet"
       primary: true
 
@@ -42,7 +42,7 @@ support:
     command: >-
       mkdir -p out/data/support/senato_emendamenti &&
       curl -sL -o out/data/support/senato_emendamenti/mart_emendamenti_per_atto.parquet
-      https://storage.googleapis.com/dataciviclab-mart/senato_emendamenti/2026/mart_emendamenti_per_atto.parquet
+      https://storage.googleapis.com/dataciviclab-mart/senato-akn/senato_emendamenti/2026/mart_emendamenti_per_atto.parquet
 
 clean:
   sql: "sql/clean.sql"

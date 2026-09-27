@@ -12,17 +12,19 @@ dataset:
     start_year: 1979
     end_year: 2024
 
-# elezioni-voto: UNION ALL dei clean multi-anno già pubblicati su GCS
-# (ogni anno ha un clean separato → lettura diretta via HTTPS, non support).
-raw:
-  output_policy: overwrite
-  sources:
-    - name: "elezioni_comunali_hub"
-      type: "http_file"
-      args:
-        url: "https://storage.googleapis.com/dataciviclab-clean/elezioni_comunali/2024/elezioni_comunali_2024_clean.parquet"
-        filename: "hub.parquet"
-      primary: true
+support:
+  - type: dataset
+    name: elezioni_comunali
+    config: ../../datasets/elezioni-comunali/dataset.yml
+    years: [2016, 2017, 2018, 2019, 2020, 2021, 2024]
+  - type: dataset
+    name: elezioni_europee
+    config: ../../datasets/elezioni-europee/dataset.yml
+    years: [1979, 1984, 1989, 1994, 1999, 2004, 2009, 2014, 2019, 2024]
+  - type: dataset
+    name: elezioni_regionali
+    config: ../../datasets/elezioni-regionali/dataset.yml
+    years: [2018, 2019, 2020, 2021, 2023, 2024]
 
 clean:
   sql: "sql/clean.sql"
