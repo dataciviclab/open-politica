@@ -69,7 +69,9 @@ def fetch_votazioni(legislatura: int) -> list[str]:
     while True:
         rows = query(f"""
             SELECT ?vr WHERE {{
-              ?vr a <{OCD}votazione> ; <{OCD}rif_leg> <{OCD}legislatura.rdf/repubblica_{legislatura}> .
+              GRAPH <http://dati.camera.it/ocd/> {{
+                ?vr a <{OCD}votazione> ; <{OCD}rif_leg> <{OCD}legislatura.rdf/repubblica_{legislatura}> .
+              }}
             }}
             LIMIT {page} OFFSET {offset}
         """)
@@ -89,11 +91,13 @@ def fetch_batch(batch: list[str]) -> list[dict]:
     while True:
         rows = query(f"""
             SELECT ?v ?dep ?vr ?grp ?tipo ?sigla WHERE {{
-              ?v a <{OCD}voto> ; <{OCD}rif_deputato> ?dep ; <{OCD}rif_votazione> ?vr .
-              OPTIONAL {{ ?v <{OCD}rif_gruppoParlamentare> ?grp . }}
-              OPTIONAL {{ ?v <http://purl.org/dc/elements/1.1/type> ?tipo . }}
-              OPTIONAL {{ ?v <{OCD}siglaGruppo> ?sigla . }}
-              FILTER(?vr IN ({in_list}))
+              GRAPH <http://dati.camera.it/ocd/> {{
+                ?v a <{OCD}voto> ; <{OCD}rif_deputato> ?dep ; <{OCD}rif_votazione> ?vr .
+                OPTIONAL {{ ?v <{OCD}rif_gruppoParlamentare> ?grp . }}
+                OPTIONAL {{ ?v <http://purl.org/dc/elements/1.1/type> ?tipo . }}
+                OPTIONAL {{ ?v <{OCD}siglaGruppo> ?sigla . }}
+                FILTER(?vr IN ({in_list}))
+              }}
             }}
             LIMIT {page} OFFSET {offset}
         """)
@@ -112,8 +116,10 @@ def fetch_votazione_dates(legislatura: int) -> list[dict]:
     while True:
         rows = query(f"""
             SELECT ?vr (MAX(?d) AS ?d) WHERE {{
-              ?vr a <{OCD}votazione> ; <{OCD}rif_leg> <{OCD}legislatura.rdf/repubblica_{legislatura}> ;
-                  <http://purl.org/dc/elements/1.1/date> ?d .
+              GRAPH <http://dati.camera.it/ocd/> {{
+                ?vr a <{OCD}votazione> ; <{OCD}rif_leg> <{OCD}legislatura.rdf/repubblica_{legislatura}> ;
+                    <http://purl.org/dc/elements/1.1/date> ?d .
+              }}
             }}
             GROUP BY ?vr
             LIMIT {page} OFFSET {offset}
