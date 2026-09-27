@@ -19,7 +19,7 @@ raw:
     - name: "senato_ddl"
       type: "local_file"
       args:
-        path: "../../out/data/clean/senato_ddl/2026/senato_ddl_2026_clean.parquet"
+        path: "../../out/data/clean/senato_ddl/19/senato_ddl_19_clean.parquet"
         filename: "senato_ddl.parquet"
       primary: true
 
@@ -27,8 +27,7 @@ support:
   - type: dataset
     name: senato_ddl
     config: ../../datasets/senato-ddl/dataset.yml
-    years: [2026]
-
+    years: [19]
 clean:
   sql: "sql/clean.sql"
   read:

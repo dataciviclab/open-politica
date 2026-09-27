@@ -32,7 +32,7 @@ support:
   - type: dataset
     name: senato_ddl
     config: ../../datasets/senato-ddl/dataset.yml
-    years: [2026]
+    years: [19]
   - type: external
     name: senato_corpus
     uri: "https://storage.googleapis.com/dataciviclab-clean/senato-akn/senato_corpus/{year}/senato_corpus_{year}_clean.parquet"
