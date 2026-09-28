@@ -10,8 +10,8 @@ st.title("🔍 Sindacato Ispettivo")
 st.markdown("Interrogazioni, interpellanze e mozioni — il Senato controlla il governo.")
 
 try:
-    df_sintesi = load_mart("senato_sindisp", "mart_sintesi")
-    df_senatori = load_mart("senato_sindisp", "mart_per_senatore")
+    df_sintesi = load_mart("senato_sindisp", "mart_sintesi", year=19)
+    df_senatori = load_mart("senato_sindisp", "mart_per_senatore", year=19)
 except Exception as e:
     st.error(f"Errore: {e}")
     st.stop()
