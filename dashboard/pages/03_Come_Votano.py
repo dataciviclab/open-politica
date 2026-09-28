@@ -27,7 +27,7 @@ media = df["pct_col_gruppo"].mean()
 ribelli = len(df[df["pct_col_gruppo"] < 90])
 
 k1, k2, k3 = st.columns(3)
-k1.metric("Fedeltà media", fmt_pct(media))
+k1.metric("Fedeltà media", fmt_pct(media, signed=False))
 k2.metric("Ribelli (<90%)", ribelli)
 k3.metric("Parlamentari", len(df))
 
