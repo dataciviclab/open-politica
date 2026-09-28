@@ -4,13 +4,14 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
-from sources import fmt_num, fmt_pct, load_mart
+from sources import fmt_num, fmt_pct, load_profilo
 
 st.title("👤 Il Tuo Rappresentante")
 st.markdown("Cerca un parlamentare e scopri come vota, cosa comanda, di cosa si occupa.")
 
+
 try:
-    df = load_mart("profilo_politico", "mart_profilo")
+    df = load_profilo()
 except Exception as e:
     st.error(f"Errore: {e}")
     st.stop()
@@ -71,45 +72,100 @@ else:
     idx = options.index(selected)
     person = results.iloc[idx]
 
-# -- Scheda ------------------------------------------------------------------
+# -- URL scheda (funzionante) ------------------------------------------------
 
-st.markdown(f"## {person['cognome']} {person['nome']}")
+def _scheda_url(person):
+    """Costruisce URL scheda funzionante da id_parlamentare e ramo."""
+    pid = person.get("id_parlamentare")
+    if pid is None or pd.isna(pid):
+        return None
+    pid = int(pid)
+    ramo = person.get("ramo", "")
+    if ramo == "camera":
+        return f"https://dati.camera.it/ocd/deputato.rdf/d{pid}_19"
+    elif ramo == "senato":
+        return f"http://dati.senato.it/senatore/{pid}"
+    return None
 
-col1, col2, col3, col4 = st.columns(4)
-col1.metric("Ramo", person["ramo"].title())
-col2.metric("Voti espressi", fmt_num(person["n_voti"]))
-col3.metric("Fedeltà al gruppo", fmt_pct(person["pct_col_gruppo"]))
-col4.metric("Coerenza", fmt_pct(person["pct_coerente"]))
+# -- Testata: foto + info ----------------------------------------------------
+
+foto_url = person.get("foto_url")
+has_foto = foto_url and pd.notna(foto_url)
+
+if has_foto:
+    col_img, col_info = st.columns([1, 3])
+    with col_img:
+        st.image(str(foto_url), width=100)
+    with col_info:
+        st.markdown(f"### {person['cognome']} {person['nome']}")
+        _meta = []
+        _meta.append(person["ramo"].title())
+        if person.get("gender") and pd.notna(person["gender"]):
+            _meta.append(person["gender"].title())
+        if person.get("luogo_nascita") and pd.notna(person["luogo_nascita"]):
+            _meta.append(f"Nato/a a {person['luogo_nascita']}")
+        url = _scheda_url(person)
+        if url:
+            _meta.append(f"[Scheda ufficiale]({url})")
+        st.caption(" · ".join(_meta))
+else:
+    st.markdown(f"### {person['cognome']} {person['nome']}")
+    _meta = [person["ramo"].title()]
+    if person.get("gender") and pd.notna(person["gender"]):
+        _meta.append(person["gender"].title())
+    url = _scheda_url(person)
+    if url:
+        _meta.append(f"[Scheda ufficiale]({url})")
+    st.caption(" · ".join(_meta))
+
+# -- Metriche principali -----------------------------------------------------
+
+k1, k2, k3, k4 = st.columns(4)
+k1.metric("Voti espressi", fmt_num(person["n_voti"]))
+k2.metric("Fedeltà al gruppo", fmt_pct(person["pct_col_gruppo"], signed=False))
+k3.metric("Coerenza", fmt_pct(person["pct_coerente"], signed=False))
+k4.metric("Interventi in aula", fmt_num(person.get("n_interventi", 0) or 0))
 
 st.markdown("---")
+
+# -- Biografia ---------------------------------------------------------------
+
+bio = person.get("biografia")
+if bio and pd.notna(bio):
+    st.markdown(f"> {bio}")
+    st.markdown("")
 
 # -- Come vota ---------------------------------------------------------------
 
 st.subheader("Come vota")
 
-col_a, col_b, col_c = st.columns(3)
-col_a.metric("Favorevoli", fmt_num(person["n_favorevoli"]))
-col_b.metric("Contrari", fmt_num(person["n_contrari"]))
-col_c.metric("Astenuti", fmt_num(person["n_astenuti"]))
+col_vote, col_donut = st.columns([1, 1])
 
-voti_df = pd.DataFrame({
-    "tipo": ["Favorevoli", "Contrari", "Astenuti"],
-    "n": [person["n_favorevoli"], person["n_contrari"], person["n_astenuti"]],
-})
-chart_voti = (
-    alt.Chart(voti_df)
-    .mark_arc(innerRadius=50)
-    .encode(
-        theta=alt.Theta("n:Q"),
-        color=alt.Color("tipo:N", scale=alt.Scale(
-            domain=["Favorevoli", "Contrari", "Astenuti"],
-            range=["#10b981", "#ef4444", "#6b7280"]
-        )),
-        tooltip=["tipo", alt.Tooltip("n:Q", format=",.0f")],
+with col_vote:
+    c1, c2, c3 = st.columns(3)
+    c1.metric("Favorevoli", fmt_num(person["n_favorevoli"]))
+    c2.metric("Contrari", fmt_num(person["n_contrari"]))
+    c3.metric("Astenuti", fmt_num(person["n_astenuti"]))
+
+with col_donut:
+    voti_df = pd.DataFrame({
+        "tipo": ["Favorevoli", "Contrari", "Astenuti"],
+        "n": [person["n_favorevoli"], person["n_contrari"], person["n_astenuti"]],
+    })
+    chart_voti = (
+        alt.Chart(voti_df)
+        .mark_arc(innerRadius=40, outerRadius=70)
+        .encode(
+            theta=alt.Theta("n:Q"),
+            color=alt.Color("tipo:N", scale=alt.Scale(
+                domain=["Favorevoli", "Contrari", "Astenuti"],
+                range=["#10b981", "#ef4444", "#6b7280"]
+            )),
+            tooltip=["tipo", alt.Tooltip("n:Q", format=",.0f")],
+        )
+        .properties(height=180, width=180)
     )
-    .properties(height=200)
-)
-st.altair_chart(chart_voti, width="stretch")
+    st.altair_chart(chart_voti, use_container_width=False)
 
 st.markdown("---")
 
@@ -117,21 +173,22 @@ st.markdown("---")
 
 st.subheader("Cariche e incarichi")
 
-col_x, col_y = st.columns(2)
+col_left, col_right = st.columns(2)
 
-with col_x:
+with col_left:
     if person["in_governo"]:
-        st.info("🏛️ **In Governo**")
-    st.metric("Commissioni", person["n_commissioni_attuali"])
+        st.info("🏛️ In Governo")
+    n_comm = person["n_commissioni_attuali"] if pd.notna(person["n_commissioni_attuali"]) else 0
+    st.metric("Commissioni", int(n_comm))
     if person["presidente_commissione"]:
-        st.info("🎯 Presidente di commissione")
-    if person["commissioni_attuali"] and pd.notna(person["commissioni_attuali"]):
-        with st.expander("Commissioni", expanded=False):
-            st.text(person["commissioni_attuali"])
+        st.success("🎯 Presidente di commissione")
+    comm_text = person.get("commissioni_attuali")
+    if comm_text and pd.notna(comm_text) and str(comm_text).strip():
+        with st.expander("Vedi commissioni", expanded=False):
+            st.text(comm_text)
 
-with col_y:
+with col_right:
     st.metric("Relatore", fmt_num(person["n_relatori"]))
     st.metric("Anni relatore", fmt_num(person["anni_relatore"]))
-    st.metric("Interventi in aula", fmt_num(person["n_interventi"]))
 
 st.caption("Dati: Camera dei Deputati, Senato della Repubblica · XIX legislatura · CC BY 4.0")

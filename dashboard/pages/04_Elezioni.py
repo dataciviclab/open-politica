@@ -75,7 +75,7 @@ with tab_aff:
         df_aff = df_aff[df_aff["tipo_elezione"] == tipo]
 
     k1, k2, k3 = st.columns(3)
-    k1.metric("Affluenza media", fmt_pct(df_aff["affluenza_pct"].mean()))
+    k1.metric("Affluenza media", fmt_pct(df_aff["affluenza_pct"].mean(), signed=False))
     k2.metric("Anni coperti", f"{int(df_aff['anno'].min())}–{int(df_aff['anno'].max())}")
     k3.metric("Regioni", df_aff["regione"].nunique())
 
