@@ -64,7 +64,7 @@ top20 = top20.reset_index(drop=True)
 top20.index = top20.index + 1
 top20.columns = ["Senatore", "Atti", "Tipi", "Dal", "Al"]
 
-st.dataframe(top20, use_container_width=True, hide_index=False)
+st.dataframe(top20, width='stretch', hide_index=False)
 
 st.markdown("---")
 
