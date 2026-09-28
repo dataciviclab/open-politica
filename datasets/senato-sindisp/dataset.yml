@@ -1,0 +1,86 @@
+# Sindacato ispettivo del Senato — interrogazioni, interpellanze, mozioni
+#
+# Fonte: graph sindisp/{leg} su dati.senato.it
+# Copertura: leg13-19
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_sindisp"
+  source_id: "dati_senato"
+  tags: [politica, senato, sindacato-ispettivo, interrogazioni, interpellanze, mozioni]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "sindisp_join"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          SELECT ?atto ?tipo ?numero ?data ?esito ?url ?label
+                 ?iniziativa ?senatore ?presentatore ?tipoIniziativa
+          WHERE {
+            GRAPH <http://dati.senato.it/sindisp/{year}> {
+              ?atto a osr:Atto .
+              OPTIONAL { ?atto osr:tipo ?tipo . }
+              OPTIONAL { ?atto osr:numero ?numero . }
+              OPTIONAL { ?atto osr:dataPresentazione ?data . }
+              OPTIONAL { ?atto osr:esito ?esito . }
+              OPTIONAL { ?atto osr:URLTesto ?url . }
+              OPTIONAL { ?atto rdfs:label ?label . }
+              OPTIONAL {
+                ?atto osr:iniziativa ?iniziativa .
+                ?iniziativa osr:senatore ?senatore .
+                OPTIONAL { ?iniziativa osr:presentatore ?presentatore . }
+                OPTIONAL { ?iniziativa osr:tipoIniziativa ?tipoIniziativa . }
+              }
+            }
+          }
+        accept_format: "sparql-results+json"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [atto_id, tipo, numero, data_presentazione]
+  read:
+    source: auto
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [atto_id, tipo]
+    min_rows: 100
+    primary_key: [atto_id, senatore_id]
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_per_senatore"
+      sql: "sql/mart_per_senatore.sql"
+  required_tables:
+    - "mart_sintesi"
+    - "mart_per_senatore"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [legislatura, tipo, n_atti]
+        primary_key: [legislatura, tipo]
+        min_rows: 3
+      mart_per_senatore:
+        required_columns: [senatore_id, n_atti]
+        primary_key: [senatore_id]
+        min_rows: 10
+
+validation:
+  fail_on_error: true
