@@ -45,11 +45,20 @@ raw:
             }
           }
         accept_format: "sparql-results+json"
+        pages: 10
+        step: 10000
+        pagination: {"mode": "offset"}
+
+support:
+  - type: dataset
+    name: senato_anagrafica
+    config: ../../datasets/senato-anagrafica/dataset.yml
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"
   read_mode: robust
-  required_columns: [atto_id, tipo, numero, data_presentazione]
+  required_columns: [atto_id, tipo, numero, data_presentazione, senatore_id, nome_senatore, cognome_senatore]
   read:
     source: auto
     header: true
