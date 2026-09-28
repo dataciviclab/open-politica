@@ -281,19 +281,27 @@ def main() -> int:
             new_votazioni = None
 
         for g in graphs:
-            if last_date is not None:
-                # solo i voti delle votazioni nuove presenti in questo graph
-                meta_in_g = [m for m in all_meta if m["seduta"]]
-                voti = fetch_voti_filtered(g, new_votazioni)
-                voti = [v for v in voti if v["v"] in new_votazioni]
-                log.info("  graph %s: %d voti nuovi", g.split("/")[-1], len(voti))
-            else:
-                meta_in_g = meta
-                voti = fetch_voti(g)
-            if not voti:
-                log.warning("  graph %s: nessun voto", g.split("/")[-1])
+            graph_name = g.rstrip('/').split('/')[-2]
+            f = out_dir / f"voti_{graph_name}.parquet"
+            if f.exists():
+                log.info("  graph %s: già estratto, salto", graph_name)
+                voti_files.append(f)
                 continue
-            f = out_dir / f"voti_{g.rstrip('/').split('/')[-2]}.parquet"
+            try:
+                if last_date is not None:
+                    meta_in_g = [m for m in all_meta if m["seduta"]]
+                    voti = fetch_voti_filtered(g, new_votazioni)
+                    voti = [v for v in voti if v["v"] in new_votazioni]
+                    log.info("  graph %s: %d voti nuovi", graph_name, len(voti))
+                else:
+                    meta_in_g = meta
+                    voti = fetch_voti(g)
+            except Exception as exc:
+                log.error("  graph %s: ERRORE %s — salto", graph_name, exc)
+                continue
+            if not voti:
+                log.warning("  graph %s: nessun voto", graph_name)
+                continue
             table = pa.table(
                 {
                     "votazione": [v["v"] for v in voti],
@@ -303,6 +311,7 @@ def main() -> int:
             )
             pq.write_table(table, f)
             voti_files.append(f)
+            log.info("  graph %s: salvato %s (%d voti)", graph_name, f.name, len(voti))
 
         log.info("metadati: %d votazioni", len(all_meta))
         sedute = fetch_sedute(args.legislature)
