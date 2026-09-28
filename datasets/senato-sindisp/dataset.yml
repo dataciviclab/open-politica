@@ -50,8 +50,7 @@ raw:
         pagination: {"mode": "offset"}
 
 support:
-  - type: dataset
-    name: senato_anagrafica
+  - name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml
     years: [2026]
 
