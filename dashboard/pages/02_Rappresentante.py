@@ -165,7 +165,7 @@ with col_donut:
         )
         .properties(height=180, width=180)
     )
-    st.altair_chart(chart_voti, use_container_width=False)
+    st.altair_chart(chart_voti, width='content')
 
 st.markdown("---")
 
