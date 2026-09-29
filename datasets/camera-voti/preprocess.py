@@ -268,6 +268,13 @@ def main() -> int:
         null_data = con.execute("SELECT count(*) FROM finale WHERE data IS NULL").fetchone()[0]
     log.info("OK: %d voti, %d deputati, %d votazioni, NULL data %d → %s",
              n, nd, nv, null_data, final_path)
+
+    # Pulizia: rimuovi chunk intermedi e file temporanei
+    for f in chunk_dir.glob("chunk_*.parquet"):
+        f.unlink()
+    chunk_dir.rmdir()
+    dates_path.unlink(missing_ok=True)
+
     return 0
 
 

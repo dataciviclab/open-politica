@@ -381,6 +381,15 @@ def main() -> int:
         n = con.execute("SELECT count(*) FROM finale").fetchone()[0]
         nv = con.execute("SELECT count(DISTINCT votazione) FROM finale").fetchone()[0]
     log.info("OK: %d righe, %d votazioni distinte → %s", n, nv, final_path)
+
+    # Pulizia: rimuovi file intermedi
+    for f in out_dir.glob("voti_*.parquet"):
+        f.unlink()
+    meta_path = out_dir / "meta.parquet"
+    sed_path = out_dir / "sedute.parquet"
+    meta_path.unlink(missing_ok=True)
+    sed_path.unlink(missing_ok=True)
+
     return 0
 
 
