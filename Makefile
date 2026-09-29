@@ -1,22 +1,36 @@
 TOOLKIT ?= toolkit
+export TOOLKIT_ALLOW_SCRIPT_SOURCE := 1
 
 # --- Dataset -----------------------------------------------------------
 
 DATASETS := $(shell find datasets -name dataset.yml 2>/dev/null | sort)
 COMPOSES := $(shell find compose -name dataset.yml 2>/dev/null | sort)
 
-# --- Pipeline completa -------------------------------------------------
+# --- Pipeline completa (datasets → compose) ---------------------------
 
 .PHONY: run-all
-run-all:
-	TOOLKIT_ALLOW_SCRIPT_SOURCE=1 ./scripts/run_pipeline.sh
+run-all: run-datasets run-compose
+
+.PHONY: run-datasets
+run-datasets:
+	@for f in $(DATASETS); do \
+		echo "→ $$f"; \
+		$(TOOLKIT) run -c "$$f" || exit 1; \
+	done
+
+.PHONY: run-compose
+run-compose:
+	@for f in $(COMPOSES); do \
+		echo "→ $$f"; \
+		$(TOOLKIT) run -c "$$f" || exit 1; \
+	done
 
 # --- Batch selettivo (PR post-merge: solo dataset cambiati) -----------
 
 .PHONY: run-batch
 run-batch:
 	@if [ -s batch.txt ]; then \
-		TOOLKIT_ALLOW_SCRIPT_SOURCE=1 $(TOOLKIT) run --batch batch.txt; \
+		$(TOOLKIT) run --batch batch.txt; \
 	else \
 		echo "Nessun dataset da processare"; \
 	fi

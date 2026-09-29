@@ -26,8 +26,8 @@ jobs:
     uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
     with:
       repo-slug: "open-politica"
-      run-command: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1 make run-all"
-      run-batch-command: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1 make run-batch"
+      run-command: "make run-all"
+      run-batch-command: "make run-batch"
       detect-paths: "datasets compose"
       sync-pattern: "per-dataset"
     secrets: inherit
