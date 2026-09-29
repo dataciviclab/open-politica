@@ -19,6 +19,8 @@ raw:
     - name: "camera_voti_parquet"
       type: "script"
       primary: true
+      client:
+        timeout: 1200
       args:
         command: "python preprocess.py --legislature 19 --out ."
         output: "camera_voti.parquet"
