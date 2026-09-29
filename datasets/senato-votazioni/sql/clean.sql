@@ -1,7 +1,7 @@
 -- clean.sql — senato_votazioni
 --
 -- Voti individuali dei Senatori (XIX legislatura), estratti via SPARQL da
--- dati.senato.it con scripts/extract_senato_votazioni.py. Una riga =
+-- dati.senato.it con preprocess.py. Una riga =
 -- voto di un senatore su una votazione (FAVOREVOLE / CONTRARIO / ASTENUTO),
 -- arricchita dai metadati della votazione (seduta, data, esito, conteggi).
 

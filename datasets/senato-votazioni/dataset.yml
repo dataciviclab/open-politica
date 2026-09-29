@@ -16,12 +16,14 @@ dataset:
 raw:
   output_policy: overwrite
   sources:
-    # parquet long-format prodotto da scripts/extract_senato_votazioni.py
     - name: "senato_votazioni_parquet"
-      type: "local_file"
+      type: "script"
       primary: true
+      client:
+        timeout: 1200
       args:
-        path: "../../out/data/derived/senato_votazioni/senato_votazioni.parquet"
+        command: "python preprocess.py --legislature 19 --out ."
+        output: "senato_votazioni.parquet"
         filename: "senato_votazioni.parquet"
 
 clean:

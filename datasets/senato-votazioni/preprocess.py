@@ -9,9 +9,8 @@ Per ogni graph della legislatura (es. /19: votazioni-fasi-1..5, sindisp, doc):
 4. scrive un unico parquet long-format (una riga per senatore×votazione).
 
 Uso:
-    python3 scripts/extract_senato_votazioni.py                 # XIX legislatura
-    python3 scripts/extract_senato_votazioni.py --legislature 18
-    python3 scripts/extract_senato_votazioni.py --out out/data/derived/senato_votazioni
+    python preprocess.py                 # XIX legislatura
+    python preprocess.py --legislature 18
 """
 
 from __future__ import annotations
@@ -227,7 +226,7 @@ def fetch_sedute(legislatura: int) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--legislature", type=int, default=19)
-    parser.add_argument("--out", default="out/data/derived/senato_votazioni")
+    parser.add_argument("--out", default=".")
     parser.add_argument("--merge-only", action="store_true",
                         help="salta l'estrazione SPARQL e ri-merge i parquet già estratti")
     parser.add_argument("--incremental", action="store_true",
@@ -382,6 +381,15 @@ def main() -> int:
         n = con.execute("SELECT count(*) FROM finale").fetchone()[0]
         nv = con.execute("SELECT count(DISTINCT votazione) FROM finale").fetchone()[0]
     log.info("OK: %d righe, %d votazioni distinte → %s", n, nv, final_path)
+
+    # Pulizia: rimuovi file intermedi
+    for f in out_dir.glob("voti_*.parquet"):
+        f.unlink()
+    meta_path = out_dir / "meta.parquet"
+    sed_path = out_dir / "sedute.parquet"
+    meta_path.unlink(missing_ok=True)
+    sed_path.unlink(missing_ok=True)
+
     return 0
 
 
