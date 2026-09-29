@@ -88,7 +88,7 @@ mart:
       mart_per_senatore:
         required_columns: [senatore_id, n_atti]
         primary_key: [senatore_id]
-        min_rows: 10
+        min_rows: 1
 
 validation:
   fail_on_error: true

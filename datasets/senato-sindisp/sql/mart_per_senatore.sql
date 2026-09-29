@@ -1,4 +1,6 @@
 -- mart_per_senatore.sql — atti per senatore
+-- presentatore viene dal SPARQL (sempre disponibile).
+-- senatore_id puo' essere NULL per legislature senza anagrafica.
 SELECT
     senatore_id,
     presentatore,
@@ -7,6 +9,5 @@ SELECT
     min(data_presentazione) AS primo_atto,
     max(data_presentazione) AS ultimo_atto
 FROM clean_input
-WHERE senatore_id IS NOT NULL
 GROUP BY senatore_id, presentatore
 ORDER BY n_atti DESC
