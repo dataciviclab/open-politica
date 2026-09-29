@@ -9,9 +9,8 @@ Per ogni graph della legislatura (es. /19: votazioni-fasi-1..5, sindisp, doc):
 4. scrive un unico parquet long-format (una riga per senatore×votazione).
 
 Uso:
-    python3 scripts/extract_senato_votazioni.py                 # XIX legislatura
-    python3 scripts/extract_senato_votazioni.py --legislature 18
-    python3 scripts/extract_senato_votazioni.py --out out/data/derived/senato_votazioni
+    python preprocess.py                 # XIX legislatura
+    python preprocess.py --legislature 18
 """
 
 from __future__ import annotations
@@ -227,7 +226,7 @@ def fetch_sedute(legislatura: int) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--legislature", type=int, default=19)
-    parser.add_argument("--out", default="out/data/derived/senato_votazioni")
+    parser.add_argument("--out", default=".")
     parser.add_argument("--merge-only", action="store_true",
                         help="salta l'estrazione SPARQL e ri-merge i parquet già estratti")
     parser.add_argument("--incremental", action="store_true",

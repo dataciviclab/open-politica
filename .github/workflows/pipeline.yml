@@ -1,8 +1,8 @@
 # Pipeline — open-politica
 #
 # Post-merge + refresh. Usa pipeline-reusable.yml dell'org.
-# L'ordinamento (extract → datasets → ponte → compose) è gestito da
-# scripts/run_pipeline.sh, che la reusable chiama come run-command.
+# Su PR: solo i dataset toccati (detect + batch).
+# Su schedule/dispatch: tutti i dataset.
 
 name: Pipeline
 
@@ -12,7 +12,6 @@ on:
     paths:
       - "datasets/**"
       - "compose/**"
-      - "scripts/**"
   schedule:
     - cron: '0 6 1 * *'
   workflow_dispatch:
@@ -28,5 +27,7 @@ jobs:
     with:
       repo-slug: "open-politica"
       run-command: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1 make run-all"
+      run-batch-command: "TOOLKIT_ALLOW_SCRIPT_SOURCE=1 make run-batch"
+      detect-paths: "datasets compose"
       sync-pattern: "per-dataset"
     secrets: inherit

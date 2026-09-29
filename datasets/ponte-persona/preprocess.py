@@ -10,8 +10,8 @@ la stessa persona ha un `persona_id` (dati.camera.it) e un `senatore_id`
 match è univoco e segnala i casi ambigui o non risolti.
 
 Uso:
-    python3 scripts/build_ponte_persona.py
-    python3 scripts/build_ponte_persona.py --out out/data/derived/ponte_persona
+    python preprocess.py
+    python preprocess.py --root ../../out
 """
 
 from __future__ import annotations
@@ -61,15 +61,24 @@ def load_senato(clean: Path) -> list[tuple[int, str, str]]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--camera-clean",
-                        default="out/data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet")
-    parser.add_argument("--senato-clean",
-                        default="out/data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet")
-    parser.add_argument("--out", default="out/data/derived/ponte_persona")
+    parser.add_argument("--root", default="../../out",
+                        help="Output root (default: ../../out, relativo alla dir del dataset)")
+    parser.add_argument("--out", default=".")
     args = parser.parse_args()
 
-    camera = load_camera(Path(args.camera_clean))
-    senato = load_senato(Path(args.senato_clean))
+    root = Path(args.root)
+    camera_clean = root / "data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
+    senato_clean = root / "data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet"
+
+    if not camera_clean.exists():
+        print(f"ERRORE: {camera_clean} non trovato — camera_deputati_legislature deve essere processato prima")
+        return 1
+    if not senato_clean.exists():
+        print(f"ERRORE: {senato_clean} non trovato — senato_anagrafica deve essere processato prima")
+        return 1
+
+    camera = load_camera(camera_clean)
+    senato = load_senato(senato_clean)
     print(f"deputati (persone distinte): {len(camera)}")
     print(f"senatori:                    {len(senato)}")
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """Merge dei chunk camera_voti già estratti + date SPARQL → camera_voti.parquet."""
 import sys
-sys.path.insert(0, "scripts")
+sys.path.insert(0, "datasets/camera-voti")
 import glob
 import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
-import extract_camera_voti as ev
+import preprocess as ev
 
 out_dir = "out/data/derived/camera_voti"
 chunks = sorted(glob.glob(f"{out_dir}/chunks/chunk_*.parquet"))

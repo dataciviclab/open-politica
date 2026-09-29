@@ -13,15 +13,25 @@ dataset:
     start_year: 2022
     end_year: 2026
 
+support:
+  - type: dataset
+    name: camera_deputati
+    config: ../camera-deputati-legislature/dataset.yml
+    years: [2026]
+  - type: dataset
+    name: senato_anagrafica
+    config: ../senato-anagrafica/dataset.yml
+    years: [2026]
+
 raw:
   output_policy: overwrite
   sources:
-    # parquet prodotto da scripts/build_ponte_persona.py
     - name: "ponte_persona_parquet"
-      type: "local_file"
+      type: "script"
       primary: true
       args:
-        path: "../../out/data/derived/ponte_persona/ponte_persona.parquet"
+        command: "python preprocess.py --root ../../out --out ."
+        output: "ponte_persona.parquet"
         filename: "ponte_persona.parquet"
 
 clean:

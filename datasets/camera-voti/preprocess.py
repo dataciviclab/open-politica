@@ -7,8 +7,8 @@ della legislatura e le processa in batch via FILTER(?vr IN (...)). Ogni batch
 ha un result-set fisso → niente overlap né buchi.
 
 Uso:
-    python3 scripts/extract_camera_voti.py --legislature 19
-    python3 scripts/extract_camera_voti.py --legislature 19 --batch 200
+    python preprocess.py --legislature 19
+    python preprocess.py --legislature 19 --batch 200
 """
 
 from __future__ import annotations
@@ -134,7 +134,7 @@ def fetch_votazione_dates(legislatura: int) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--legislature", type=int, default=19)
-    parser.add_argument("--out", default="out/data/derived/camera_voti")
+    parser.add_argument("--out", default=".")
     parser.add_argument("--batch", type=int, default=200)
     parser.add_argument("--incremental", action="store_true",
                         help="estrae solo le votazioni successive alla max data già presente nel parquet")

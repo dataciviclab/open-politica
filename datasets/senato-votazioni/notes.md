@@ -16,9 +16,9 @@ individuale: chiude il gap "nessun voto in aula" del profilo politico.
 
 ```bash
 # estrazione completa XIX (paginata, ~30 min per il rate-limit WAF)
-python3 scripts/extract_senato_votazioni.py --legislature 19
+python3 datasets/senato-votazioni/preprocess.py --legislature 19
 # ri-merge senza re-estrarre (dopo un cambio di clean.sql/mart.sql)
-python3 scripts/extract_senato_votazioni.py --merge-only
+python3 datasets/senato-votazioni/preprocess.py --merge-only
 ```
 
 L'endpoint dati.senato.it ha un WAF restrittivo:

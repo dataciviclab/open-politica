@@ -5,20 +5,30 @@ TOOLKIT ?= toolkit
 DATASETS := $(shell find datasets -name dataset.yml 2>/dev/null | sort)
 COMPOSES := $(shell find compose -name dataset.yml 2>/dev/null | sort)
 
-# --- Pipeline completa (extract → datasets → ponte → compose) ----------
+# --- Pipeline completa -------------------------------------------------
 
 .PHONY: run-all
 run-all:
 	TOOLKIT_ALLOW_SCRIPT_SOURCE=1 ./scripts/run_pipeline.sh
 
-# --- Estrazioni pesanti (servono solo per senato/camera voti) ----------
+# --- Batch selettivo (PR post-merge: solo dataset cambiati) -----------
+
+.PHONY: run-batch
+run-batch:
+	@if [ -s batch.txt ]; then \
+		TOOLKIT_ALLOW_SCRIPT_SOURCE=1 $(TOOLKIT) run --batch batch.txt; \
+	else \
+		echo "Nessun dataset da processare"; \
+	fi
+
+# --- Estrazioni manuali (convenience) ---------------------------------
 
 .PHONY: extract-senato-votazioni extract-camera-voti
 extract-senato-votazioni:
-	python3 scripts/extract_senato_votazioni.py --legislature 19 --incremental
+	python3 datasets/senato-votazioni/preprocess.py --legislature 19 --incremental
 
 extract-camera-voti:
-	python3 scripts/extract_camera_voti.py --legislature 19 --batch 200 --incremental
+	python3 datasets/camera-voti/preprocess.py --legislature 19 --batch 200 --incremental
 
 # --- Validazione config ------------------------------------------------
 
