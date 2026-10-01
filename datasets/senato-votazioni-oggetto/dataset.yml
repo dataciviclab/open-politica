@@ -29,13 +29,14 @@ raw:
         endpoint: "https://dati.senato.it/sparql"
         query: |
           PREFIX osr: <http://dati.senato.it/osr/>
-          SELECT ?v ?og ?ddl ?esito ?tipo
+          SELECT ?v ?og ?ddl ?idDdl ?esito ?tipo
           WHERE {
             ?v a osr:Votazione .
             OPTIONAL { ?v osr:oggetto ?og . }
             OPTIONAL { ?v osr:esito ?esito . }
             OPTIONAL { ?v osr:tipoVotazione ?tipo . }
             OPTIONAL { ?og osr:relativoA ?ddl . }
+            OPTIONAL { ?ddl osr:idDdl ?idDdl . }
           }
         accept_format: "sparql-results+json"
         pages: 12

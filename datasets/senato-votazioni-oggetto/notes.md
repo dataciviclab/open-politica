@@ -23,7 +23,9 @@ Sul **default graph** Virtuoso li unisce correttamente.
 ## Join utili
 
 - `senato_votazioni.votazione_id` → `senato_votazioni_oggetto.votazione_id`
-- `senato_votazioni_oggetto.ddl_id` → `senato_ddl.id_ddl` / `atto_num`
+- **`senato_votazioni_oggetto.ddl_id` = `osr:idDdl`** → `senato_ddl.id_ddl` / `atto_num`
+- ⚠️ Il numero URI `/ddl/N` **non** è `idDdl` (es. `/ddl/32478` → `idDdl=29965`)
+- `ddl_uri_num` è solo riferimento diagnostico, non chiave di join
 
 ## Limiti
 

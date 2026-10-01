@@ -29,9 +29,10 @@ raw:
         query: |
           PREFIX osr: <http://dati.senato.it/osr/>
           PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
-          SELECT ?d ?rel ?sen ?label ?organo ?tipo
+          SELECT ?d ?rel ?idDdl ?sen ?label ?organo ?tipo
           WHERE {
             ?d a osr:Ddl ; osr:relatore ?rel .
+            OPTIONAL { ?d osr:idDdl ?idDdl . }
             OPTIONAL { ?rel osr:senatore ?sen . }
             OPTIONAL { ?rel rdfs:label ?label . }
             OPTIONAL { ?rel osr:organo ?organo . }
@@ -55,7 +56,8 @@ clean:
     trim_whitespace: true
   validate:
     min_rows: 1000
-    primary_key: [ddl_id, relatore_label, organo]
+    # organo è OPTIONAL nel grafo: PK senza organo (o con default)
+    primary_key: [ddl_id, relatore_label]
 
 mart:
   tables:

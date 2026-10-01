@@ -1,4 +1,5 @@
 -- mart_votazioni_per_ddl.sql — sintesi votazioni raggiungibili per DDL
+-- ddl_id = osr:idDdl (BIGINT)
 
 SELECT
     ddl_id,
@@ -10,5 +11,5 @@ SELECT
     COUNT(DISTINCT oggetto_id) AS n_oggetti,
     MIN(votazione_id) AS sample_votazione
 FROM clean_input
-WHERE ddl_id IS NOT NULL AND ddl_id <> ''
+WHERE ddl_id IS NOT NULL
 GROUP BY ddl_id, legislatura
