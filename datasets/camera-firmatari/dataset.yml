@@ -1,0 +1,86 @@
+# Firmatari Camera — atto → deputato (URI joinabili)
+#
+# Fonte: dati.camera.it SPARQL — ocd:atto
+# Proprietà: ocd:altro_firmatario, ocd:primo_firmatario (URI deputato)
+# NOTA: dc:contributor restituisce solo testo nome, non URI — fuori da questo dataset.
+#
+# Join: atto_camera (ac{leg}_{id}) + legislatura → camera_ddl (id_ddl + legislatura)
+#       atto_id_leg = '{leg}_{id}' (chiave stabile cross-leg)
+#       deputato URI → camera_deputati.persona_id (regex d{id}_)
+
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_firmatari"
+  source_id: "dati_camera"
+  tags: [politica, camera, firmatari, ddl, accountability]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    start_year: 1946
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "atti_firmatari"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT ?atto ?dep ?label ?ruolo
+          WHERE {
+            {
+              ?atto a ocd:atto ; ocd:altro_firmatario ?dep .
+              BIND("altro" AS ?ruolo)
+            }
+            UNION
+            {
+              ?atto a ocd:atto ; ocd:primo_firmatario ?dep .
+              BIND("primo" AS ?ruolo)
+            }
+            OPTIONAL { ?dep rdfs:label ?label }
+            ?atto ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
+          }
+        accept_format: "sparql-results+json"
+        pages: 12
+        step: 10000
+        pagination: {"mode": "offset"}
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [atto_id, atto_id_leg, legislatura, deputato_uri, ruolo]
+  read:
+    source: auto
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    min_rows: 1000
+    # chiave qualificata: i numeri atto restartano per legislatura
+    primary_key: [atto_id_leg, deputato_uri, ruolo]
+
+mart:
+  tables:
+    - name: "mart_firmatari_per_atto"
+      sql: "sql/mart_firmatari_per_atto.sql"
+    - name: "mart_firmatari_per_deputato"
+      sql: "sql/mart_firmatari_per_deputato.sql"
+  required_tables:
+    - "mart_firmatari_per_atto"
+  validate:
+    table_rules:
+      mart_firmatari_per_atto:
+        required_columns: [atto_id_leg, n_firmatari]
+        primary_key: [atto_id_leg]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
