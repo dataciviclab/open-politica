@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-09-29",
+  "updated_at": "2026-10-01",
   "datasets": [
     {
       "slug": "camera_commissioni",
@@ -2859,6 +2859,99 @@
       ]
     },
     {
+      "slug": "senato_relatori",
+      "name": "Senato Relatori",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "relatori",
+        "ddl",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "ddl_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "ddl_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_uri_num",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "senatore_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "relatore_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "relatore_label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "organo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_relatore",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "has_senatore_id",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/senato_relatori/2026/senato_relatori_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_relatori__mart_relatori_per_ddl",
+        "senato_relatori__mart_relatori_per_senatore"
+      ]
+    },
+    {
       "slug": "senato_sindisp",
       "name": "Senato Sindisp",
       "description": "",
@@ -3113,6 +3206,104 @@
       "mart_refs": [
         "senato_votazioni__mart_sintesi",
         "senato_votazioni__mart_voto_senatore"
+      ]
+    },
+    {
+      "slug": "senato_votazioni_oggetto",
+      "name": "Senato Votazioni Oggetto",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "votazioni",
+        "ddl",
+        "iter",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "votazione_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "votazione_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "oggetto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "oggetto_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "ddl_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_uri_num",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "esito",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "has_ddl",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/senato_votazioni_oggetto/2026/senato_votazioni_oggetto_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_votazioni_oggetto__mart_votazioni_per_ddl"
       ]
     }
   ],
@@ -3698,6 +3889,26 @@
       }
     },
     {
+      "slug": "senato_relatori__mart_relatori_per_ddl",
+      "dataset": "senato_relatori",
+      "table": "mart_relatori_per_ddl",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/senato_relatori/2026/mart_relatori_per_ddl.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_relatori__mart_relatori_per_senatore",
+      "dataset": "senato_relatori",
+      "table": "mart_relatori_per_senatore",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/senato_relatori/2026/mart_relatori_per_senatore.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "senato_sindisp__mart_per_senatore",
       "dataset": "senato_sindisp",
       "table": "mart_per_senatore",
@@ -3734,6 +3945,16 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/open-politica/senato_votazioni/2026/mart_voto_senatore.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "senato_votazioni_oggetto__mart_votazioni_per_ddl",
+      "dataset": "senato_votazioni_oggetto",
+      "table": "mart_votazioni_per_ddl",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/senato_votazioni_oggetto/2026/mart_votazioni_per_ddl.parquet",
         "multi_file": false
       }
     }
@@ -4626,6 +4847,37 @@
       }
     },
     {
+      "id": "senato_relatori",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_relatori",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261001T201133Z_85582646",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 55657,
+          "clean": 30336,
+          "mart": 18140
+        },
+        "output_bytes": {
+          "raw": 6471802,
+          "clean": 472355,
+          "mart": 120501
+        },
+        "started_at": "2026-10-01T20:11:33.594241+00:00",
+        "finished_at": "2026-10-01T20:12:01.735869+00:00",
+        "duration_seconds": 28.142
+      }
+    },
+    {
       "id": "senato_sindisp",
       "source_id": "dati_senato",
       "status": "ok",
@@ -4685,6 +4937,37 @@
         "finished_at": "2026-09-28T08:52:31.236337+00:00",
         "duration_seconds": 0.615
       }
+    },
+    {
+      "id": "senato_votazioni_oggetto",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_votazioni_oggetto",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261001T201201Z_271df151",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 120000,
+          "clean": 29246,
+          "mart": 1041
+        },
+        "output_bytes": {
+          "raw": 16794899,
+          "clean": 344733,
+          "mart": 12288
+        },
+        "started_at": "2026-10-01T20:12:01.796264+00:00",
+        "finished_at": "2026-10-01T20:12:41.935992+00:00",
+        "duration_seconds": 40.14
+      }
     }
   ],
   "codelists": [],
@@ -4723,10 +5006,22 @@
             "name": "Senato Firmatari",
             "column": "ddl_id",
             "semantic_type": "ddl_id"
+          },
+          {
+            "slug": "senato_relatori",
+            "name": "Senato Relatori",
+            "column": "ddl_id",
+            "semantic_type": "ddl_id"
+          },
+          {
+            "slug": "senato_votazioni_oggetto",
+            "name": "Senato Votazioni Oggetto",
+            "column": "ddl_id",
+            "semantic_type": "ddl_id"
           }
         ],
         "types": {
-          "ddl_id": 5
+          "ddl_id": 7
         }
       },
       "Comune": {
@@ -4936,6 +5231,12 @@
             "semantic_type": "senator_id"
           },
           {
+            "slug": "senato_relatori",
+            "name": "Senato Relatori",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
             "slug": "senato_sindisp",
             "name": "Senato Sindisp",
             "column": "senatore_id",
@@ -4950,7 +5251,7 @@
         ],
         "types": {
           "person_id": 9,
-          "senator_id": 8
+          "senator_id": 9
         }
       },
       "Provincia": {
