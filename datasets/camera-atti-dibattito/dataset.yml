@@ -1,0 +1,83 @@
+# Link atto Camera ↔ dibattito
+#
+# Fonte: dati.camera.it SPARQL — ocd:atto / ocd:dibattito
+# Proprietà: ocd:rif_dibattito, ocd:rif_abbinamento, ocd:rif_attoCameraAbbinato
+#
+# Unisce gli atti ai dibattiti/abbinamenti (chiudi il pezzo atto→discussione).
+
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_atti_dibattito"
+  source_id: "dati_camera"
+  tags: [politica, camera, dibattito, iter, accountability]
+  category: politica
+  years: [15, 16, 17, 18, 19]
+  time_coverage:
+    start_year: 2006
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "atti_dibattito"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          SELECT ?atto ?dib ?ruolo
+          WHERE {
+            {
+              ?atto a ocd:atto ; ocd:rif_dibattito ?dib .
+              BIND("dibattito" AS ?ruolo)
+            }
+            UNION
+            {
+              ?atto a ocd:atto ; ocd:rif_abbinamento ?dib .
+              BIND("abbinamento" AS ?ruolo)
+            }
+            UNION
+            {
+              ?atto a ocd:atto ; ocd:rif_attoCameraAbbinato ?dib .
+              BIND("atto_abbinato" AS ?ruolo)
+            }
+            ?atto ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
+          }
+        accept_format: "sparql-results+json"
+        pages: 12
+        step: 10000
+        pagination: {"mode": "offset"}
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [atto_id, target_uri, ruolo]
+  read:
+    source: auto
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    min_rows: 1000
+    primary_key: [atto_id, target_uri, ruolo]
+
+mart:
+  tables:
+    - name: "mart_dibattiti_per_atto"
+      sql: "sql/mart_dibattiti_per_atto.sql"
+  required_tables:
+    - "mart_dibattiti_per_atto"
+  validate:
+    table_rules:
+      mart_dibattiti_per_atto:
+        required_columns: [atto_id, n_dibattiti]
+        primary_key: [atto_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
