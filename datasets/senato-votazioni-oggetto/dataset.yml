@@ -1,0 +1,74 @@
+# Ponte votazioni Senato → DDL (oggetto di trattazione)
+#
+# Fonte: dati.senato.it SPARQL — DEFAULT GRAPH (non GRAPH ?g).
+# Catena: votazione.osr:oggetto → OggettoTrattazione.osr:relativoA → ddl
+#
+# Perché default graph: i named graph spezzano il join (probe live 2026-10-01).
+# Copertura osservata: ~48k votazioni con oggetto · ~39k oggetti con ddl.
+
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_votazioni_oggetto"
+  source_id: "dati_senato"
+  tags: [politica, senato, votazioni, ddl, iter, accountability]
+  category: politica
+  years: [2026]
+  time_coverage:
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "votazioni_oggetto"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          SELECT ?v ?og ?ddl ?esito ?tipo
+          WHERE {
+            ?v a osr:Votazione .
+            OPTIONAL { ?v osr:oggetto ?og . }
+            OPTIONAL { ?v osr:esito ?esito . }
+            OPTIONAL { ?v osr:tipoVotazione ?tipo . }
+            OPTIONAL { ?og osr:relativoA ?ddl . }
+          }
+        accept_format: "sparql-results+json"
+        pages: 12
+        step: 10000
+        pagination: {"mode": "offset"}
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [votazione_id, oggetto_id, ddl_id, esito]
+  read:
+    source: auto
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    min_rows: 1000
+    primary_key: [votazione_id]
+
+mart:
+  tables:
+    - name: "mart_votazioni_per_ddl"
+      sql: "sql/mart_votazioni_per_ddl.sql"
+  required_tables:
+    - "mart_votazioni_per_ddl"
+  validate:
+    table_rules:
+      mart_votazioni_per_ddl:
+        required_columns: [ddl_id, legislatura, n_votazioni, n_approvate, n_respinte]
+        primary_key: [ddl_id, legislatura]
+        min_rows: 100
+
+validation:
+  fail_on_error: true

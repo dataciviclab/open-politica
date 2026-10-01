@@ -1,0 +1,76 @@
+# Relatori del Senato — persona → DDL
+#
+# Fonte: dati.senato.it SPARQL — DEFAULT GRAPH.
+# Catena: Ddl.osr:relatore → bnode → osr:senatore → senatore/ID
+#
+# Copertura osservata: ~55k relazioni · ~23k con senatore URI.
+
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_relatori"
+  source_id: "dati_senato"
+  tags: [politica, senato, relatori, ddl, accountability]
+  category: politica
+  years: [2026]
+  time_coverage:
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "ddl_relatori"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT ?d ?rel ?sen ?label ?organo ?tipo
+          WHERE {
+            ?d a osr:Ddl ; osr:relatore ?rel .
+            OPTIONAL { ?rel osr:senatore ?sen . }
+            OPTIONAL { ?rel rdfs:label ?label . }
+            OPTIONAL { ?rel osr:organo ?organo . }
+            OPTIONAL { ?rel osr:tipoRelatore ?tipo . }
+          }
+        accept_format: "sparql-results+json"
+        pages: 10
+        step: 10000
+        pagination: {"mode": "offset"}
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [ddl_id, relatore_label]
+  read:
+    source: auto
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    min_rows: 1000
+    primary_key: [ddl_id, relatore_label, organo]
+
+mart:
+  tables:
+    - name: "mart_relatori_per_ddl"
+      sql: "sql/mart_relatori_per_ddl.sql"
+    - name: "mart_relatori_per_senatore"
+      sql: "sql/mart_relatori_per_senatore.sql"
+  required_tables:
+    - "mart_relatori_per_ddl"
+  validate:
+    table_rules:
+      mart_relatori_per_ddl:
+        required_columns: [ddl_id, n_relatori]
+        primary_key: [ddl_id]
+        min_rows: 100
+
+validation:
+  fail_on_error: true
