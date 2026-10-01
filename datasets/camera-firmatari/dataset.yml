@@ -4,7 +4,8 @@
 # Proprietà: ocd:altro_firmatario, ocd:primo_firmatario (URI deputato)
 # NOTA: dc:contributor restituisce solo testo nome, non URI — fuori da questo dataset.
 #
-# Join: atto_camera (ac{leg}_{id}) → camera_ddl.id_ddl
+# Join: atto_camera (ac{leg}_{id}) + legislatura → camera_ddl (id_ddl + legislatura)
+#       atto_id_leg = '{leg}_{id}' (chiave stabile cross-leg)
 #       deputato URI → camera_deputati.persona_id (regex d{id}_)
 
 root: "../../out"
