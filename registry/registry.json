@@ -5,6 +5,72 @@
   "updated_at": "2026-10-01",
   "datasets": [
     {
+      "slug": "camera_atti_dibattito",
+      "name": "Camera Atti Dibattito",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2006,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "dibattito",
+        "iter",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "atto_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_id_leg",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "target_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_atti_dibattito/*/camera_atti_dibattito_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_atti_dibattito__mart_dibattiti_per_atto"
+      ]
+    },
+    {
       "slug": "camera_commissioni",
       "name": "Camera Commissioni",
       "description": "",
@@ -255,6 +321,86 @@
       "mart_refs": [
         "camera_deputati_legislature__mart_legislatura_genere",
         "camera_deputati_legislature__mart_top_mandati"
+      ]
+    },
+    {
+      "slug": "camera_firmatari",
+      "name": "Camera Firmatari",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1946,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "firmatari",
+        "ddl",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "atto_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_id_leg",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "deputato_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "deputato_label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_firmatari/*/camera_firmatari_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_firmatari__mart_firmatari_per_atto",
+        "camera_firmatari__mart_firmatari_per_deputato"
       ]
     },
     {
@@ -3309,6 +3455,16 @@
   ],
   "marts": [
     {
+      "slug": "camera_atti_dibattito__mart_dibattiti_per_atto",
+      "dataset": "camera_atti_dibattito",
+      "table": "mart_dibattiti_per_atto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_atti_dibattito/19/mart_dibattiti_per_atto.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_commissioni__mart_membro_organo",
       "dataset": "camera_commissioni",
       "table": "mart_membro_organo",
@@ -3375,6 +3531,26 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/open-politica/camera_deputati_legislature/2026/mart_top_mandati.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_firmatari__mart_firmatari_per_atto",
+      "dataset": "camera_firmatari",
+      "table": "mart_firmatari_per_atto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_firmatari/19/mart_firmatari_per_atto.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_firmatari__mart_firmatari_per_deputato",
+      "dataset": "camera_firmatari",
+      "table": "mart_firmatari_per_deputato",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_firmatari/19/mart_firmatari_per_deputato.parquet",
         "multi_file": false
       }
     },
@@ -4111,6 +4287,37 @@
       }
     },
     {
+      "id": "camera_atti_dibattito",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_atti_dibattito",
+      "detail": "anni 15-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261001T205112Z_c3fe5183",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 40718,
+          "clean": 20338,
+          "mart": 1050
+        },
+        "output_bytes": {
+          "raw": 4671442,
+          "clean": 153822,
+          "mart": 10902
+        },
+        "started_at": "2026-10-01T20:51:12.147846+00:00",
+        "finished_at": "2026-10-01T20:51:16.459917+00:00",
+        "duration_seconds": 4.312
+      }
+    },
+    {
       "id": "camera_commissioni",
       "source_id": "dati_camera",
       "status": "ok",
@@ -4201,6 +4408,37 @@
         "started_at": "2026-09-28T08:43:44.617933+00:00",
         "finished_at": "2026-09-28T08:43:56.546316+00:00",
         "duration_seconds": 11.928
+      }
+    },
+    {
+      "id": "camera_firmatari",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_firmatari",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261001T205246Z_d0890285",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 47632,
+          "clean": 23663,
+          "mart": 3321
+        },
+        "output_bytes": {
+          "raw": 7417806,
+          "clean": 235184,
+          "mart": 39541
+        },
+        "started_at": "2026-10-01T20:52:46.247203+00:00",
+        "finished_at": "2026-10-01T20:52:54.179307+00:00",
+        "duration_seconds": 7.932
       }
     },
     {
@@ -5153,6 +5391,12 @@
             "semantic_type": "person_id"
           },
           {
+            "slug": "camera_firmatari",
+            "name": "Camera Firmatari",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
             "slug": "camera_incarichi",
             "name": "Camera Incarichi",
             "column": "persona_id",
@@ -5250,7 +5494,7 @@
           }
         ],
         "types": {
-          "person_id": 9,
+          "person_id": 10,
           "senator_id": 9
         }
       },
