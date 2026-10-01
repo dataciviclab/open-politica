@@ -1,6 +1,8 @@
 -- mart_dibattiti_per_atto.sql
+-- PK: (atto_id_leg)
 
 SELECT
+    atto_id_leg,
     atto_id,
     legislatura,
     COUNT(*) AS n_link,
@@ -10,4 +12,4 @@ SELECT
     COUNT(DISTINCT target_uri) AS n_target_distinti
 FROM clean_input
 WHERE atto_id IS NOT NULL
-GROUP BY atto_id, legislatura
+GROUP BY atto_id_leg, atto_id, legislatura

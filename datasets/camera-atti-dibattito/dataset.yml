@@ -54,7 +54,7 @@ raw:
 clean:
   sql: "sql/clean.sql"
   read_mode: robust
-  required_columns: [atto_id, target_uri, ruolo]
+  required_columns: [atto_id, atto_id_leg, legislatura, target_uri, ruolo]
   read:
     source: auto
     header: true
@@ -64,7 +64,8 @@ clean:
     trim_whitespace: true
   validate:
     min_rows: 1000
-    primary_key: [atto_id, target_uri, ruolo]
+    # chiave qualificata: atto_id restarta per legislatura
+    primary_key: [atto_id_leg, target_uri, ruolo]
 
 mart:
   tables:
@@ -75,8 +76,8 @@ mart:
   validate:
     table_rules:
       mart_dibattiti_per_atto:
-        required_columns: [atto_id, n_dibattiti]
-        primary_key: [atto_id]
+        required_columns: [atto_id_leg, n_dibattiti]
+        primary_key: [atto_id_leg]
         min_rows: 100
 
 validation:

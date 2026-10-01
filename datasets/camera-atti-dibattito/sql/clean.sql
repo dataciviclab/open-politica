@@ -1,6 +1,7 @@
 -- clean.sql — camera_atti_dibattito
 --
--- URI: attocamera.rdf/ac{leg}_{id} · dibattito.rdf/dib{id}_{leg} · abbinamenti vari
+-- URI: attocamera.rdf/ac{leg}_{id} · dibattito/abbinamenti vari
+-- Chiave atto: atto_id + legislatura + atto_id_leg (restart per legislatura)
 -- Dedup obbligatorio: UNION + OFFSET non deterministico.
 
 WITH src AS (
@@ -25,14 +26,25 @@ parsed AS (
     FROM src
 ),
 
+qualified AS (
+    SELECT
+        *,
+        CASE
+            WHEN legislatura IS NOT NULL AND atto_id IS NOT NULL
+                THEN CAST(legislatura AS VARCHAR) || '_' || atto_id
+            ELSE atto_id
+        END AS atto_id_leg
+    FROM parsed
+),
+
 dedup AS (
     SELECT
         *,
         ROW_NUMBER() OVER (
-            PARTITION BY atto_id, target_uri, ruolo
+            PARTITION BY atto_id_leg, target_uri, ruolo
             ORDER BY target_uri, ruolo
         ) AS _rn
-    FROM parsed
+    FROM qualified
     WHERE atto_id IS NOT NULL AND atto_id <> ''
 )
 
@@ -40,6 +52,7 @@ SELECT
     atto_id,
     atto_uri,
     legislatura,
+    atto_id_leg,
     target_uri,
     ruolo
 FROM dedup

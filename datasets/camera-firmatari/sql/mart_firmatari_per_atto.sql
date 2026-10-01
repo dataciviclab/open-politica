@@ -1,6 +1,8 @@
 -- mart_firmatari_per_atto.sql
+-- PK: (atto_id_leg) — chiave qualificata legislatura+numero
 
 SELECT
+    atto_id_leg,
     atto_id,
     legislatura,
     COUNT(*) AS n_firmatari,
@@ -10,4 +12,4 @@ SELECT
     MIN(deputato_label) AS sample_firmatario
 FROM clean_input
 WHERE atto_id IS NOT NULL
-GROUP BY atto_id, legislatura
+GROUP BY atto_id_leg, atto_id, legislatura

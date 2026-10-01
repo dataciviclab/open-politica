@@ -12,7 +12,9 @@ Collega gli **atti della Camera** ai **deputati firmatari** (URI joinabili).
 
 ## Join utili
 
-- `atto_id` → `camera_ddl.id_ddl` (da URI `ac{leg}_{id}`)
+- **`atto_id_leg`** = `{legislatura}_{atto_id}` (es. `19_2886`) — chiave stabile
+- Join a `camera_ddl`: **`atto_id` + `legislatura`** (o `atto_id_leg`), **non** `atto_id` solo
+  - I numeri restartano per legislatura (stesso pattern di `camera-ddl`)
 - `persona_id` → `camera_deputati.persona_id`
 - `camera_voti.deputato_id` (stesso intero)
 
@@ -26,3 +28,5 @@ Collega gli **atti della Camera** ai **deputati firmatari** (URI joinabili).
 - `dc:contributor` senza URI: fuori scope (serve NER o match nominativo)
 - OFFSET Virtuoso non-deterministico → DISTINCT + ROW_NUMBER
 - Multi-legislatura: `years: [13..19]`
+- **Rischio cross-leg**: join solo su `atto_id` senza `legislatura` è ambiguo
+- Drop ~50% clean = dedup UNION/OFFSET (non perdita dati reali)
