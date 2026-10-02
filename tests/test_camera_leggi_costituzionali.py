@@ -42,9 +42,13 @@ def test_clean_esporta_chiavi_ponte():
         "ddl_numero",
     ):
         assert col in text, col
-    # dedup PK = URI legge_camera
+    # dedup PK = URI legge_camera (non id_legge)
     assert "PARTITION BY normalize_string(leg)" in text
-    assert "PARTITION BY" in text and "id_legge" not in text.split("ROW_NUMBER")[1].split("FROM")[0]
+    assert "PARTITION BY" in text
+    # non deve partizionare su id_legge
+    assert "PARTITION BY id_legge" not in text
+    assert "PARTITION BY\n            TRY_CAST" not in text
+    assert "PARTITION BY\n                TRY_CAST" not in text
 
 
 def test_dedup_preserva_lc_stesso_id_legge():
