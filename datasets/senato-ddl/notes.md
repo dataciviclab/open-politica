@@ -110,3 +110,39 @@ Aggiunta la mart che risponde alla domanda guida ("come nasce e muore una legge"
 - Tutte e 7 le legislature producono dati validi (~5.000 DDL ciascuna)
 - Totale: 36.142 DDL, 7 legislature (1996-2026)
 - `min_rows` abbassati: clean 100, mart_iter_tempi 10, mart_anno 2
+
+## 2026-10-02 — Fix `urn_normattiva` (costituzionali + placeholder)
+
+**Problema 1**: il clean sintetizzava URN anche su `dataLegge=2100-01-01`
+(placeholder del RDF Senato, verificato live su `ddl/58318` idDdl=53811)
+e usava sempre namespace `legge:` anche per le leggi costituzionali —
+non joinabili con `revisioni_costituzionali` / `camera_leggi`
+(`urn:nir:stato:legge.costituzionale:…`).
+
+**Problema 2 (bug subtle)**: le 3 sorgenti SPARQL coprono colonne diverse
+(q1=natura, q2a=numeroLegge/dataLegge). Un `MAX(CASE WHEN natura=… AND dataLegge=…)`
+**per riga** non vedeva mai entrambi i campi sulla stessa riga → per le
+costituzionali prevaleva il branch ELSE `legge:`.
+
+**Fix** in `sql/clean.sql`:
+1. subquery di aggregazione (`GROUP BY ddl + MAX`) su tutte le colonne
+2. URN calcolata **dopo**, sui campi aggregati
+3. placeholder / data mancante → `urn_normattiva = NULL`
+4. `natura='costituzionale'` + data reale → `legge.costituzionale:YYYY-MM-DD;N`
+5. altri atti + data reale → `legge:YYYY-MM-DD;N`
+
+**Verifica locale** (clean rilanciati Leg13–19, 2026-10-02):
+- 0 URN con `2100-01-01`
+- costituzionali con data reale → namespace `legge.costituzionale:`
+- es. Leg19: `urn:nir:stato:legge.costituzionale:2026-05-18;2` (Trentino)
+
+**Nota**: il RDF Senato **non pubblica** URN Normattiva
+(`osr:lex` assente; `testoApprovato` è URN Senato). L'URN qui è
+**derivata**, non una trascrizione della fonte.
+
+**Consumatori**: `costituzione-italiana/compose/iter-costituzionale`,
+`legal-graph` (`KEYS.md` urn_normattiva ←→ italia-corpus.urn).
+Dettagli e indagine SPARQL: issue #45.
+
+**Test**: `tests/test_senato_ddl_urn_normattiva.py` (placeholder → NULL,
+namespace costituzionale, dati misti → data reale).
