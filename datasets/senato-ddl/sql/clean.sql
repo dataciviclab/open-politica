@@ -14,7 +14,8 @@
 --
 -- URN (2026-10-02): calcolata DOPO l'aggregazione (natura/data/numero
 -- possono stare su sorgenti SPARQL diverse — caso ROW-LEVEL era sbagliato).
--- Placeholder 2100-01-01 → NULL; costituzionali → namespace legge.costituzionale.
+-- Placeholder 2100-01-01 → NULL (escluso anche da MAX(data_legge));
+-- costituzionale (case-insensitive) + data reale → legge.costituzionale.
 
 SELECT
     id_ddl,
@@ -51,7 +52,7 @@ SELECT
          AND data_legge IS NOT NULL
          AND CAST(data_legge AS DATE) <> DATE '2100-01-01'
             THEN CASE
-                WHEN natura = 'costituzionale'
+                WHEN LOWER(COALESCE(natura, '')) = 'costituzionale'
                     THEN 'urn:nir:stato:legge.costituzionale:'
                          || CAST(CAST(data_legge AS DATE) AS VARCHAR)
                          || ';' || CAST(numero_legge AS VARCHAR)
@@ -103,7 +104,13 @@ FROM (
         MAX(TRY_CAST(strftime(TRY_CAST(dataPresentazione AS DATE), '%Y') AS INTEGER)) AS anno,
         MAX(normalize_string(presentatoTrasmesso))                    AS presentato_trasmesso,
         MAX(TRY_CAST(CAST(numeroLegge AS VARCHAR) AS BIGINT))         AS numero_legge,
-        MAX(TRY_CAST(dataLegge AS DATE))                              AS data_legge,
+        -- Solo date valide: il placeholder 2100-01-01 non deve vincere
+        -- su MAX quando lo stesso ddl ha anche una data reale (sorgenti diverse).
+        MAX(CASE
+                WHEN TRY_CAST(dataLegge AS DATE) IS NOT NULL
+                 AND TRY_CAST(dataLegge AS DATE) <> DATE '2100-01-01'
+                    THEN TRY_CAST(dataLegge AS DATE)
+            END)                                                      AS data_legge,
         MAX(normalize_string(relatore))                               AS relatore,
         MAX(normalize_string(classificazione))                        AS classificazione,
         MAX(normalize_string(assegnazione))                           AS assegnazione,

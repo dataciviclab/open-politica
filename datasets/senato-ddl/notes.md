@@ -142,6 +142,7 @@ costituzionali prevaleva il branch ELSE `legge:`.
 
 **Consumatori**: `costituzione-italiana/compose/iter-costituzionale`,
 `legal-graph` (`KEYS.md` urn_normattiva ←→ italia-corpus.urn).
-Issue: dataciviclab/open-politica#45
+Dettagli e indagine SPARQL: issue #45.
 
-**Report indagine**: `_local/notes/current/2026-10-02_SPARQL_camera_senato_chiavi_DDL_costituzionali.md`
+**Test**: `tests/test_senato_ddl_urn_normattiva.py` (placeholder → NULL,
+namespace costituzionale, dati misti → data reale).
