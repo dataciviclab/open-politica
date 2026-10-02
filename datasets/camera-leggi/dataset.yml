@@ -100,7 +100,9 @@ clean:
     - legge_key_year
   read:
     source: auto
-    mode: latest
+    # union_by_name delle 2 sorgenti SPARQL (13-19 + LC* globali).
+    # mode: latest leggerebbe solo l'ultima e perderebbe la source complementare.
+    mode: all
     header: true
     encoding: "utf-8"
     strict_mode: false
