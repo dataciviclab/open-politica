@@ -7,6 +7,9 @@
 --                                      --osr:tipoIniziativa--> "Parlamentare"
 --                                      --osr:senatore--> URI senatore (se senatore)
 --
+-- ddl_id = osr:idDdl (numerazione globale Leg13–19, NON l'id URI /ddl/N).
+-- Join a senato-ddl.id_ddl è 1:1; la legislatura non serve qui (path {year}).
+--
 -- Nota: non tutti i firmatari hanno osr:senatore (i presentatori "On." deputati
 -- o "Ministro" governativi non hanno URL senatore). primoFirmatario è presente
 -- su ~16% delle iniziative (il resto è "ed altri" non espanso in risorse).

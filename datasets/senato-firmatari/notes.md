@@ -42,13 +42,29 @@
 ## 2026-10-02 — Pattern C multi-legislature
 
 - `years: [13..19]`, query `GRAPH <.../ddl/{year}>`
-- Clean non ha colonna legislatura (join via `senato-ddl.id_ddl`)
+- Clean non espone `legislatura`: join a `senato-ddl` via `ddl_id` = `osr:idDdl`
 - Con `data_aggiunta_firma`: 6.731 · con `data_ritiro_firma`: 161
 - Con `deputato_url` (link Camera): 21.755 · con `senatore_id`: 12.792
 - Firma media: ~8.1 iniziative per idDdl
+
+### `osr:idDdl` è globale su Leg13–19 (review PR #52)
+
+Verifica su clean multi-leg (2026-10-02):
+
+- `ddl_id` firmatari **disgiunti** tra legislature (leg13 `2–12014`, leg19 `50862–55687`; overlap = 0)
+- `senato-ddl.id_ddl` in >1 legislatura: **0 / 34.360**
+- Join firmatari → senato-ddl: 27.969 match **1:1**, 0 match multipli
+- Leg19: 4.753 / 4.754 id firmatari presenti in `senato-ddl`
+
+Quindi `ddl_id` **non** riparte per graph: la join multi-anno collassa solo se si unisce senza filtrare legislatura sul lato ddl.  
+Il clean firmatari resta senza colonna `legislatura` di proposito (una riga = iniziativa; la leg. è nel path `{year}` del run e in `senato-ddl`).
+
+~34% id senza match `senato-ddl`: ddl senza metadati nel graph o esclusi dal clean ddl (`HAVING fase IS NOT NULL`) — non collisione di chiave.
 
 ## Limiti dichiarati
 
 - **NON risponde "tutti i firmatari"**: il graph espande i presentatori dichiarati
   (per idDdl), non l'elenco completo "ed altri" del testo `descrIniziativa`.
 - Presentatori non-senatori (deputati, ministri) inclusi con `senatore_id = NULL`.
+- Join a `senato-ddl` solo sugli id presenti in entrambi i clean; id firmatari
+  senza controparte ddl non sono un bug di Pattern C.

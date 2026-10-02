@@ -9,7 +9,7 @@ dataset:
   category: politica
   years: [2026]
   time_coverage:
-    # XIX legislatura — dai clean dei sorgenti
+    # Raw compose su votazioni Leg19; i support multi-leg coprono anche le leg. storiche
     start_year: 2022
     end_year: 2026
 

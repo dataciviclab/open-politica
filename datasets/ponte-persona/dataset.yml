@@ -9,7 +9,7 @@ dataset:
   category: politica
   years: [2026]
   time_coverage:
-    # XIX legislatura — anagrafica senatori vs anagrafica deputati (tutte le leg.)
+    # Ponte su anagrafica Camera 2026 + Senato multi-leg (preprocess usa l'ultima leg.)
     start_year: 2022
     end_year: 2026
 

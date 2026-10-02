@@ -14,6 +14,10 @@ presidente, vicepresidente, capogruppo, segretario, questore.
 
 - `years: [13..19]`, query `rif_leg <.../repubblica_{year}>`
 - Clean: `{year} AS legislatura`; min_rows 150 (per-leg)
+- PK `(deputato_id, organo_id, carica, data_inizio)`: `GROUP BY dep,org,car,inizio`
+  + `max(fine)` collassa più URI `up/*` sullo stesso periodo. Se in futuro
+  compaiono due membership con stesso inizio e **cariche diverse** non gestite
+  dal GROUP BY, allargare la PK — da verificare al primo run multi-leg pieno.
 - **Cariche**: CAPOGRUPPO (365), SEGRETARIO (168), VICEPRESIDENTE (132),
   PRESIDENTE (93), QUESTORE (18)
 
