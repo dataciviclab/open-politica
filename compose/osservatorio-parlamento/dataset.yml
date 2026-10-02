@@ -9,7 +9,7 @@ dataset:
   category: politica
   years: [2026]
   time_coverage:
-    # Raw su senato_ddl Leg19; support gruppi multi-leg (13–19)
+    # produione ddl/gruppi: XIX leg.; votazioni/rappresentanza: dove coperto
     start_year: 2022
     end_year: 2026
 
@@ -38,7 +38,7 @@ support:
   - type: dataset
     name: senato_gruppi
     config: ../../datasets/senato-gruppi/dataset.yml
-    years: [13, 14, 15, 16, 17, 18, 19]
+    years: [2026]
   - type: dataset
     name: camera_deputati
     config: ../../datasets/camera-deputati-legislature/dataset.yml

@@ -55,19 +55,9 @@ CLEAN_WITH_YEAR = [
     "camera-relatori",
 ]
 
-# compose/dataset che puntano support multi-anno Pattern C
-COMPOSE_SUPPORT = {
-    "compose/profilo-politico/dataset.yml": {
-        "senato_anagrafica": [13, 14, 15, 16, 17, 18, 19],
-        "senato_gruppi": [13, 14, 15, 16, 17, 18, 19],
-        "senato_commissioni": [13, 14, 15, 16, 17, 18, 19],
-        "senato_interventi": [13, 14, 15, 16, 17, 18, 19],
-        "camera_commissioni": [13, 14, 15, 16, 17, 18, 19],
-        "camera_relatori": [16, 17, 18, 19],
-    },
-    "compose/osservatorio-parlamento/dataset.yml": {
-        "senato_gruppi": [13, 14, 15, 16, 17, 18, 19],
-    },
+# Support multi-anno Pattern C nei dataset (non compose — fuori scope PR #52).
+# I compose restano su years:[2026] fino a un follow-up dedicato.
+DATASET_SUPPORT = {
     "datasets/ponte-persona/dataset.yml": {
         "senato_anagrafica": [13, 14, 15, 16, 17, 18, 19],
     },
@@ -104,15 +94,45 @@ def test_pattern_c_clean_inietta_legislatura():
         assert "AS legislatura" in sql, ds
 
 
-def test_compose_support_years_allineati():
-    """contract: i support Pattern C nei compose toccati non restano su [2026]."""
-    for rel, expected in COMPOSE_SUPPORT.items():
+def test_dataset_support_years_allineati():
+    """contract: support multi-anno Pattern C nei dataset (non compose)."""
+    for rel, expected in DATASET_SUPPORT.items():
         cfg = _load(rel)
         support = {s["name"]: s for s in cfg.get("support", []) if isinstance(s, dict)}
         for name, years in expected.items():
             assert name in support, f"{rel}: manca support {name}"
             assert support[name].get("years") == years, (
                 f"{rel}: support {name} years={support[name].get('years')} != {years}"
+            )
+
+
+def test_compose_fuori_scope_pattern_c():
+    """policy: i compose non devono essere toccati da Pattern C (follow-up dedicato).
+
+    Se un compose dovesse già dichiarare support multi-anno sui dataset
+    Pattern C, questo test fallisce: allora il pin è entrato per sbaglio
+    e va spostato nella PR dei compose.
+    """
+    for rel in (
+        "compose/profilo-politico/dataset.yml",
+        "compose/osservatorio-parlamento/dataset.yml",
+    ):
+        cfg = _load(rel)
+        support = {s["name"]: s for s in cfg.get("support", []) if isinstance(s, dict)}
+        for name in (
+            "senato_anagrafica",
+            "senato_gruppi",
+            "senato_commissioni",
+            "senato_interventi",
+            "camera_commissioni",
+            "camera_relatori",
+        ):
+            if name not in support:
+                continue
+            years = support[name].get("years") or []
+            # ammesso solo [2026] o assente: multi-anno = fuori scope
+            assert years in ([], [2026]), (
+                f"{rel}: support {name} years={years} — Pattern C non tocca i compose"
             )
 
 

@@ -50,6 +50,7 @@ raw:
         pagination: {"mode": "offset"}
 
 support:
+  # multi-leg (13–19): clean anagrafica su path {year}/ dopo Pattern C
   - name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml
     years: [13, 14, 15, 16, 17, 18, 19]

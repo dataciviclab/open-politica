@@ -9,7 +9,7 @@ dataset:
   category: politica
   years: [2026]
   time_coverage:
-    # Raw compose su votazioni Leg19; i support multi-leg coprono anche le leg. storiche
+    # XIX legislatura — dai clean dei sorgenti
     start_year: 2022
     end_year: 2026
 
@@ -30,7 +30,7 @@ support:
   - type: dataset
     name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml
-    years: [13, 14, 15, 16, 17, 18, 19]
+    years: [2026]
   - type: dataset
     name: ponte_persona
     config: ../../datasets/ponte-persona/dataset.yml
@@ -42,7 +42,7 @@ support:
   - type: dataset
     name: senato_gruppi
     config: ../../datasets/senato-gruppi/dataset.yml
-    years: [13, 14, 15, 16, 17, 18, 19]
+    years: [2026]
   - type: dataset
     name: camera_voti
     config: ../../datasets/camera-voti/dataset.yml
@@ -54,11 +54,11 @@ support:
   - type: dataset
     name: senato_commissioni
     config: ../../datasets/senato-commissioni/dataset.yml
-    years: [13, 14, 15, 16, 17, 18, 19]
+    years: [2026]
   - type: dataset
     name: camera_relatori
     config: ../../datasets/camera-relatori/dataset.yml
-    years: [16, 17, 18, 19]
+    years: [2026]
   - type: dataset
     name: camera_interventi
     config: ../../datasets/camera-interventi/dataset.yml
@@ -66,11 +66,11 @@ support:
   - type: dataset
     name: senato_interventi
     config: ../../datasets/senato-interventi/dataset.yml
-    years: [13, 14, 15, 16, 17, 18, 19]
+    years: [2026]
   - type: dataset
     name: camera_commissioni
     config: ../../datasets/camera-commissioni/dataset.yml
-    years: [13, 14, 15, 16, 17, 18, 19]
+    years: [2026]
 
 clean:
   sql: "sql/clean.sql"
