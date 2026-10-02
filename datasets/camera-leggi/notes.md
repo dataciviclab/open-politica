@@ -27,3 +27,10 @@ Questo è il ponte chiave tra Camera e Legal Graph.
 - Endpoint: `https://dati.camera.it/sparql` — Virtuoso / OpenData Camera
 - Predicati: `ocd:legge`, `rdfs:label`, `dc:identifier`, `dc:date`,
   `dc:type`, `ocd:lex`, `dc:publisher`, `ocd:rif_leg`
+- **Source 2 (2026-10-02)**: costituzionali `LC*` su tutte le legislature
+  (`ocd:lavoriPreparatori` → `ocd:rif_attoCamera`, `ocd:rif_natura`).
+  Live Camera: 100 costituzionali con `ocd:lex` (74 full-date + 26 year-form).
+  Senza questa source mancavano le leggi pre-1996 (es. LC1947_*).
+- Colonne derivate: `atto_camera`, `natura_atto`, `legge_key_full`,
+  `legge_key_year` per join con `revisioni_costituzionali` e DDL.
+- Mart: `mart_costituzionali` (copertura URN/atto sulle sole costituzionali).
