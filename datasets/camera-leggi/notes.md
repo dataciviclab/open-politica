@@ -30,7 +30,21 @@ Questo è il ponte chiave tra Camera e Legal Graph.
 - **Source 2 (2026-10-02)**: costituzionali `LC*` su tutte le legislature
   (`ocd:lavoriPreparatori` → `ocd:rif_attoCamera`, `ocd:rif_natura`).
   Live Camera: 100 costituzionali con `ocd:lex` (74 full-date + 26 year-form).
-  Senza questa source mancavano le leggi pre-1996 (es. LC1947_*).
 - Colonne derivate: `atto_camera`, `natura_atto`, `legge_key_full`,
   `legge_key_year` per join con `revisioni_costituzionali` e DDL.
 - Mart: `mart_costituzionali` (copertura URN/atto sulle sole costituzionali).
+
+## 2026-10-02 — Partizione multi-anno (`{year}`)
+
+**Bug**: source LC* year-less rilanciata a ogni run 13–19 → ogni clean
+riprendeva tutte le LC. Nel union del consumatore: **49 LC × 7 anni**.
+
+**Fix** in `sql/clean.sql` (toolkit `{year}`):
+- `legislatura = {year}` → solo le leggi di questa legislatura
+- LC orfane (legislatura NULL o fuori 13–19) → solo `{year}=19`
+
+**Verifica locale Leg13–19** (2026-10-02):
+- URI in **più** file year: **0**
+- LC distinct in union: **49**
+- Distribuzione LC: leg13=7, 14=2, 15=1, 16=4, 17=2, 18=4, **19=29** (moderne + orfane)
+- Test: `tests/test_camera_leggi_costituzionali.py` (partizione + unicità multi-anno)
