@@ -678,6 +678,30 @@
           "type": "BIGINT",
           "role": "metric",
           "description": ""
+        },
+        {
+          "name": "atto_camera",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "natura_atto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legge_key_full",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legge_key_year",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
         }
       ],
       "location": {
@@ -689,7 +713,8 @@
       "mart_refs": [
         "camera_leggi__mart_tipo",
         "camera_leggi__mart_anno",
-        "camera_leggi__mart_normattiva"
+        "camera_leggi__mart_normattiva",
+        "camera_leggi__mart_costituzionali"
       ]
     },
     {
@@ -3615,6 +3640,16 @@
       }
     },
     {
+      "slug": "camera_leggi__mart_costituzionali",
+      "dataset": "camera_leggi",
+      "table": "mart_costituzionali",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/19/mart_costituzionali.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_leggi__mart_normattiva",
       "dataset": "camera_leggi",
       "table": "mart_normattiva",
@@ -4541,7 +4576,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084534Z_18c130db",
+        "run_id": "20261002T194734Z_27a7514c",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4550,18 +4585,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 353,
-          "clean": 188,
-          "mart": 8
+          "raw": 354,
+          "clean": 400,
+          "mart": 35
         },
         "output_bytes": {
-          "raw": 163524,
-          "clean": 18015,
-          "mart": 1153
+          "raw": 227293,
+          "clean": 39403,
+          "mart": 2520
         },
-        "started_at": "2026-09-28T08:45:34.126912+00:00",
-        "finished_at": "2026-09-28T08:45:35.074745+00:00",
-        "duration_seconds": 0.948
+        "started_at": "2026-10-02T19:47:34.664103+00:00",
+        "finished_at": "2026-10-02T19:47:37.076799+00:00",
+        "duration_seconds": 2.413
       }
     },
     {
