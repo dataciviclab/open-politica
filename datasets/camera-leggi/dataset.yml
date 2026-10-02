@@ -111,7 +111,9 @@ clean:
     null_padding: false
   validate:
     not_null: [legge_camera, id_legge]
-    primary_key: [id_legge]
+    # PK = URI legge_camera: L[C]{anno}_{n} restarta ogni anno
+    # (id_legge non è univoca — LC2022_1 vs LC2013_1)
+    primary_key: [legge_camera]
     min_rows: 100
 
 mart:

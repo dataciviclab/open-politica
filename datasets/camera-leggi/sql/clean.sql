@@ -74,8 +74,10 @@ raw_dedup AS (
             ELSE NULL
         END                                                                 AS legge_key_year,
         ROW_NUMBER() OVER (
-            PARTITION BY
-                TRY_CAST(regexp_extract(normalize_string(leg), 'L[C]?\d+_(\d+)', 1) AS BIGINT)
+            -- PK = legge_camera (URI): L[C]{anno}_{n} restarta ogni anno,
+            -- NON è univoca su solo id_legge (es. LC2022_1 vs LC2013_1).
+            -- Dedup solo su URI evita che una costituzionale sovrascriva un'altra.
+            PARTITION BY normalize_string(leg)
             ORDER BY
                 -- priorità: costituzionale > data più recente
                 CASE WHEN UPPER(COALESCE(normalize_string(tipo), '')) = 'COSTITUZIONALE' THEN 0 ELSE 1 END,
