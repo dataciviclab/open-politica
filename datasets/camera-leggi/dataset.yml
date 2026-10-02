@@ -27,22 +27,77 @@ raw:
           SELECT ?leg (MAX(REPLACE(REPLACE(?label, "\n", " "), "\r", " ")) AS ?label)
                  (MAX(?num) AS ?num) (MAX(?data) AS ?data) (MAX(?tipo) AS ?tipo)
                  (MAX(?lex) AS ?lex) (MAX(?gu) AS ?gu) (MAX(?leg_num) AS ?leg_num)
+                 (MAX(?atto) AS ?atto) (MAX(?natura_atto) AS ?natura_atto)
           WHERE {
             ?leg a ocd:legge ; rdfs:label ?label ; dc:identifier ?num ;
                    dc:date ?data ; dc:type ?tipo ; ocd:rif_leg ?leg_num .
             OPTIONAL { ?leg ocd:lex ?lex . }
             OPTIONAL { ?leg dc:publisher ?gu . }
+            OPTIONAL {
+              ?leg ocd:lavoriPreparatori ?lp .
+              ?lp ocd:rif_attoCamera ?atto .
+            }
+            OPTIONAL { ?atto ocd:rif_natura ?natura_atto . }
             ?leg ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
           }
           GROUP BY ?leg
         pages: 1
         step: 10000
         accept_format: "sparql-results+json"
+    # Costituzionali su TUTTE le legislature (LC*), non solo Leg13–19:
+    # senza questo source mancano le leggi pre-1996 (il ponte DDL↔Normattiva
+    # per revisioni storiche). Live Camera 2026-10-02: 100 LC con ocd:lex.
+    - name: "camera_leggi_costituzionali_sparql"
+      type: "sparql"
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          SELECT ?leg (MAX(REPLACE(REPLACE(?label, "\n", " "), "\r", " ")) AS ?label)
+                 (MAX(?num) AS ?num) (MAX(?data) AS ?data) (MAX(?tipo) AS ?tipo)
+                 (MAX(?lex) AS ?lex) (MAX(?gu) AS ?gu) (MAX(?leg_num) AS ?leg_num)
+                 (MAX(?atto) AS ?atto) (MAX(?natura_atto) AS ?natura_atto)
+          WHERE {
+            ?leg a ocd:legge ; rdfs:label ?label ; dc:identifier ?num ;
+                   dc:date ?data ; dc:type ?tipo .
+            OPTIONAL { ?leg ocd:rif_leg ?leg_num }
+            OPTIONAL { ?leg ocd:lex ?lex . }
+            OPTIONAL { ?leg dc:publisher ?gu . }
+            OPTIONAL {
+              ?leg ocd:lavoriPreparatori ?lp .
+              ?lp ocd:rif_attoCamera ?atto .
+            }
+            OPTIONAL { ?atto ocd:rif_natura ?natura_atto . }
+            FILTER(
+              STRSTARTS(STR(?leg), "http://dati.camera.it/ocd/legge.rdf/LC")
+              || STRSTARTS(STR(?lex), "urn:nir:stato:legge.costituzionale")
+              || ?tipo = "Costituzionale"
+            )
+          }
+          GROUP BY ?leg
+        pages: 1
+        step: 5000
+        accept_format: "sparql-results+json"
 
 clean:
   sql: "sql/clean.sql"
   read_mode: robust
-  required_columns: [legge_camera, id_legge, titolo, tipo, data_promulgazione, legislatura, anno, urn_normattiva, gu_pubblicazione, ddl_numero]
+  required_columns:
+    - legge_camera
+    - id_legge
+    - titolo
+    - tipo
+    - data_promulgazione
+    - legislatura
+    - anno
+    - urn_normattiva
+    - gu_pubblicazione
+    - ddl_numero
+    - atto_camera
+    - natura_atto
+    - legge_key_full
+    - legge_key_year
   read:
     source: auto
     mode: latest
@@ -67,9 +122,12 @@ mart:
       sql: "sql/mart_anno.sql"
     - name: "mart_normattiva"
       sql: "sql/mart_normattiva.sql"
+    - name: "mart_costituzionali"
+      sql: "sql/mart_costituzionali.sql"
   required_tables:
     - "mart_tipo"
     - "mart_anno"
+    - "mart_costituzionali"
   validate:
     table_rules:
       mart_tipo:
@@ -82,6 +140,9 @@ mart:
         min_rows: 2
       mart_normattiva:
         required_columns: [con_urn, senza_urn]
+        min_rows: 1
+      mart_costituzionali:
+        required_columns: [n_costituzionali, con_urn, con_atto]
         min_rows: 1
 
 validation:
