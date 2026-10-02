@@ -7,9 +7,10 @@ dataset:
   source_id: "dati_senato"
   tags: [politica, senato, ddl, firmatari, iter-legislativo]
   category: politica
-  years: [2026]
+  years: [13, 14, 15, 16, 17, 18, 19]
   time_coverage:
-    start_year: 2022
+    # Leg XIII–XIX — graph ddl/{year} (I–XII non pubblicati nel LOD)
+    start_year: 1996
     end_year: 2026
 
 raw:
@@ -31,7 +32,7 @@ raw:
                  (MAX(?dataRitiroFirma) AS ?dataRitiroFirma)
                  (MAX(?deputato) AS ?deputato)
           WHERE {
-            GRAPH <http://dati.senato.it/ddl/19> {
+            GRAPH <http://dati.senato.it/ddl/{year}> {
               ?ddl osr:iniziativa ?iniziativa .
               OPTIONAL { ?ddl osr:idDdl ?idDdl . }
             }
@@ -44,8 +45,8 @@ raw:
             OPTIONAL { ?iniziativa <http://dati.camera.it/ocd/rif_deputato> ?deputato . }
           }
           GROUP BY ?ddl ?iniziativa
-        # il WAF Senato tronca a ~10k righe/risposta: paginazione OFFSET.
-        # 34.761 iniziative totali → 4 pagine da 10k (3 pagine = 30k = tronca ~4.7k)
+        # WAF Senato tronca a ~10k righe/risposta. Leg19 ~35k iniziative → 4 pagine;
+        # legislature storiche generalmente sotto le 10k (1 pagina basta, extra innocue).
         pages: 4
         step: 10000
         accept_format: "sparql-results+json"
@@ -63,8 +64,8 @@ clean:
     trim_whitespace: true
   validate:
     not_null: [ddl, presentatore]
-    # 34.761 iniziative totali (paginato a 4 pagine) — perdere 1 pagina (<30k) fallisce
-    min_rows: 30000
+    # una run = una legislatura: min_rows sul per-leg (Leg19 ~35k; storiche meno)
+    min_rows: 1000
     # una riga = una coppia (ddl URI, iniziativa) — un idDdl può avere più URI
     primary_key: [ddl, iniziativa]
 
@@ -84,11 +85,11 @@ mart:
       mart_firmatari_ddl:
         required_columns: [ddl_id, n_firmatari]
         primary_key: [ddl_id]
-        min_rows: 1000
+        min_rows: 200
       mart_tipo_iniziativa:
         required_columns: [tipo_iniziativa, n_firmatari]
         primary_key: [tipo_iniziativa]
-        min_rows: 2
+        min_rows: 1
 
 validation:
   fail_on_error: true

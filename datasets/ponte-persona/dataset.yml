@@ -21,7 +21,7 @@ support:
   - type: dataset
     name: senato_anagrafica
     config: ../senato-anagrafica/dataset.yml
-    years: [2026]
+    years: [13, 14, 15, 16, 17, 18, 19]
 
 raw:
   output_policy: overwrite

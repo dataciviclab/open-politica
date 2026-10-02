@@ -1,4 +1,4 @@
-# Commissioni del Senato (XIX leg.) — membership e cariche
+# Commissioni del Senato — membership e cariche (Leg13–19)
 root: "../../out"
 schema_version: 1
 
@@ -7,10 +7,10 @@ dataset:
   source_id: "dati_senato"
   tags: [politica, senato, commissioni, membership, iter]
   category: politica
-  years: [2026]
+  years: [13, 14, 15, 16, 17, 18, 19]
   time_coverage:
-    # XIX legislatura — graph composizione/19 (osr:Afferenza)
-    start_year: 2022
+    # Leg XIII–XIX — graph composizione/{year} (osr:Afferenza)
+    start_year: 1996
     end_year: 2026
 
 raw:
@@ -26,7 +26,7 @@ raw:
           SELECT ?sen (MAX(?car) AS ?car) (MAX(?ini) AS ?ini) (MAX(?fin) AS ?fin)
                  (MAX(?titolo) AS ?titolo) (MAX(?breve) AS ?breve) (MAX(?cat) AS ?cat) ?comm
           WHERE {
-            GRAPH <http://dati.senato.it/composizione/19> {
+            GRAPH <http://dati.senato.it/composizione/{year}> {
               ?sen osr:afferisce ?aff .
               ?aff a osr:Afferenza ; osr:commissione ?comm .
               OPTIONAL { ?aff osr:carica ?car . }
@@ -54,10 +54,9 @@ clean:
     trim_whitespace: true
   validate:
     not_null: [senatore_id, commissione_id]
-    # una riga = periodo di appartenenza di un senatore a una commissione
-    # con un ruolo (stesso senatore/comm/data può avere più cariche: Membro+Segretario)
+    # una riga = periodo di appartenenza a una commissione (per leg.)
     primary_key: [senatore_id, commissione_id, carica, data_inizio, data_fine]
-    min_rows: 800
+    min_rows: 300
 
 mart:
   tables:
@@ -71,11 +70,11 @@ mart:
     table_rules:
       mart_sintesi:
         required_columns: [commissione_id, nome, n_membri]
-        min_rows: 10
+        min_rows: 1
       mart_membro_commissione:
         required_columns: [senatore_id, n_commissioni]
         primary_key: [senatore_id]
-        min_rows: 100
+        min_rows: 20
 
 validation:
   fail_on_error: true

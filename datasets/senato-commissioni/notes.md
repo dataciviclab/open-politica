@@ -1,4 +1,4 @@
-# senato_commissioni — commissioni del Senato (XIX leg.)
+# senato_commissioni — commissioni del Senato (Leg13–19)
 
 Membership dei senatori alle commissioni parlamentari — la **fase 3** dell'iter
 legislativo (dove si esamina e si scrive davvero la legge), prima del voto in
@@ -7,12 +7,17 @@ senatore".
 
 ## Dati
 
-- **Fonte**: dati.senato.it — SPARQL, graph `composizione/19` (`osr:Afferenza`)
-- **Righe**: 1.052 (una per periodo di appartenenza con ruolo)
-- **Commissioni**: 46 (permanenti per materia, speciali, d'inchiesta, giunte,
+- **Fonte**: dati.senato.it — SPARQL, graph `composizione/{year}` (`osr:Afferenza`)
+- **Righe**: Leg19 ~1.052 (una per periodo di appartenenza con ruolo)
+- **Commissioni**: ~46 su Leg19 (permanenti per materia, speciali, d'inchiesta, giunte,
   organismi interni)
 - **Campi**: `senatore_id`, `commissione_id`, `nome`, `materia`, `categoria`,
-  `carica` (Membro/Presidente/Vicepresidente...), `data_inizio`, `data_fine`
+  `carica` (Membro/Presidente/Vicepresidente...), `data_inizio`, `data_fine`, `legislatura`
+
+## 2026-10-02 — Pattern C multi-legislature
+
+- `years: [13..19]`, query `GRAPH <.../composizione/{year}>`
+- Clean: `{year} AS legislatura`; min_rows 300 (per-leg)
 
 ## Come si legge
 

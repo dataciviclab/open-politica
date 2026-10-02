@@ -3,7 +3,8 @@
 ## Fonte
 
 - Endpoint SPARQL Senato: `https://dati.senato.it/sparql` (GET obbligatorio, POST 403)
-- Namespace `osr:` (`http://dati.senato.it/osr/`), graph `http://dati.senato.it/ddl/19`
+- Namespace `osr:` (`http://dati.senato.it/osr/`), graph `http://dati.senato.it/ddl/{year}`
+- **Perimetro**: Leg13–19 (`years: [13..19]`). I–XII non pubblicati nel LOD Senato.
 - **I firmatari NON sono un predicato diretto del ddl**: sono risorse
   `osr:iniziativa` collegate via `osr:iniziativa` dal ddl. La catena è:
   `ddl → iniziativa/INIZ-DDL-{n} → presentatore / primoFirmatario / tipoIniziativa / senatore`
@@ -27,17 +28,21 @@
 - **`tipoIniziativa`**: presente al 100% — Parlamentare, Governativa, Regionale,
   CNEL, Popolare.
 - **⚠️ WAF Senato tronca a ~10.000 righe/risposta**: la query firmatari produce
-  ~38.000 righe → serve paginazione OFFSET (`pages: 4, step: 10000`). Con 3
-  pagine il CSV si fermava a 30k (perdeva ~8.000 righe silenziosamente —
-  scoperto confrontando col COUNT fonte: 34.761 iniziative vs 29.522 catturate).
+  ~38.000 righe su Leg19 → paginazione OFFSET (`pages: 4, step: 10000`).
+  Legislature storiche generalmente sotto le 10k (extra pagine innocue).
 - **`dataAggiuntaFirma`/`dataRitiroFirma`**: la fonte le fornisce in formato ISO
   (es. 2023-05-26), NON YYYYMMDD — il clean le casta direttamente a DATE.
 
 ## Volumi
 
-- DDL con metadati (graph ddl/19): 5.124
-- Iniziative/presentatori totali: **37.992** (4 pagine — completo)
-- idDdl distinti: 4.659 — match 100% con `senato-ddl`
+- Leg19 (riferimento): DDL con metadati ~5.124 · iniziative ~38k · idDdl ~4.659
+- min_rows clean abbassato a 1.000 (per-leg, non sul totale multi-anno)
+- I–XII: graph `ddl/{1..12}` = 0 triple live (2026-10-02) — non espandibile
+
+## 2026-10-02 — Pattern C multi-legislature
+
+- `years: [13..19]`, query `GRAPH <.../ddl/{year}>`
+- Clean non ha colonna legislatura (join via `senato-ddl.id_ddl`)
 - Con `data_aggiunta_firma`: 6.731 · con `data_ritiro_firma`: 161
 - Con `deputato_url` (link Camera): 21.755 · con `senatore_id`: 12.792
 - Firma media: ~8.1 iniziative per idDdl

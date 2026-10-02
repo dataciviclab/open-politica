@@ -1,6 +1,7 @@
 -- clean.sql — camera_relatori
 -- Il deputato relatore di un atto (il "regista politico" che segue e dirige
--- la legge in commissione). Una riga per incarico da relatore.
+-- la legge in commissione). Una riga per incarico da relatore (Leg13–19).
+-- Il filtro URI rel{year}_ è già applicato in SPARQL; legislatura da {year}.
 SELECT
     normalize_string(rel)                                                AS relatore_id,
     TRY_CAST(regexp_extract(dep, 'deputato\.rdf/d(\d+)_', 1) AS BIGINT)  AS deputato_id,
@@ -10,6 +11,6 @@ SELECT
         END AS DATE
     )                                                                    AS data,
     normalize_string(tipo)                                               AS tipo,
-    19                                                                   AS legislatura
+    {year}                                                               AS legislatura
 FROM raw_input
 GROUP BY rel, dep, data, tipo

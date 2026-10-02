@@ -1,6 +1,6 @@
 -- clean.sql — senato_firmatari
 --
--- Firmatari/presentatori dei ddl del Senato (XIX legislatura, graph ddl/19).
+-- Firmatari/presentatori dei ddl del Senato (Leg13–19, graph ddl/{year}).
 -- La fonte espone i firmatari come risorse osr:iniziativa collegate al ddl:
 --   ddl --osr:iniziativa--> iniziativa/* --osr:presentatore--> "Sen. Mario Turco"
 --                                      --osr:primoFirmatario--> "1"

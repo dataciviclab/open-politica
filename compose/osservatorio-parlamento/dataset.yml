@@ -38,7 +38,7 @@ support:
   - type: dataset
     name: senato_gruppi
     config: ../../datasets/senato-gruppi/dataset.yml
-    years: [2026]
+    years: [13, 14, 15, 16, 17, 18, 19]
   - type: dataset
     name: camera_deputati
     config: ../../datasets/camera-deputati-legislature/dataset.yml

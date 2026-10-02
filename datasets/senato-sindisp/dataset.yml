@@ -52,7 +52,7 @@ raw:
 support:
   - name: senato_anagrafica
     config: ../../datasets/senato-anagrafica/dataset.yml
-    years: [2026]
+    years: [13, 14, 15, 16, 17, 18, 19]
 
 clean:
   sql: "sql/clean.sql"

@@ -1,15 +1,14 @@
-# senato_gruppi — gruppi parlamentari del Senato (XIX leg.)
+# senato_gruppi — gruppi parlamentari del Senato (Leg13–19)
 
 Membership dei senatori ai gruppi parlamentari, con cariche e periodi
 (inizio/fine) — i **cambi di gruppo nel tempo** sono tracciati.
 
 ## Dati
 
-- **Fonte**: dati.senato.it — SPARQL, graph `composizione/19`
-- **Righe**: 288 (una per periodo di adesione senatore→gruppo)
+- **Fonte**: dati.senato.it — SPARQL, graph `composizione/{year}` (Leg13–19)
+- **Righe**: Leg19 ~288 (una per periodo di adesione senatore→gruppo)
 - **Struttura**: senatore → `ocd:aderisce` → adesioneGruppo {gruppo, carica,
   inizio, fine}; etichette via `denominazione` → `osr:titolo/titoloBreve`
-  (es. gruppo 56 = "Lega Salvini Premier - Partito Sardo d'Azione", FdI, ...)
 
 ## Uso
 
@@ -22,6 +21,12 @@ make run-senato-gruppi
 make run-profilo-politico   # ricompone il profilo con la membership
 ```
 
+## 2026-10-02 — Pattern C multi-legislature
+
+- `years: [13..19]`, query `GRAPH <.../composizione/{year}>`
+- Clean: `{year} AS legislatura`
+- min_rows clean abbassato a 100 (per-leg)
+
 ## Insight dal primo run (XIX leg.)
 
 - **Tutti i gruppi molto compatti**: pct_col_gruppo tipicamente 95-100%.
@@ -33,7 +38,7 @@ make run-profilo-politico   # ricompone il profilo con la membership
 
 ## Limiti
 
-- Solo XIX legislatura (graph composizione/19)
+- Perimetro Leg13–19 (graph `composizione/{year}`); I–XII non nel LOD
 - Il voto dominante del gruppo si calcola sulla moda F/C della singola
   votazione; votazioni molto ravvicinate con membership a cavallo possono
   avere assegnazione approssimata (join su data)
