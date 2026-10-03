@@ -1,0 +1,73 @@
+# Voti ↔ DDL (dettaglio) — join disagregato Senato XIX
+# raw + support da GCS (http_file / external) — pattern #58.
+# Solo 2026/XIX (niente multi-year su voti individuali — RAM).
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "voti_ddl_dettaglio"
+  source_id: "dataciviclab_composite"
+  tags: [politica, senato, votazioni, ddl, accountability, catena-legislativa]
+  category: politica
+  years: [2026]
+  time_coverage:
+    start_year: 2022
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_votazioni_oggetto"
+      type: "http_file"
+      primary: true
+      args:
+        url: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_votazioni_oggetto/2026/senato_votazioni_oggetto_2026_clean.parquet"
+        filename: "senato_votazioni_oggetto.parquet"
+
+support:
+  - type: external
+    name: senato_votazioni
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_votazioni/{year}/senato_votazioni_{year}_clean.parquet"
+    years: [2026]
+  - type: external
+    name: senato_ddl
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
+    years: [19]
+  # Pattern C: path per LEGISLATURA (…/19/), non anno calendario (…/2026/)
+  - type: external
+    name: senato_anagrafica
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_anagrafica/{year}/senato_anagrafica_{year}_clean.parquet"
+    years: [19]
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: latest
+  required_columns: [votazione_id, senatore_id, voto, ddl_id, data]
+  validate:
+    not_null: [votazione_id, senatore_id]
+    primary_key: [votazione_id, senatore_id]
+    min_rows: 100000
+
+mart:
+  tables:
+    - name: "mart_voti_ddl"
+      sql: "sql/mart_voti_ddl.sql"
+    - name: "mart_voti_ddl_sintesi"
+      sql: "sql/mart_voti_ddl_sintesi.sql"
+  required_tables:
+    - "mart_voti_ddl"
+  validate:
+    table_rules:
+      mart_voti_ddl:
+        required_columns: [votazione_id, senatore_id, voto, ddl_id]
+        primary_key: [votazione_id, senatore_id]
+        min_rows: 100000
+      mart_voti_ddl_sintesi:
+        required_columns: [ddl_id, n_voti, n_senatori]
+        primary_key: [ddl_id]
+        min_rows: 50
+
+validation:
+  fail_on_error: true
