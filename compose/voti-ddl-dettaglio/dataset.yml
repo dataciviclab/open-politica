@@ -43,8 +43,10 @@ clean:
   read:
     source: config_only
     mode: latest
+  required_columns: [votazione_id, senatore_id, voto, ddl_id, data]
   validate:
     not_null: [votazione_id, senatore_id]
+    primary_key: [votazione_id, senatore_id]
     min_rows: 100000
 
 mart:

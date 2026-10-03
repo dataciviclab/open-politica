@@ -28,14 +28,16 @@ voti AS (
 ),
 
 ddl AS (
+    -- Aggregatori deterministici (stile decreti-legge #58): senato_ddl ha
+    -- più fasi per id_ddl; ANY_VALUE sarebbe non riproducibile su stato/urn.
     SELECT
         id_ddl AS ddl_id,
-        ANY_VALUE(titolo) AS titolo,
-        ANY_VALUE(stato) AS stato,
-        ANY_VALUE(numero_legge) AS numero_legge,
-        ANY_VALUE(urn_normattiva) AS urn_normattiva,
-        ANY_VALUE(data_presentazione) AS data_presentazione,
-        ANY_VALUE(data_legge) AS data_legge
+        arg_max(titolo, coalesce(data_legge, data_presentazione, DATE '1900-01-01')) AS titolo,
+        arg_max(stato, coalesce(data_legge, data_presentazione, DATE '1900-01-01')) AS stato,
+        max(numero_legge) AS numero_legge,
+        arg_max(urn_normattiva, coalesce(data_legge, data_presentazione, DATE '1900-01-01')) AS urn_normattiva,
+        min(data_presentazione) AS data_presentazione,
+        max(data_legge) AS data_legge
     FROM read_parquet({support.senato_ddl.clean})
     WHERE id_ddl IS NOT NULL
     GROUP BY id_ddl

@@ -55,7 +55,9 @@ clean:
   read:
     source: config_only
     mode: latest
+  required_columns: [ponte, metrica, valore, fonte]
   validate:
+    not_null: [ponte, metrica, valore, fonte]
     min_rows: 15
 
 mart:
