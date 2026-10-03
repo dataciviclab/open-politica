@@ -28,7 +28,8 @@ comunali AS (
         voti_candidato,
         turno,
         seggi_lista
-    FROM read_parquet('{support.elezioni_comunali.clean}', union_by_name=true)
+    -- external multi-anno: {support.*.clean} = lista URL SQL (no quote)
+    FROM read_parquet({support.elezioni_comunali.clean}, union_by_name=true)
 ),
 
 -- ── 2. Elezioni Europee ───────────────────────────────────────────
@@ -50,7 +51,7 @@ europee AS (
         NULL AS voti_candidato,
         NULL AS turno,
         NULL AS seggi_lista
-    FROM read_parquet('{support.elezioni_europee.clean}', union_by_name=true)
+    FROM read_parquet({support.elezioni_europee.clean}, union_by_name=true)
 ),
 
 -- ── 3. Elezioni Regionali ─────────────────────────────────────────
@@ -72,7 +73,7 @@ regionali AS (
         voti_candidato,
         NULL AS turno,
         NULL AS seggi_lista
-    FROM read_parquet('{support.elezioni_regionali.clean}', union_by_name=true)
+    FROM read_parquet({support.elezioni_regionali.clean}, union_by_name=true)
 )
 
 -- ── Final: UNION ALL ──────────────────────────────────────────────

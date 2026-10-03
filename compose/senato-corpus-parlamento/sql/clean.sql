@@ -31,7 +31,8 @@ atto AS (
     GROUP BY atto_num
 ),
 iter AS (
-    SELECT * FROM read_parquet('{support.senato_ddl.clean}')
+    -- external multi-anno: clean = lista URL SQL (no quote)
+    SELECT * FROM read_parquet({support.senato_ddl.clean})
 ),
 iter_agg AS (
     SELECT

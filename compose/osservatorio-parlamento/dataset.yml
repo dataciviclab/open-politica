@@ -1,4 +1,5 @@
-# Osservatorio Parlamento — KPI istituzionali per legislatura/anno
+# Osservatorio Parlamento — KPI istituzionali.
+# raw + support da GCS. Produzione/ddl multi-leg (13–19); voti ancora XIX.
 root: "../../out"
 schema_version: 1
 
@@ -9,44 +10,49 @@ dataset:
   category: politica
   years: [2026]
   time_coverage:
-    # produione ddl/gruppi: XIX leg.; votazioni/rappresentanza: dove coperto
-    start_year: 2022
+    # Produzione legislativa e gruppi: Leg13–19; votazioni/rappresentanza: XIX
+    start_year: 1996
     end_year: 2026
 
-# raw: 1 fonte logica (l'input principale del compose — senato_ddl, la
-# produzione legislativa). Le altre vanno di support ({support.*} nel SQL).
-# Con raw.sources il compose gira con `toolkit run` full come ogni dataset.
 raw:
   output_policy: "overwrite"
   sources:
     - name: "senato_ddl"
-      type: "local_file"
+      type: "http_file"
       args:
-        path: "../../out/data/clean/senato_ddl/19/senato_ddl_19_clean.parquet"
+        url: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/19/senato_ddl_19_clean.parquet"
         filename: "senato_ddl.parquet"
       primary: true
 
 support:
-  - type: dataset
+  - type: external
+    name: senato_ddl_multi
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
     name: camera_voti
-    config: ../../datasets/camera-voti/dataset.yml
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_voti/{year}/camera_voti_{year}_clean.parquet"
     years: [2026]
-  - type: dataset
+  - type: external
     name: senato_votazioni
-    config: ../../datasets/senato-votazioni/dataset.yml
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_votazioni/{year}/senato_votazioni_{year}_clean.parquet"
     years: [2026]
-  - type: dataset
+  - type: external
     name: senato_gruppi
-    config: ../../datasets/senato-gruppi/dataset.yml
-    years: [2026]
-  - type: dataset
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_gruppi/{year}/senato_gruppi_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
     name: camera_deputati
-    config: ../../datasets/camera-deputati-legislature/dataset.yml
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_deputati_legislature/{year}/camera_deputati_legislature_{year}_clean.parquet"
     years: [2026]
-  - type: dataset
+  - type: external
     name: decreti_legge
-    config: ../../compose/decreti-legge/dataset.yml
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/decreti_legge/{year}/decreti_legge_{year}_clean.parquet"
     years: [2026]
+  - type: external
+    name: camera_votazioni_sparql
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_votazioni_sparql/{year}/camera_votazioni_sparql_{year}_clean.parquet"
+    years: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
 
 clean:
   sql: "sql/clean.sql"
