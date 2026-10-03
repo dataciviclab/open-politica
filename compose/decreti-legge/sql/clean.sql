@@ -6,8 +6,9 @@
 -- per (numero, anno) prendendo l'esito "migliore" (convertito > decaduto >
 -- restituito > in esame). La data di presentazione coincide con quella del DL.
 WITH conv AS (
+    -- external multi-anno: {support.*.clean} è una lista SQL di URL (no quote)
     SELECT *
-    FROM read_parquet('{support.senato_ddl.clean}')
+    FROM read_parquet({support.senato_ddl.clean})
     WHERE natura = 'di conversione di decreto-legge'
       AND regexp_extract(titolo, 'n\.\s*(\d+)', 1) != ''
 )
