@@ -24,7 +24,7 @@ senato_voti AS (
 ),
 senato_membr AS (
     SELECT senatore_id, gruppo_id, data_inizio, data_fine
-    FROM read_parquet('{support.senato_gruppi.clean}')
+    FROM read_parquet({support.senato_gruppi.clean})
 ),
 senato_vg AS (
     SELECT v.senatore_id, v.votazione, v.voto, g.gruppo_id,
@@ -55,12 +55,19 @@ senato_align AS (
     GROUP BY v.senatore_id
 ),
 senato_anagrafica AS (
-    SELECT DISTINCT senatore_id, nome, cognome
-    FROM read_parquet('{support.senato_anagrafica.clean}')
+    -- multi-leg GCS: un nome per senatore_id (arg_max su legislatura).
+    -- DISTINCT su (id,nome) fan-out se lo stesso id ha nomi in più leg.
+    SELECT
+        senatore_id,
+        arg_max(nome, legislatura)    AS nome,
+        arg_max(cognome, legislatura) AS cognome
+    FROM read_parquet({support.senato_anagrafica.clean})
+    WHERE senatore_id IS NOT NULL
+    GROUP BY senatore_id
 ),
 senato_interventi_agg AS (
     SELECT senatore_id, count(*) AS n_interventi
-    FROM read_parquet('{support.senato_interventi.clean}')
+    FROM read_parquet({support.senato_interventi.clean})
     GROUP BY senatore_id
 ),
 -- commissioni: "di cosa si occupa" (fase 3 dell'iter) — aggregato per senatore
@@ -75,7 +82,7 @@ senato_comm_agg AS (
             nome || ' (' || carica || ')',
             '; ' ORDER BY nome
         ) FILTER (WHERE data_fine IS NULL)                     AS commissioni_attuali
-    FROM read_parquet('{support.senato_commissioni.clean}')
+    FROM read_parquet({support.senato_commissioni.clean})
     GROUP BY senatore_id
 ),
 senato_profilo AS (
@@ -107,12 +114,12 @@ senato_profilo AS (
     ) v ON a.senatore_id = v.senatore_id
     LEFT JOIN senato_align al ON a.senatore_id = al.senatore_id
     LEFT JOIN (
-        SELECT senatore_id, persona_id FROM read_parquet('{support.ponte_persona.clean}')
+        SELECT senatore_id, persona_id FROM read_parquet({support.ponte_persona.clean})
         WHERE tipo_match = '1to1'
     ) p ON a.senatore_id = p.senatore_id
     LEFT JOIN (
         SELECT persona_id, count(*) AS n_cariche_governo
-        FROM read_parquet('{support.membri_governo.clean}')
+        FROM read_parquet({support.membri_governo.clean})
         WHERE end_date IS NULL
         GROUP BY persona_id
     ) g ON p.persona_id = g.persona_id
@@ -124,13 +131,13 @@ senato_profilo AS (
 -- esito (approvato) di ogni votazione dalla serie multi-anno
 camera_esito AS (
     SELECT DISTINCT votazione, approvato
-    FROM read_parquet('{root_posix}/data/clean/camera_votazioni_sparql/*/*_clean.parquet')
+    FROM read_parquet({support.camera_votazioni_sparql.clean})
 ),
 camera_voti AS (
     SELECT v.deputato_id, v.votazione, v.voto, v.sigla_gruppo,
            (e.approvato AND v.voto = 'FAVOREVOLE')
             OR (NOT e.approvato AND v.voto = 'CONTRARIO') AS coerente
-    FROM read_parquet('{support.camera_voti.clean}') v
+    FROM read_parquet({support.camera_voti.clean}) v
     LEFT JOIN camera_esito e ON v.votazione = e.votazione
     WHERE v.voto IN ('FAVOREVOLE', 'CONTRARIO', 'ASTENUTO')
 ),
@@ -156,7 +163,7 @@ camera_align AS (
 ),
 camera_anagrafica AS (
     SELECT DISTINCT persona_id, nome, cognome
-    FROM read_parquet('{support.camera_deputati.clean}')
+    FROM read_parquet({support.camera_deputati.clean})
 ),
 -- organi Camera: ruoli (presidente/capogruppo/segretario) — "chi comanda l'organo"
 camera_comm_agg AS (
@@ -170,7 +177,7 @@ camera_comm_agg AS (
             nome || ' (' || carica || ')',
             '; ' ORDER BY nome
         ) FILTER (WHERE data_fine IS NULL)                        AS organi_ruoli
-    FROM read_parquet('{support.camera_commissioni.clean}')
+    FROM read_parquet({support.camera_commissioni.clean})
     GROUP BY deputato_id
 ),
 -- relatori Camera: "chi regista le leggi"
@@ -179,13 +186,13 @@ camera_relatori_agg AS (
         deputato_id,
         count(*)                                AS n_relatori,
         count(DISTINCT year(data))              AS anni_attivi
-    FROM read_parquet('{support.camera_relatori.clean}')
+    FROM read_parquet({support.camera_relatori.clean})
     GROUP BY deputato_id
 ),
 -- interventi: "chi parla in aula" (una riga per intervento)
 camera_interventi_agg AS (
     SELECT deputato_id, count(*) AS n_interventi
-    FROM read_parquet('{support.camera_interventi.clean}')
+    FROM read_parquet({support.camera_interventi.clean})
     GROUP BY deputato_id
 ),
 camera_profilo AS (
@@ -221,7 +228,7 @@ camera_profilo AS (
     LEFT JOIN camera_interventi_agg iv ON a.persona_id = iv.deputato_id
     LEFT JOIN (
         SELECT persona_id, count(*) AS n_cariche_governo
-        FROM read_parquet('{support.membri_governo.clean}')
+        FROM read_parquet({support.membri_governo.clean})
         WHERE end_date IS NULL
         GROUP BY persona_id
     ) g ON a.persona_id = g.persona_id

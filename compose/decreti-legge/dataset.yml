@@ -1,4 +1,5 @@
 # Decreti-Legge — conversioni in Parlamento (XIX leg.)
+# raw + support da GCS (http_file / external) — non rilancia senato_ddl.
 root: "../../out"
 schema_version: 1
 
@@ -17,17 +18,18 @@ raw:
   output_policy: "overwrite"
   sources:
     - name: "senato_ddl"
-      type: "local_file"
+      type: "http_file"
       args:
-        path: "../../out/data/clean/senato_ddl/19/senato_ddl_19_clean.parquet"
+        url: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/19/senato_ddl_19_clean.parquet"
         filename: "senato_ddl.parquet"
       primary: true
 
 support:
-  - type: dataset
+  - type: external
     name: senato_ddl
-    config: ../../datasets/senato-ddl/dataset.yml
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
     years: [19]
+
 clean:
   sql: "sql/clean.sql"
   read:
