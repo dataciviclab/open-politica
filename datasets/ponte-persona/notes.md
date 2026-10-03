@@ -4,9 +4,19 @@ Unifica l'identità di una persona tra i due rami del Parlamento: il sistema
 parlamentare non espone una chiave condivisa, la stessa persona ha un
 `persona_id` (dati.camera.it) e un `senatore_id` (dati.senato.it) diversi.
 
-## Dati (XIX legislatura)
+## Dati
 
-- **Senatori**: 212 (anagrafica Senato, graph composizione/19)
+- Ponte Camera `persona_id` ↔ Senato `senatore_id` (match nominativo)
+- Camera: `camera-deputati-legislature` Leg19 (`years: [2026]`)
+- Senato: `senato-anagrafica` multi-leg (`years: [13..19]`) — preprocess
+  prende l'**ultima legislatura disponibile** (Leg19); lo storico non entra
+  nel ponte attuale
+- **Compose fuori scope Pattern C** (#52): `profilo-politico` resta su
+  support `years: [2026]` — dopo il merge di Pattern C il run compose
+  fallirà su path `senato_anagrafica/2026` mancante. Follow-up dedicato
+  ad allineare i compose.
+
+- **Senatori**: ~200/leg. (anagrafica Senato `composizione/{year}`; ponte usa Leg19)
 - **Deputati**: 11.843 persone distinte (anagrafica Camera, tutte le legislature)
 - **Ponte**: 62 senatori (29,2%) mappati 1:1 su un deputato · 1 caso ambiguo ·
   149 senza match
@@ -34,4 +44,5 @@ make run-ponte-persona     # pipeline → clean + mart_match
   del dataset Camera** — es. **Matteo Renzi** (deputato XVII, senatore XVIII/
   XIX) è assente da `camera_deputati_legislature` → da segnalare a monte
 - Il ponte copre la XIX; per estenderlo servono anagrafiche Senato delle
-  legislature precedenti (XIII-XVIII)
+  legislature precedenti (XIII–XVIII già nel clean multi-leg, ma il preprocess
+  oggi legge solo l'ultima cartella)

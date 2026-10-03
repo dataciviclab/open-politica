@@ -1,9 +1,9 @@
 # senato-anagrafica
 
-**Domanda guida:** Chi sono i senatori della XIX legislatura? Quando e dove sono nati? A quale `senatore_id` corrisponde ogni nome?
+**Domanda guida:** Chi sono i senatori? Quando e dove sono nati? A quale `senatore_id` corrisponde ogni nome?
 
 **Fonte:** Senato della Repubblica — OpenData SPARQL (`https://dati.senato.it/sparql`)
-**Dataset:** graph `composizione/19` (XIX legislatura), classe `osr:Senatore` (212 senatori)
+**Dataset:** graph `composizione/{year}` (Leg13–19), classe `osr:Senatore` (~200/leg.)
 **Licenza:** CC BY 3.0
 
 ## Perché vale la pena

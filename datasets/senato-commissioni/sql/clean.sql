@@ -1,6 +1,6 @@
 -- clean.sql — senato_commissioni
--- Membership dei senatori alle commissioni (XIX leg.): una riga per periodo
--- di appartenenza, con carica (Membro/Presidente/Vicepresidente...) e date.
+-- Membership dei senatori alle commissioni (Leg13–19, graph composizione/{year}):
+-- una riga per periodo di appartenenza, con carica e date.
 SELECT
     TRY_CAST(regexp_extract(sen, '/senatore/(\d+)', 1) AS BIGINT)  AS senatore_id,
     -- id commissione = suffisso completo (es. "0-7"): il primo numero da
@@ -12,6 +12,6 @@ SELECT
     normalize_string(car)                                          AS carica,
     TRY_CAST(ini AS DATE)                                          AS data_inizio,
     TRY_CAST(fin AS DATE)                                          AS data_fine,
-    19                                                             AS legislatura
+    {year}                                                         AS legislatura
 FROM raw_input
 GROUP BY sen, comm, car, ini, fin

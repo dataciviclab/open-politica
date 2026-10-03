@@ -68,7 +68,15 @@ def main() -> int:
 
     root = Path(args.root)
     camera_clean = root / "data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
-    senato_clean = root / "data/clean/senato_anagrafica/2026/senato_anagrafica_2026_clean.parquet"
+    # senato_anagrafica è multi-legislature (Leg13–19) dal 2026-10-02:
+    # prende l'ultima legislatura disponibile (Leg19 = cartella "19")
+    senato_candidates = sorted(
+        (root / "data/clean/senato_anagrafica").glob("*/*_clean.parquet"),
+        key=lambda p: int(p.parent.name) if p.parent.name.isdigit() else -1,
+    )
+    senato_clean = senato_candidates[-1] if senato_candidates else (
+        root / "data/clean/senato_anagrafica/19/senato_anagrafica_19_clean.parquet"
+    )
 
     if not camera_clean.exists():
         print(f"ERRORE: {camera_clean} non trovato — camera_deputati_legislature deve essere processato prima")

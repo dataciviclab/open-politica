@@ -1,4 +1,4 @@
-# Anagrafica Senatori — support dataset
+# Anagrafica Senatori — support dataset (Leg13–19)
 root: "../../out"
 schema_version: 1
 
@@ -7,9 +7,10 @@ dataset:
   source_id: "dati_senato"
   tags: [politica, senato, anagrafica, senatori]
   category: politica
-  years: [2026]
+  years: [13, 14, 15, 16, 17, 18, 19]
   time_coverage:
-    start_year: 2022
+    # Leg XIII–XIX — graph composizione/{year}
+    start_year: 1996
     end_year: 2026
 
 raw:
@@ -27,7 +28,7 @@ raw:
           SELECT ?senatore (MAX(?label) AS ?label)
                  (MAX(?dataNascita) AS ?dataNascita) (MAX(?citta) AS ?citta)
           WHERE {
-            GRAPH <http://dati.senato.it/composizione/19> {
+            GRAPH <http://dati.senato.it/composizione/{year}> {
               ?senatore a osr:Senatore .
               OPTIONAL { ?senatore rdfs:label ?label . }
               OPTIONAL { ?senatore bio:birth ?b . ?b bio:date ?dataNascita . }
@@ -51,8 +52,8 @@ clean:
     trim_whitespace: true
   validate:
     not_null: [senatore_id]
-    # 212 senatori reali (XIX leg., count diretto 2026-08-04) — margine ~30%
-    min_rows: 150
+    # ~200 senatori per legislature moderne — min per-leg
+    min_rows: 80
     primary_key: [senatore_id]
 
 mart:
@@ -69,11 +70,11 @@ mart:
       mart_nascita_anno:
         required_columns: [anno_nascita, n_senatori]
         primary_key: [anno_nascita]
-        min_rows: 10
+        min_rows: 5
       mart_luogo_nascita:
         required_columns: [luogo_nascita, n_senatori]
         primary_key: [luogo_nascita]
-        min_rows: 10
+        min_rows: 5
 
 validation:
   fail_on_error: true

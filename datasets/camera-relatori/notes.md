@@ -1,4 +1,4 @@
-# camera_relatori — relatori della Camera (XIX leg.)
+# camera_relatori — relatori della Camera (Leg13–19)
 
 Il **relatore** è il deputato che segue e "dirige" uno specifico atto in
 commissione: scrive la relazione, gestisce gli emendamenti, lo porta in aula.
@@ -7,13 +7,20 @@ produce.
 
 ## Dati
 
-- **Fonte**: dati.camera.it — SPARQL, `ocd:relatore`
-- **Righe**: 10.360 incarichi da relatore · **1.000+ deputati** coinvolti
+- **Fonte**: dati.camera.it — SPARQL, `ocd:relatore`, filtro URI `rel{year}_`
+- **Righe**: Leg19 ~10.360 incarichi · **1.000+ deputati** coinvolti
 - **Campi**: `relatore_id`, `deputato_id`, `data`, `tipo`, `legislatura`
 - La `data` è quella della discussione (`dc:date` in cui il relatore ha
   riferito in commissione)
 
-## Numeri (XIX leg.)
+## 2026-10-02 — Pattern C multi-legislature
+
+- `years: [16,17,18,19]` — **LOD Camera ha solo rel16_..rel19_** (rel13/14/15 = 0 live)
+- Query `FILTER(CONTAINS(STR(?rel), "rel{year}_"))`
+- Clean: `{year} AS legislatura`; min_rows 1000 (per-leg)
+- pages: 2 (Leg19 ~10k > cap 10k; storiche sotto il cap)
+
+## Numeri (riferimento Leg19)
 
 - **Top relatori**: Sbardella 226, Russo 201, Tremaglia 183, Maschio 181,
   Mascaretti 170 — i "registi" che seguono decine di leggi

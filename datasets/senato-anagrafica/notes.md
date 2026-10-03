@@ -3,8 +3,9 @@
 ## Fonte
 
 - Endpoint SPARQL Senato: `https://dati.senato.it/sparql` (GET obbligatorio, POST 403 → fix toolkit v1.47.3+)
-- Namespace `osr:` (`http://dati.senato.it/osr/`), graph `http://dati.senato.it/composizione/19`
+- Namespace `osr:` (`http://dati.senato.it/osr/`), graph `http://dati.senato.it/composizione/{year}`
 - Licenza: CC BY 3.0
+- **Perimetro**: Leg13–19 (`years: [13..19]`); I–XII non pubblicati nel LOD
 
 ## Query produzione
 
@@ -12,7 +13,7 @@
 SELECT ?senatore (MAX(?label) AS ?label)
        (MAX(?dataNascita) AS ?dataNascita) (MAX(?citta) AS ?citta)
 WHERE {
-  GRAPH <http://dati.senato.it/composizione/19> {
+  GRAPH <http://dati.senato.it/composizione/{year}> {
     ?senatore a osr:Senatore .
     OPTIONAL { ?senatore rdfs:label ?label . }
     OPTIONAL { ?senatore bio:birth ?b . ?b bio:date ?dataNascita . }
@@ -34,8 +35,8 @@ GROUP BY + MAX (pattern standard). 212 righe < soglia WAF 10k → una sola query
 
 ## Perimetro
 
-- **XIX legislatura** (graph composizione/19) — coerente con `senato-ddl`/`senato-firmatari`
-- Estensione a legislature 13-19 (graph `composizione/13`..`/19`): lavoro futuro, pattern già pronto (`{leg}`)
+- **Leg13–19** (graph `composizione/{year}`) — coerente con `senato-ddl`/`senato-firmatari`
+- Clean: `{year} AS legislatura`; min_rows 80 (per-leg)
 
 ## Join
 
@@ -45,4 +46,9 @@ GROUP BY + MAX (pattern standard). 212 righe < soglia WAF 10k → una sola query
 ## Limiti
 
 - **Nessun ponte con la Camera**: il Senato non ha `owl:sameAs` Wikidata (verificato: 0) e `senatore_id` ≠ `persona_id` Camera. Il ponte persone Camera↔Senato resta da progettare (join nominativo o via `senato_firmatari.deputato_url`)
-- Solo senatori della XIX; il luogo di nascita è la città (non normalizzata a codice ISTAT)
+- Luogo di nascita = città (non normalizzata a codice ISTAT)
+
+## 2026-10-02 — Pattern C multi-legislature
+
+- Query: `GRAPH <http://dati.senato.it/composizione/{year}> { ?senatore a osr:Senatore ... }`
+- Support già usato da `senato-sindisp` (che già aveva `{year}` nel clean)

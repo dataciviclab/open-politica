@@ -1,15 +1,23 @@
-# camera_commissioni — organi della Camera (XIX leg.), ruoli
+# camera_commissioni — organi della Camera (Leg13–19), ruoli
 
 Chi ricopre **ruoli** negli organi della Camera (commissioni, giunte, comitati):
 presidente, vicepresidente, capogruppo, segretario, questore.
 
 ## Dati
 
-- **Fonte**: dati.camera.it — SPARQL, `ocd:ufficioParlamentare`
-- **Righe**: 778 · **Organi**: 67 (commissioni permanenti, d'inchiesta, giunte,
-  ufficio di presidenza)
+- **Fonte**: dati.camera.it — SPARQL, `ocd:ufficioParlamentare` + `rif_leg repubblica_{year}`
+- **Righe**: Leg19 ~778 · **Organi**: ~67
 - **Campi**: `deputato_id`, `organo_id`, `nome`, `carica`, `data_inizio`,
   `data_fine`, `legislatura`
+
+## 2026-10-02 — Pattern C multi-legislature
+
+- `years: [13..19]`, query `rif_leg <.../repubblica_{year}>`
+- Clean: `{year} AS legislatura`; min_rows 150 (per-leg)
+- PK `(deputato_id, organo_id, carica, data_inizio)`: `GROUP BY dep,org,car,inizio`
+  + `max(fine)` collassa più URI `up/*` sullo stesso periodo. Se in futuro
+  compaiono due membership con stesso inizio e **cariche diverse** non gestite
+  dal GROUP BY, allargare la PK — da verificare al primo run multi-leg pieno.
 - **Cariche**: CAPOGRUPPO (365), SEGRETARIO (168), VICEPRESIDENTE (132),
   PRESIDENTE (93), QUESTORE (18)
 

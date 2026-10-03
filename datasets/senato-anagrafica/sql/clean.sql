@@ -1,5 +1,5 @@
 -- clean.sql — senato_anagrafica
--- Anagrafica senatori (XIX legislatura, graph composizione/19).
+-- Anagrafica senatori (Leg13–19, graph composizione/{year}).
 -- Input: query SPARQL (una riga = un senatore, GROUP BY + MAX).
 --
 -- Normalizzazioni:
@@ -7,7 +7,7 @@
 --   - nome/cognome: split della label "Nome Cognome" (prima parola = nome)
 --   - data_nascita: già ISO dal sorgente (bio:date)
 --   - luogo_nascita: label della città di nascita (nodeID risolto nella query)
---   - legislatura: costante 19 (perimetro XIX; estensione 13-19 = lavoro futuro)
+--   - legislatura: {year} (Leg13–19; I–XII non pubblicati nel LOD Senato)
 
 WITH base AS (
     SELECT * FROM raw_input
@@ -24,6 +24,6 @@ SELECT
     )                                                                   AS cognome,
     TRY_CAST(dataNascita AS DATE)                                       AS data_nascita,
     normalize_string(citta)                                             AS luogo_nascita,
-    19                                                                  AS legislatura
+    {year}                                                              AS legislatura
 FROM base
 WHERE senatore IS NOT NULL

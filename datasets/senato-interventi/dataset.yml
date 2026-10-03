@@ -1,4 +1,4 @@
-# Interventi al Senato (XIX leg.) — chi parla, quando
+# Interventi al Senato — chi parla, quando (Leg13–19)
 root: "../../out"
 schema_version: 1
 
@@ -7,10 +7,10 @@ dataset:
   source_id: "dati_senato"
   tags: [politica, senato, interventi, attivita, parlamento]
   category: politica
-  years: [2026]
+  years: [13, 14, 15, 16, 17, 18, 19]
   time_coverage:
-    # XIX leg. — osr:Intervento (graph composizione/19)
-    start_year: 2022
+    # Leg XIII–XIX — osr:Intervento (graph composizione/{year})
+    start_year: 1996
     end_year: 2026
 
 raw:
@@ -21,13 +21,14 @@ raw:
       primary: true
       args:
         endpoint: "https://dati.senato.it/sparql"
-        pages: 5
+        # Leg19 ~36k; Leg13/14/17 hanno superato 50k con pages=5 → pages=10
+        pages: 10
         step: 10000
         query: |
           PREFIX osr: <http://dati.senato.it/osr/>
           SELECT ?int (MAX(?sen) AS ?sen) (MAX(?data) AS ?data) (MAX(?ogg) AS ?ogg)
           WHERE {
-            GRAPH <http://dati.senato.it/composizione/19> {
+            GRAPH <http://dati.senato.it/composizione/{year}> {
               ?sen osr:interviene ?int .
               ?int a osr:Intervento ; osr:seduta ?sed .
               OPTIONAL { ?int <http://www.w3.org/2000/01/rdf-schema#label> ?ogg . }
@@ -48,7 +49,8 @@ clean:
   validate:
     not_null: [intervento_id, senatore_id]
     primary_key: [intervento_id]
-    min_rows: 20000
+    # per-leg: Leg19 ~36k; storiche sotto → soglia più bassa
+    min_rows: 5000
 
 mart:
   tables:
@@ -67,7 +69,7 @@ mart:
       mart_top_parlanti:
         required_columns: [senatore_id, n_interventi]
         primary_key: [senatore_id]
-        min_rows: 100
+        min_rows: 50
 
 validation:
   fail_on_error: true

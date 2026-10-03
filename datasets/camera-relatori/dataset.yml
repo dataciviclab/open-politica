@@ -1,4 +1,4 @@
-# Relatori della Camera (XIX leg.) — i "registi" delle leggi
+# Relatori della Camera — i "registi" delle leggi (Leg13–19)
 root: "../../out"
 schema_version: 1
 
@@ -7,10 +7,11 @@ dataset:
   source_id: "dati_camera"
   tags: [politica, camera, relatori, iter, produzione]
   category: politica
-  years: [2026]
+  # LOD Camera espone ocd:relatore solo da Leg16 (rel13/14/15 = 0 live 2026-10-02)
+  years: [16, 17, 18, 19]
   time_coverage:
-    # XIX legislatura — ocd:relatore (il deputato che segue e dirige un atto in commissione)
-    start_year: 2022
+    # Leg XVI–XIX — ocd:relatore, filtro URI rel{year}_
+    start_year: 2008
     end_year: 2026
 
 raw:
@@ -21,7 +22,7 @@ raw:
       primary: true
       args:
         endpoint: "https://dati.camera.it/sparql"
-        # 10.621 relatori XIX > cap 10k → pages=2; dedup in clean su URI relatore
+        # Leg19 ~10k > cap 10k → pages=2; legislature storiche sotto il cap
         pages: 2
         step: 10000
         query: |
@@ -31,7 +32,7 @@ raw:
             ?rel a ocd:relatore ; ocd:rif_deputato ?dep .
             ?disc ocd:rif_relatore ?rel ; <http://purl.org/dc/elements/1.1/date> ?data .
             OPTIONAL { ?rel <http://purl.org/dc/elements/1.1/type> ?tipo . }
-            FILTER(CONTAINS(STR(?rel), "rel19_"))
+            FILTER(CONTAINS(STR(?rel), "rel{year}_"))
           }
           GROUP BY ?rel
         accept_format: "sparql-results+json"
@@ -51,7 +52,8 @@ clean:
   validate:
     not_null: [relatore_id, deputato_id]
     primary_key: [relatore_id]
-    min_rows: 8000
+    # per-leg: Leg19 ~10k; storiche sotto
+    min_rows: 1000
 
 mart:
   tables:
@@ -70,7 +72,7 @@ mart:
       mart_top_relatori:
         required_columns: [deputato_id, n_incarichi]
         primary_key: [deputato_id]
-        min_rows: 100
+        min_rows: 50
 
 validation:
   fail_on_error: true

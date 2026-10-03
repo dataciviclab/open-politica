@@ -8,7 +8,7 @@ firmano per legislatura? Iniziativa parlamentare o governativa?
 
 ## Dataset / fonte
 
-- Fonte: endpoint SPARQL Senato (`dati.senato.it`), graph `ddl/19` (XIX legislatura)
+- Fonte: endpoint SPARQL Senato (`dati.senato.it`), graph `ddl/{year}` (Leg13–19)
 - Support dataset di `senato-ddl`: arricchisce il ddl con i suoi presentatori
 - Una riga = una coppia (ddl, iniziativa) — un ddl può avere più presentatori
 
