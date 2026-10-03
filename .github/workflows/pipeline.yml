@@ -2,7 +2,6 @@
 #
 # Post-merge + refresh. Usa pipeline-reusable.yml dell'org.
 # Su PR merged: solo i dataset toccati (detect + batch).
-# Su push a main (datasets/compose): batch di tutti i dataset sotto detect-paths.
 # Su schedule/dispatch: tutti i dataset.
 
 name: Pipeline
@@ -10,11 +9,6 @@ name: Pipeline
 on:
   pull_request:
     types: [closed]
-    paths:
-      - "datasets/**"
-      - "compose/**"
-  push:
-    branches: [main]
     paths:
       - "datasets/**"
       - "compose/**"
