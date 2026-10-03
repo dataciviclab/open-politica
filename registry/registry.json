@@ -2140,6 +2140,60 @@
       ]
     },
     {
+      "slug": "ponti_parlamento",
+      "name": "Ponti Parlamento",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "ponti",
+        "accountability",
+        "iter",
+        "catena-legislativa"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "ponte",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "metrica",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "valore",
+          "type": "DOUBLE",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "fonte",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/ponti_parlamento/2026/ponti_parlamento_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "ponti_parlamento__mart_ponti_sintesi"
+      ]
+    },
+    {
       "slug": "profilo_politico",
       "name": "Profilo Politico",
       "description": "",
@@ -3476,6 +3530,130 @@
       "mart_refs": [
         "senato_votazioni_oggetto__mart_votazioni_per_ddl"
       ]
+    },
+    {
+      "slug": "voti_ddl_dettaglio",
+      "name": "Voti Ddl Dettaglio",
+      "description": "",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 2022,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "votazioni",
+        "ddl",
+        "accountability",
+        "catena-legislativa"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "votazione_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "voto",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "oggetto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "esito_votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_votazione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ddl_titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_stato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero_legge",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "urn_normattiva",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/voti_ddl_dettaglio/2026/voti_ddl_dettaglio_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "voti_ddl_dettaglio__mart_voti_ddl",
+        "voti_ddl_dettaglio__mart_voti_ddl_sintesi"
+      ]
     }
   ],
   "marts": [
@@ -3930,6 +4108,16 @@
       }
     },
     {
+      "slug": "ponti_parlamento__mart_ponti_sintesi",
+      "dataset": "ponti_parlamento",
+      "table": "mart_ponti_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/ponti_parlamento/2026/mart_ponti_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "profilo_politico__mart_profilo",
       "dataset": "profilo_politico",
       "table": "mart_profilo",
@@ -4168,6 +4356,26 @@
         "path": "gs://dataciviclab-mart/open-politica/senato_votazioni_oggetto/2026/mart_votazioni_per_ddl.parquet",
         "multi_file": false
       }
+    },
+    {
+      "slug": "voti_ddl_dettaglio__mart_voti_ddl",
+      "dataset": "voti_ddl_dettaglio",
+      "table": "mart_voti_ddl",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/voti_ddl_dettaglio/2026/mart_voti_ddl.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "voti_ddl_dettaglio__mart_voti_ddl_sintesi",
+      "dataset": "voti_ddl_dettaglio",
+      "table": "mart_voti_ddl_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/voti_ddl_dettaglio/2026/mart_voti_ddl_sintesi.parquet",
+        "multi_file": false
+      }
     }
   ],
   "signals": [
@@ -4262,6 +4470,36 @@
       }
     },
     {
+      "id": "compose:ponti_parlamento",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "ponti_parlamento",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261003T173017Z_b4ae6743",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 21,
+          "mart": 21
+        },
+        "output_bytes": {
+          "raw": 344733,
+          "clean": 1321,
+          "mart": 1312
+        },
+        "started_at": "2026-10-03T17:30:17.903441+00:00",
+        "finished_at": "2026-10-03T17:30:30.517746+00:00",
+        "duration_seconds": 12.614
+      }
+    },
+    {
       "id": "compose:profilo_politico",
       "source_id": "dataciviclab_composite",
       "status": "ok",
@@ -4319,6 +4557,36 @@
         "started_at": "2026-10-03T14:42:03.728158+00:00",
         "finished_at": "2026-10-03T14:42:07.723629+00:00",
         "duration_seconds": 3.995
+      }
+    },
+    {
+      "id": "compose:voti_ddl_dettaglio",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "voti_ddl_dettaglio",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261003T173030Z_67b41b0c",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 349439,
+          "mart": 349531
+        },
+        "output_bytes": {
+          "raw": 344733,
+          "clean": 627814,
+          "mart": 251390
+        },
+        "started_at": "2026-10-03T17:30:30.732260+00:00",
+        "finished_at": "2026-10-03T17:30:36.064781+00:00",
+        "duration_seconds": 5.333
       }
     },
     {
@@ -5291,10 +5559,16 @@
             "name": "Senato Votazioni Oggetto",
             "column": "ddl_id",
             "semantic_type": "ddl_id"
+          },
+          {
+            "slug": "voti_ddl_dettaglio",
+            "name": "Voti Ddl Dettaglio",
+            "column": "ddl_id",
+            "semantic_type": "ddl_id"
           }
         ],
         "types": {
-          "ddl_id": 7
+          "ddl_id": 8
         }
       },
       "Comune": {
@@ -5526,11 +5800,17 @@
             "name": "Senato Votazioni",
             "column": "senatore_id",
             "semantic_type": "senator_id"
+          },
+          {
+            "slug": "voti_ddl_dettaglio",
+            "name": "Voti Ddl Dettaglio",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
           }
         ],
         "types": {
           "person_id": 10,
-          "senator_id": 9
+          "senator_id": 10
         }
       },
       "Provincia": {
