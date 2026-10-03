@@ -5,9 +5,10 @@
 -- Una riga per iniziativa (senatore × atto) — PK (atto_id, senatore_id).
 --
 -- ⚠️ Support senato_anagrafica multi-leg (Pattern C): {support.*.clean}
--- diventa un glob su tutte le legislature → lo stesso senatore_id compare
--- in più file. Senza dedup, il LEFT JOIN fan-out e rompe la PK.
--- anag = UNA riga per senatore_id (priorità alla legislatura di questo run).
+-- è un glob multi-anno → lo stesso senatore_id in più legislature.
+-- Il dedup va SOLO su anag (arg_max per senatore_id); il raw sindisp
+-- resta com'è (niente GROUP BY finale, niente filtro senatore NOT NULL:
+-- le legislature storiche hanno iniziative senza URI senatore).
 
 WITH sindisp AS (
     SELECT
@@ -34,7 +35,6 @@ WITH sindisp AS (
         {year}                                               AS legislatura
     FROM raw_input
     WHERE atto IS NOT NULL
-      AND senatore IS NOT NULL
 ),
 anag AS (
     SELECT
@@ -49,22 +49,21 @@ anag AS (
 )
 SELECT
     s.atto_id,
-    MAX(s.tipo)                 AS tipo,
-    MAX(s.numero)               AS numero,
-    MAX(s.data_presentazione)   AS data_presentazione,
-    MAX(s.esito)                AS esito,
-    MAX(s.url_testo)            AS url_testo,
-    MAX(s.label_atto)           AS label_atto,
+    s.tipo,
+    s.numero,
+    s.data_presentazione,
+    s.esito,
+    s.url_testo,
+    s.label_atto,
     s.senatore_id,
-    MAX(s.presentatore)         AS presentatore,
-    MAX(s.tipo_iniziativa)      AS tipo_iniziativa,
-    MAX(s.tipo_categoria)       AS tipo_categoria,
-    MAX(s.legislatura)          AS legislatura,
-    MAX(a.nome)                 AS nome_senatore,
-    MAX(a.cognome)              AS cognome_senatore,
-    MAX(a.data_nascita)         AS data_nascita,
-    MAX(a.luogo_nascita)        AS luogo_nascita
+    s.presentatore,
+    s.tipo_iniziativa,
+    s.tipo_categoria,
+    s.legislatura,
+    a.nome AS nome_senatore,
+    a.cognome AS cognome_senatore,
+    a.data_nascita,
+    a.luogo_nascita
 FROM sindisp s
 LEFT JOIN anag a
        ON s.senatore_id = a.senatore_id
-GROUP BY s.atto_id, s.senatore_id
