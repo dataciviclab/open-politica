@@ -33,10 +33,11 @@ support:
     name: senato_ddl
     uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
     years: [19]
+  # Pattern C: path per LEGISLATURA (…/19/), non anno calendario (…/2026/)
   - type: external
     name: senato_anagrafica
     uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_anagrafica/{year}/senato_anagrafica_{year}_clean.parquet"
-    years: [2026]
+    years: [19]
 
 clean:
   sql: "sql/clean.sql"

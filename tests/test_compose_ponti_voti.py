@@ -75,6 +75,12 @@ def test_voti_support_external_gcs():
         assert name in support
         assert support[name]["type"] == "external"
         assert "storage.googleapis.com" in support[name]["uri"]
+    # Pattern C: anagrafica e ddl per LEGISLATURA, non anno calendario
+    assert support["senato_anagrafica"]["years"] == [19]
+    assert support["senato_ddl"]["years"] == [19]
+    assert "/senato_anagrafica/19/" in support["senato_anagrafica"]["uri"].replace(
+        "{year}", "19"
+    ) or "{year}" in support["senato_anagrafica"]["uri"]
 
 
 def test_voti_clean_no_any_value():

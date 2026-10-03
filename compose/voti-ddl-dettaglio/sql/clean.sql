@@ -44,8 +44,16 @@ ddl AS (
 ),
 
 anag AS (
-    SELECT DISTINCT senatore_id, nome, cognome
+    -- Multi-leg Pattern C: un nome per senatore_id (arg_max su legislatura)
+    -- — stessa logica di profilo-politico; evita fan-out se il support
+    -- tornasse multi-leg (review #60 L6).
+    SELECT
+        senatore_id,
+        arg_max(nome, legislatura)    AS nome,
+        arg_max(cognome, legislatura) AS cognome
     FROM read_parquet({support.senato_anagrafica.clean})
+    WHERE senatore_id IS NOT NULL
+    GROUP BY senatore_id
 ),
 
 dettaglio AS (
