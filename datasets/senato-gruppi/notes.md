@@ -42,3 +42,10 @@ make run-profilo-politico   # ricompone il profilo con la membership
 - Il voto dominante del gruppo si calcola sulla moda F/C della singola
   votazione; votazioni molto ravvicinate con membership a cavallo possono
   avere assegnazione approssimata (join su data)
+
+## 2026-10-03 — Pipeline
+
+- Perimetro multi-leg (Pattern C); I–XII non nel LOD dove applicabile.
+- La pipeline su **push a main** (`datasets/**`) rilancia run + sync GCS
+  di questi dataset (workflow `Pipeline`, `detect-paths: datasets compose`).
+- Rebuild manuale: `toolkit run -c datasets/<slug>/dataset.yml` dalla root repo.

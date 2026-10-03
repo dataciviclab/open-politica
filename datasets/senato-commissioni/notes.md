@@ -42,3 +42,10 @@ make run-senato-commissioni
 - `commissione_id` usa il suffisso completo `"0-7"` (il solo primo numero
   colliderebbe: 0-7 e 0-21 hanno entrambi prefisso 0)
 - `nome`/`materia` via MAX (la commissione ha più etichette storiche)
+
+## 2026-10-03 — Pipeline
+
+- Perimetro multi-leg (Pattern C); I–XII non nel LOD dove applicabile.
+- La pipeline su **push a main** (`datasets/**`) rilancia run + sync GCS
+  di questi dataset (workflow `Pipeline`, `detect-paths: datasets compose`).
+- Rebuild manuale: `toolkit run -c datasets/<slug>/dataset.yml` dalla root repo.

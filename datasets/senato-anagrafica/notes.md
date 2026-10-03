@@ -52,3 +52,10 @@ GROUP BY + MAX (pattern standard). 212 righe < soglia WAF 10k → una sola query
 
 - Query: `GRAPH <http://dati.senato.it/composizione/{year}> { ?senatore a osr:Senatore ... }`
 - Support già usato da `senato-sindisp` (che già aveva `{year}` nel clean)
+
+## 2026-10-03 — Pipeline
+
+- Perimetro multi-leg (Pattern C); I–XII non nel LOD dove applicabile.
+- La pipeline su **push a main** (`datasets/**`) rilancia run + sync GCS
+  di questi dataset (workflow `Pipeline`, `detect-paths: datasets compose`).
+- Rebuild manuale: `toolkit run -c datasets/<slug>/dataset.yml` dalla root repo.
