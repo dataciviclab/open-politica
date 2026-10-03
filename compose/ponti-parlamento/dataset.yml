@@ -1,0 +1,74 @@
+# Ponti Parlamento — bridge atto ↔ persona ↔ ddl
+# raw + support da GCS (http_file / external) — pattern #58, niente dataset locali.
+# Camera multi-year: URL espliciti {year} GCS (13–19).
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "ponti_parlamento"
+  source_id: "dataciviclab_composite"
+  tags: [politica, ponti, accountability, iter, catena-legislativa]
+  category: politica
+  years: [2026]
+  time_coverage:
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_votazioni_oggetto"
+      type: "http_file"
+      primary: true
+      args:
+        url: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_votazioni_oggetto/2026/senato_votazioni_oggetto_2026_clean.parquet"
+        filename: "senato_votazioni_oggetto.parquet"
+
+support:
+  - type: external
+    name: senato_ddl
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: senato_votazioni
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_votazioni/{year}/senato_votazioni_{year}_clean.parquet"
+    years: [2026]
+  - type: external
+    name: senato_relatori
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_relatori/{year}/senato_relatori_{year}_clean.parquet"
+    years: [2026]
+  - type: external
+    name: camera_firmatari
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_firmatari/{year}/camera_firmatari_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: camera_atti_dibattito
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_atti_dibattito/{year}/camera_atti_dibattito_{year}_clean.parquet"
+    years: [15, 16, 17, 18, 19]
+  - type: external
+    name: camera_ddl
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_ddl/{year}/camera_ddl_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: latest
+  validate:
+    min_rows: 15
+
+mart:
+  tables:
+    - name: "mart_ponti_sintesi"
+      sql: "sql/mart_ponti_sintesi.sql"
+  required_tables:
+    - "mart_ponti_sintesi"
+  validate:
+    table_rules:
+      mart_ponti_sintesi:
+        required_columns: [ponte, metrica, valore, fonte]
+        min_rows: 15
+
+validation:
+  fail_on_error: true
