@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-10-03",
+  "updated_at": "2026-10-08",
   "datasets": [
     {
       "slug": "camera_atti_dibattito",
@@ -765,6 +765,30 @@
           "name": "legislatura",
           "type": "INTEGER",
           "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_camera",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "atto_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_legislatura",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_id_leg",
+          "type": "VARCHAR",
+          "role": "dimension",
           "description": ""
         }
       ],
@@ -4875,7 +4899,7 @@
       "detail": "anni 16-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T103026Z_d71bb541",
+        "run_id": "20261008T181459Z_609d1c9a",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4884,18 +4908,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 10396,
-          "clean": 10396,
-          "mart": 285
+          "raw": 10413,
+          "clean": 10413,
+          "mart": 286
         },
         "output_bytes": {
-          "raw": 1306286,
-          "clean": 90071,
-          "mart": 3058
+          "raw": 1506833,
+          "clean": 111572,
+          "mart": 3059
         },
-        "started_at": "2026-10-03T10:30:26.854312+00:00",
-        "finished_at": "2026-10-03T10:30:30.294742+00:00",
-        "duration_seconds": 3.44
+        "started_at": "2026-10-08T18:14:59.356366+00:00",
+        "finished_at": "2026-10-08T18:15:03.332843+00:00",
+        "duration_seconds": 3.976
       }
     },
     {
