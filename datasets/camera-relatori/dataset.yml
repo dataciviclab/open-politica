@@ -17,6 +17,7 @@ dataset:
 raw:
   output_policy: overwrite
   sources:
+    # Source 1 (primary): incarichi via discussione (chi-quando, data/tipo)
     - name: "camera_relatori_sparql"
       type: "sparql"
       primary: true
@@ -36,14 +37,34 @@ raw:
           }
           GROUP BY ?rel
         accept_format: "sparql-results+json"
+    # Source 2 (#62): chiave atto diretta ocd:atto ocd:rif_relatore
+    # ~45% degli incarichi Leg19; il resto resta senza atto pulito.
+    # NOTA: ocd:rif_deputato è sul relatore, non sull'atto (0 results se
+    # richiesto su ?atto). Il deputato resta dalla source 1 (join su rel).
+    - name: "camera_relatori_atto_sparql"
+      type: "sparql"
+      args:
+        endpoint: "https://dati.camera.it/sparql"
+        pages: 2
+        step: 10000
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          SELECT ?rel (MAX(?atto) AS ?atto)
+          WHERE {
+            ?atto a ocd:atto ; ocd:rif_relatore ?rel .
+            FILTER(CONTAINS(STR(?rel), "rel{year}_"))
+          }
+          GROUP BY ?rel
+        accept_format: "sparql-results+json"
 
 clean:
   sql: "sql/clean.sql"
   read_mode: robust
-  required_columns: [relatore_id, deputato_id, data]
+  required_columns: [relatore_id, deputato_id, data, atto_camera, atto_id, atto_legislatura]
   read:
     source: auto
-    mode: latest
+    # union_by_name delle 2 sorgenti SPARQL (discussione + atto diretto)
+    mode: all
     header: true
     encoding: "utf-8"
     strict_mode: false
@@ -76,4 +97,3 @@ mart:
 
 validation:
   fail_on_error: true
-

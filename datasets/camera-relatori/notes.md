@@ -9,9 +9,25 @@ produce.
 
 - **Fonte**: dati.camera.it — SPARQL, `ocd:relatore`, filtro URI `rel{year}_`
 - **Righe**: Leg19 ~10.360 incarichi · **1.000+ deputati** coinvolti
-- **Campi**: `relatore_id`, `deputato_id`, `data`, `tipo`, `legislatura`
+- **Campi**: `relatore_id`, `deputato_id`, `data`, `tipo`, `legislatura`,
+  **`atto_camera`**, **`atto_id`**, **`atto_legislatura`**, **`atto_id_leg`** (#62)
 - La `data` è quella della discussione (`dc:date` in cui il relatore ha
   riferito in commissione)
+
+## 2026-10-08 — Chiave atto (#62)
+
+- Seconda source SPARQL: `?atto a ocd:atto ; ocd:rif_relatore ?rel` →
+  URI `attocamera.rdf/ac{leg}_{id}`
+- **Correzione query issue**: `ocd:rif_deputato` non è su `?atto`
+  (COUNT=0) — resta sulla source discussione; join su `relatore_id`.
+- `read.mode: all` (union_by_name discussione + atto), stesso pattern di
+  `camera_leggi`; clean aggrega per `relatore_id` (max campi).
+- Colonne: `atto_camera` (URI), `atto_id`, `atto_legislatura`,
+  `atto_id_leg` (`{leg}_{id}`) — allineate a `camera_firmatari`
+- **Limite misurato (Leg19 run locale)**: **1.936 / 10.413** relatori
+  con `atto_camera` non null = **18,6%**. La stima issue (~45%) contava
+  likely righe atti, non relatori distinti dopo dedup. Il resto resta
+  senza atto LOD pulito — non bloccante, da dichiarare nei consumer.
 
 ## 2026-10-02 — Pattern C multi-legislature
 
@@ -29,12 +45,11 @@ produce.
 
 ## Note / limiti
 
-- Il legame **atto esplicito** non è diretto: il relatore è referenziato da
-  una `discussione` (che ha seduta/data ma non sempre il codice atto). Il
-  dataset cattura chi-quando, non ancora il singolo atto; il join atto è
-  lavoro futuro via `allegatoDiscussione`/seduta
-- `relatore_id` = URI (chiave unica); dedup in clean
-- 10.621 stimati, 10.360 dopo dedup/date mancanti
+- La source **atto diretto** (#62) copre **~18,6%** dei relatori Leg19
+  (1.936/10.413 con atto non null — run 2026-10-08); il resto resta
+  senza atto LOD — non bloccante, da dichiarare nei consumer.
+- `relatore_id` = URI (chiave unica); una riga per relatore nel clean
+  (max di data/tipo/atto — la data è quella della discussione se presente)
 
 ## Rebuild
 
