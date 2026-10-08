@@ -35,7 +35,7 @@ clean:
   read:
     source: config_only
     mode: latest
-  required_columns: [dl_numero, dl_anno, esito, data_presentazione]
+  required_columns: [dl_numero, dl_anno, esito, data_presentazione, ddl_id]
   validate:
     not_null: [dl_numero, data_presentazione]
     # una riga = un decreto-legge presentato per conversione

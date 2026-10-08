@@ -10,8 +10,22 @@ conversione" — da lì estraiamo numero, data, esito e tempi.
 - **Fonte**: `senato_ddl` (natura = "di conversione di decreto-legge")
 - **Righe**: 108 DL distinti (XIX leg.) — dedup da 270 righe di iter
 - **Campi**: `dl_numero`, `dl_anno`, `data_presentazione` (= data del DL),
-  `data_conversione`, `esito`, `giorni_conversione`, `titolo`
+  `data_conversione`, `esito`, `giorni_conversione`, `titolo`,
+  **`ddl_id`** (chiave `senato_ddl.id_ddl`, #63), `ddl_ramo`, `n_id_ddl_iter`
 - **Esiti**: convertito / decaduto / restituito al Governo / in esame
+
+## ddl_id (#63) — regola representative
+
+Lo stesso DL può avere **più `id_ddl`** (ramo Camera + Senato della stessa
+conversione, o iter distinti). Il clean ne sceglie **uno**:
+
+1. preferenza `ramo = 'S'` (esame Senato)
+2. poi `data_legge` / `data_presentazione` più recente
+
+`ddl_id` è quindi **representative, non univoco per costruzione**.
+Downstream (legal-graph): l'edge `converte_decreto_legge` punta a questo
+iter — accettabile come chiave di join, non come enumeration di tutti gli iter.
+`n_id_ddl_iter` conta quanti `id_ddl` distinti c'erano (>=1).
 
 ## Numeri (XIX leg.)
 
