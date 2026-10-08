@@ -1,5 +1,6 @@
-# Decreti-Legge — conversioni in Parlamento (XIX leg.)
+# Decreti-Legge — conversioni in Parlamento (Leg13–19)
 # raw + support da GCS (http_file / external) — non rilancia senato_ddl.
+# support multi-leg Pattern C (years = numero legislatura).
 root: "../../out"
 schema_version: 1
 
@@ -8,15 +9,17 @@ dataset:
   source_id: "dataciviclab_composite"
   tags: [politica, governo, decreti-legge, conversione, iter]
   category: politica
+  # una uscita compose (anno run); il clean copre Leg13–19 via support
   years: [2026]
   time_coverage:
-    # XIX leg. — i DDL di conversione (il DL arriva in Senato come disegno di conversione)
-    start_year: 2022
+    # DDL di conversione nelle legislature XIII–XIX
+    start_year: 1996
     end_year: 2026
 
 raw:
   output_policy: "overwrite"
   sources:
+    # rappresentativo (il clean legge {support.senato_ddl.clean} multi-leg)
     - name: "senato_ddl"
       type: "http_file"
       args:
@@ -25,22 +28,23 @@ raw:
       primary: true
 
 support:
+  # Pattern C: path per LEGISLATURA (…/19/), non anno calendario
   - type: external
     name: senato_ddl
     uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
-    years: [19]
+    years: [13, 14, 15, 16, 17, 18, 19]
 
 clean:
   sql: "sql/clean.sql"
   read:
     source: config_only
     mode: latest
-  required_columns: [dl_numero, dl_anno, esito, data_presentazione]
+  required_columns: [dl_numero, dl_anno, esito, data_presentazione, ddl_id]
   validate:
     not_null: [dl_numero, data_presentazione]
     # una riga = un decreto-legge presentato per conversione
     primary_key: [dl_numero, dl_anno]
-    min_rows: 80
+    min_rows: 300
 
 mart:
   tables:
@@ -58,7 +62,7 @@ mart:
         min_rows: 1
       mart_dettaglio:
         required_columns: [dl_numero, dl_anno, esito, titolo]
-        min_rows: 80
+        min_rows: 300
 
 validation:
   fail_on_error: true
