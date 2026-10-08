@@ -53,4 +53,7 @@ SELECT
     )                                                               AS ddl_ramo,
     count(DISTINCT id_ddl)                                          AS n_id_ddl_iter
 FROM conv
-GROUP BY regexp_extract(titolo, 'n\.\s*(\d+)', 1)
+-- multi-leg: i numeri DL ripartono ogni anno → PK (dl_numero, dl_anno)
+GROUP BY
+    regexp_extract(titolo, 'n\.\s*(\d+)', 1),
+    year(data_presentazione)
