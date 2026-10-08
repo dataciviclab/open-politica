@@ -8,8 +8,11 @@
 --
 -- Chiave atto (#62): atto_camera (URI) + atto_id + atto_legislatura
 --   stessa convenzione di camera_firmatari (ac{leg}_{id}).
---   Copertura parziale (~45% Leg19): gli incarichi senza atto LOD restano
---   con atto_camera NULL — dichiarato, non bloccante.
+--   Copertura parziale (~18,6% Leg19 — 1.936/10.413 con atto non null):
+--   gli incarichi senza atto LOD restano con atto_camera NULL.
+--   Grain: max(atto_camera) per relatore_id = UN atto representative
+--   (gli incarichi coperti hanno in media ~2.4 atti; il max è
+--   lessicografico, non semantico) — espandere romperebbe la PK.
 
 WITH u AS (
     SELECT

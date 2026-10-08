@@ -26,8 +26,14 @@ produce.
   `atto_id_leg` (`{leg}_{id}`) — allineate a `camera_firmatari`
 - **Limite misurato (Leg19 run locale)**: **1.936 / 10.413** relatori
   con `atto_camera` non null = **18,6%**. La stima issue (~45%) contava
-  likely righe atti, non relatori distinti dopo dedup. Il resto resta
+  righe atti, non relatori distinti dopo dedup. Il resto resta
   senza atto LOD pulito — non bloccante, da dichiarare nei consumer.
+- **Grain atto**: per relatore_id con più atti LOD (media ~2.4) resta
+  **un solo atto representative** (`max(atto_camera)` = URI
+  lessicograficamente maggiore). Non è semantico: per legal-graph l'edge
+  relatore Camera punta a un atto representative, non all'insieme.
+  Espandere le righe (1 relatore × N atti) romperebbe la PK
+  `relatore_id` — fuori scope #62, se mai serve va ripensato il grain.
 
 ## 2026-10-02 — Pattern C multi-legislature
 
