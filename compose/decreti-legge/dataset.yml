@@ -62,7 +62,7 @@ mart:
         min_rows: 1
       mart_dettaglio:
         required_columns: [dl_numero, dl_anno, esito, titolo]
-min_rows: 300
+        min_rows: 300
 
 validation:
   fail_on_error: true
