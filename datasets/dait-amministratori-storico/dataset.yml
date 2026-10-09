@@ -1,0 +1,82 @@
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "dait_amministratori_storico"
+  source_id: "dait"
+  tags: [politica, dait, amministratori, locali, storico, serie-storica]
+  category: politica
+  # Un solo anno di run: il preprocess produce la serie intera 1986–2025
+  years: [2025]
+  time_coverage:
+    mode: full_series
+    start_year: 1986
+    end_year: 2025
+
+# --- RAW LAYER ---
+# preprocess.py scarica gli snapshot annuali (31/12) dal portale DAIT,
+# gestisce encoding misti (utf-8/latin-1) e unifica le due ere schema
+# (A: 1986–2022, 28 col / B: 2023–2025, 34 col) in un singolo CSV.
+# La mappa anno→URL è hardcoded in preprocess.py (naming file variabile).
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "dait_storico_comuni"
+      type: "script"
+      primary: true
+      client:
+        timeout: 3600
+      args:
+        command: "python preprocess.py --out ."
+        output: "storico_amministratori.csv"
+        filename: "storico_amministratori.csv"
+
+# --- CLEAN LAYER ---
+# Il preprocess produce header snake_case uniformi e colonne già mappate.
+# Il clean fa solo tipizzazione (date DD/MM/YYYY, interi) e validazione.
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: latest
+    delim: ";"
+    encoding: "utf-8"
+    header: true
+    parallel: false
+    strict_mode: false
+    ignore_errors: true
+    null_padding: true
+    quote: "\""
+    escape: "\""
+    dateformat: "%d/%m/%Y"
+  required_columns: [anno_snapshot, codice_regione, descrizione_regione, codice_provincia, descrizione_provincia, codice_comune, descrizione_comune, codice_dait_completo, sigla_provincia, istat_codice_comune, popolazione_censita, maggioritario_proporzionale, descrizione_tempo_gestione, data_elezione, data_ballottaggio, consiglieri_spettanti, consiglieri_eletti, assessori_assegnati, cognome, nome, sesso, data_nascita, sede_nascita, livello_carica, descrizione_carica, data_inizio_carica, data_cessazione, incarico, data_inizio_incarico, data_fine_incarico, funzione, data_inizio_funzione, data_fine_funzione, lista_appartenenza, titolo_studio, professione]
+  validate:
+    not_null: [anno_snapshot, descrizione_carica]
+    min_rows: 4000000
+
+# --- MART LAYER ---
+# Mart longitudinali sulla serie 1986–2025:
+#   1) mart_genere_anno — quota femminile per anno (trend storico)
+#   2) mart_profilo_anno — profilo per anno × carica (n, età, % femmine)
+mart:
+  tables:
+    - name: "mart_genere_anno"
+      sql: "sql/mart_genere_anno.sql"
+    - name: "mart_profilo_anno"
+      sql: "sql/mart_profilo_anno.sql"
+  required_tables:
+    - "mart_genere_anno"
+    - "mart_profilo_anno"
+  validate:
+    table_rules:
+      mart_genere_anno:
+        required_columns: [anno_snapshot, sesso, n_amministratori, quota_pct]
+        primary_key: [anno_snapshot, sesso]
+        min_rows: 60
+      mart_profilo_anno:
+        required_columns: [anno_snapshot, descrizione_carica, n_amministratori, eta_media, quota_femmine_pct]
+        primary_key: [anno_snapshot, descrizione_carica]
+        min_rows: 200
+
+validation:
+  fail_on_error: true

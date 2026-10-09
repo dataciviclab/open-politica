@@ -60,7 +60,31 @@ I CSV della pagina open-data hanno schemi parzialmente diversi. Con `union_by_na
 - **Auto-inferenza tipi**: con union_by_name, DuckDB tipizza `popolazione` come BIGINT e le date come DATE — il clean.sql non deve rifare cast con NULLIF su stringhe
 - **Mart filtrate su comune**: le 3 mart sono `WHERE livello_ente='comune'` per preservare le metriche storiche; province/regioni analizzabili ad hoc sul clean
 - **Encoding**: attuali UTF-8; la serie storica 1986–2022 usa latin-1 in parte (gestire nel preprocess del dataset storico)
-- **Serie storica**: da implementare come dataset separato (`dait_amministratori_storico`) — vedi piano
+
+## Gap upstream (verificati 2026-10-09)
+
+I buchi sotto sono nei file raw del DAIT, non nel nostro processing. Verificati confrontando i CSV grezzi con la copertura attesa.
+
+### ammreg.csv — 18 regioni su 20
+
+- **Marche (11)**: assente — **anomalia vera**, regione ordinaria che dovrebbe essere presente. Merita segnalazione alla fonte.
+- **Trentino-Alto Adige (04)**: assente — atteso: PA autonome, le province BZ/TN fanno da capo, niente governo regionale separato.
+- **Emilia-Romagna (08)**: presente ma con **n=1** (solo il Presidente, zero consiglieri regionali) — semi-anomalia, verificare se il DAIT non pubblica i consiglieri ER a livello regionale.
+
+### ammprov.csv — 19 regioni su 20
+
+- **Valle d'Aosta (02)**: assente — atteso: regione a statuto speciale senza province.
+
+### Copertura comuni vs ISTAT
+
+- DAIT (snapshot 24/08/2026): **7.880** comuni unici
+- ISTAT (1/1/2025): ~**7.896** → gap ~16 unità
+- Verifica fusioni note: Lirio, Castegnero, Nanto **assenti** dal DAIT (fusi 2024 in Montalto Pavese / Nanto) — lo snapshot non è ancora allineato alle ultime aggregazioni comunali.
+
+### Territorio Sardegna
+
+- `ammprov.csv` include province storiche pre-riforma (CI, OG, OT, VS, SU) — classificazione territoriale non aggiornata alle riforme 2016/2021.
+- Sud Sardegna (SU): presente a livello provincia ma **0 comuni** con sigla SU a livello comune — incoerenza interna al file DAIT.
 
 ## Aggiornamento 2026-10-09 (multi-livello)
 
