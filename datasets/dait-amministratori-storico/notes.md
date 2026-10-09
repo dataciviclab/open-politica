@@ -51,6 +51,30 @@
 - **Dati personali**: stessa base giuridica del dataset corrente (cariche pubbliche, art. 6(1)(c) GDPR); la serie storica estende il trattamento su base continuativa — valutare liceità per riutilizzi downstream
 - **Licenza**: CC BY 4.0 (per analogia con note legali Ministero, art. 52 CAD)
 
+## Copertura e qualità (verificati 2026-10-09)
+
+### Copertura regioni — piena
+
+- **20/20 regioni** presenti in tutti gli anni campionati (1986, 1990, 1995, 2000, 2005, 2010, 2015, 2020, 2025)
+- Nessun buco regionale nella serie — a differenza del dataset corrente (ammreg con 18/20), lo storico è completo perché i CSV annuali includono tutti i comuni delle regioni mancanti a livello regionale.
+
+### Qualità parse — eccellente
+
+- Cognome vuoto: **0%** in tutti gli anni campionati (134k–198k righe/anno)
+- Sesso non M/F: **< 0,15%** — trascurabile
+- Encoding: smart_decode gestisce correttamente utf-8 e latin-1; nessun errore di decode nei 40 anni.
+
+### Caveat copertura parziale 1986–1988
+
+- Il 1986 ha 5.466 sindaci (vs ~8.000 dal 1990): **copertura parziale** del DAIT nei primi anni di vita.
+- Il salto 1987→1988 (+29,5% sindaci) è espansione di copertura della fonte, non evento demografico reale.
+- **Usare con cautela** il triennio 1986–1988 nelle serie storiche; dal 1990 la copertura è stabile (~8k comuni).
+
+### Lag territoriale province sarde
+
+- I file annuali dello storico mostrano classificazione provinciale sarda **non allineata alle riforme**: nel 2020 le province erano CA/NU/OR/SS/SU (corretto post-2016), ma nel 2025 sono tornate CA/CI/NU/OG/OR/OT/SS/VS (pre-2016).
+- Impact: le analisi per provincia in Sardegna usano confini storici, non quelli vigenti. Le analisi per regione e per comune non sono affette.
+
 ## Aggiornamento 2026-10-09 (creazione)
 
 - Dataset creato da zero su branch feat/dait-amm-storico
