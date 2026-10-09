@@ -10,6 +10,10 @@ dataset:
   time_coverage: {start_year: 2026, end_year: 2026}
 
 # --- RAW LAYER ---
+# 3 source multi-livello (comune/provincia/regione) della stessa pagina DAIT.
+# inject_column inietta livello_ente in ogni riga; il toolkit unisce i CSV
+# con union_by_name (colonne mancanti → NULL). Nessun columns: esplicito
+# in clean.read — disattiverebbe union_by_name.
 raw:
   output_policy: overwrite
   sources:
@@ -18,51 +22,52 @@ raw:
       args:
         url: "https://dait.interno.gov.it/documenti/ammcom.csv"
         filename: "ammcom.csv"
+      inject_column:
+        livello_ente: "comune"
       primary: true
+    - name: "dait_ammprov"
+      type: "http_file"
+      args:
+        url: "https://dait.interno.gov.it/documenti/ammprov.csv"
+        filename: "ammprov.csv"
+      inject_column:
+        livello_ente: "provincia"
+    - name: "dait_ammreg"
+      type: "http_file"
+      args:
+        url: "https://dait.interno.gov.it/documenti/ammreg.csv"
+        filename: "ammreg.csv"
+      inject_column:
+        livello_ente: "regione"
 
 # --- CLEAN LAYER ---
-# Le prime 2 righe del CSV contengono metadati (titolo + data aggiornamento) — skip:2
+# Le prime 2 righe di ogni CSV contengono metadati (titolo + data aggiornamento) — skip:2
+# union_by_name gestisce le differenze di schema tra livelli (colonne mancanti → NULL).
+# Date in formato DD/MM/YYYY parsate da DuckDB via dateformat.
 clean:
   sql: "sql/clean.sql"
   read:
     source: auto
-    mode: latest
+    mode: all
     delim: ";"
     encoding: "utf-8"
     header: true
     skip: 2
     parallel: false
     ignore_errors: true
+    null_padding: true
     dateformat: "%d/%m/%Y"
-    columns:
-      codice_regione: "VARCHAR"
-      codice_provincia: "VARCHAR"
-      codice_comune: "VARCHAR"
-      denominazione_comune: "VARCHAR"
-      sigla_provincia: "VARCHAR"
-      popolazione_censita_alla_data_elezione: "VARCHAR"
-      cognome: "VARCHAR"
-      nome: "VARCHAR"
-      sesso: "VARCHAR"
-      data_nascita: "DATE"
-      luogo_nascita: "VARCHAR"
-      descrizione_carica: "VARCHAR"
-      incarico: "VARCHAR"
-      data_elezione: "DATE"
-      data_entrata_in_carica: "DATE"
-      "lista_appartenenza/collegamento": "VARCHAR"
-      titolo_studio: "VARCHAR"
-      professione: "VARCHAR"
-  required_columns: [anno, codice_regione, codice_provincia, codice_comune, codice_dait_completo, denominazione_comune, sigla_provincia, popolazione_censita, cognome, nome, sesso, data_nascita, luogo_nascita, descrizione_carica, incarico, data_elezione, data_entrata_in_carica, lista_appartenenza, titolo_studio, professione]
+  required_columns: [anno, livello_ente, codice_regione, codice_provincia, codice_comune, codice_dait_completo, denominazione_ente, sigla_provincia, popolazione_censita, cognome, nome, sesso, data_nascita, luogo_nascita, descrizione_carica, incarico, data_elezione, data_entrata_in_carica, data_elezione_max_carica, lista_appartenenza, titolo_studio, professione]
   validate:
-    not_null: [anno, descrizione_carica]
-    min_rows: 100000
+    not_null: [anno, livello_ente, descrizione_carica]
+    min_rows: 125000
 
 # --- MART LAYER ---
-# Mart analitiche serie (rimossa la flat passthrough):
-#   1) mart_profilo_carica — conteggi, eta media, % femmine per carica
-#   2) mart_profilo_demografico — distribuzione sesso x classe di eta per carica
-#   3) mart_territorio — composizione per regione x carica
+# Mart analitiche:
+#   1) mart_profilo_carica — conteggi, eta media, % femmine per carica (solo comuni)
+#   2) mart_profilo_demografico — distribuzione sesso x classe di eta per carica (solo comuni)
+#   3) mart_territorio — composizione per regione x carica (solo comuni)
+#   4) mart_profilo_livello — confronto profilo tra comuni/province/regioni
 mart:
   tables:
     - name: "mart_profilo_carica"
@@ -71,9 +76,12 @@ mart:
       sql: "sql/mart_profilo_demografico.sql"
     - name: "mart_territorio"
       sql: "sql/mart_territorio.sql"
+    - name: "mart_profilo_livello"
+      sql: "sql/mart_profilo_livello.sql"
   required_tables:
     - "mart_profilo_carica"
     - "mart_territorio"
+    - "mart_profilo_livello"
   validate:
     table_rules:
       mart_profilo_carica:
@@ -88,6 +96,10 @@ mart:
         required_columns: [codice_regione, descrizione_carica, n_amministratori, quota_femmine_pct]
         primary_key: [codice_regione, descrizione_carica]
         min_rows: 20
+      mart_profilo_livello:
+        required_columns: [livello_ente, descrizione_carica, n_amministratori, n_enti, eta_media, quota_femmine_pct]
+        primary_key: [livello_ente, descrizione_carica]
+        min_rows: 10
 
 validation:
   fail_on_error: true

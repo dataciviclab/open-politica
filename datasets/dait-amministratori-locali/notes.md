@@ -1,50 +1,45 @@
 ## Tecnico
 
-- **Fonte**: DAIT — snapshot corrente CSV via HTTP
-- **URL diretto**: `https://dait.interno.gov.it/documenti/ammcom.csv`
+- **Fonte**: DAIT — snapshot corrente CSV via HTTP (3 file multi-livello)
+- **URL diretti**: `ammcom.csv` (comuni), `ammprov.csv` (province), `ammreg.csv` (regioni) — stessa pagina open-data
 - **Protocollo**: HTTP file (non CKAN)
-- **CSV**: UTF-8, delim `;`, header alla riga 3 (prime 2 righe = metadati da skippare)
-- **Dimensione raw**: 26.68 MB
-- **Colonne**: 18 colonne raw → 19 clean (aggiunta `anno`)
-- **Granularità**: amministratori comunali
+- **CSV**: UTF-8, delim `;`, header alla riga 3 (prime 2 righe = metadati da skippare) — identico nei 3 file
+- **Dimensioni raw**: ammcom ~30 MB, ammprov ~250 KB, ammreg ~200 KB
+- **Granularità**: amministratori comunali + provinciali + regionali (snapshot corrente)
+- **Unione multi-livello**: `inject_column: livello_ente` + `read.mode: all` + `union_by_name` (toolkit nativo, nessun preprocess). Colonne mancanti a un livello → NULL.
 
 ## Run
 
-- **Dataset**: ammcom.csv (amministratori comunali, snapshot 2026)
-- **Run ID**: `20260611T103450Z_bb4522c9`
-- **Esito**: SUCCESS (7.7s)
-- **Righe clean**: 116.054
-- **Readiness**: 5/5
+- **Dataset**: ammcom + ammprov + ammreg (snapshot 2026)
+- **Run ID**: `20261009T111043Z` (feat/dait-amm-unificati)
+- **Esito**: SUCCESS — readiness 8/8
+- **Righe clean**: 127.805 (125.953 comuni + 986 province + 866 regioni)
+- **Confronto**: il precedente run solo-comuni aveva 124.716 righe; la differenza (~1.2k) è dovuta all'aggiornamento del file ammcom.csv a monte
 
 ## Confronto altri CSV DAIT
 
-I 6 CSV disponibili nella pagina open-data hanno schemi DIVERSI tra loro. Non unificabili automaticamente con `mode: all`:
+I CSV della pagina open-data hanno schemi parzialmente diversi. Con `union_by_name` + `inject_column` il toolkit li unisce nativamente:
 
-| CSV | Colonne | Unione con ammcom? |
+| CSV | Colonne raw | Unito nel dataset? |
 |---|---|---|
-| `ammcom.csv` | 18 (schema base) | — |
-| `maggiororgano.csv` | 18 (identico) | ✅ UNION diretto |
-| `ammprov.csv` | 17 (+ data_elezione_max_carica, - codice_comune) | ❌ schema diverso |
-| `ammmetropolitani.csv` | 17 (come ammprov) | ❌ schema diverso |
-| `ammreg.csv` | 14 (solo regione) | ❌ schema ridotto |
-| `organistraordinariincarica.csv` | 11 (solo base) | ❌ schema ridotto |
-
-Per unire file con schemi diversi servirebbe clean.sql manuale con UNION ALL e aliasing colonne.
+| `ammcom.csv` | 18 | ✅ (primary) |
+| `ammprov.csv` | 17 (+ data_elezione_max_carica, - codice_comune) | ✅ (union_by_name) |
+| `ammreg.csv` | 14 (solo regione) | ✅ (union_by_name) |
+| `maggiororgano.csv` | 18 (identico ad ammcom) | ❌ ridondante (sottoinsieme) |
+| `sindaciincarica.csv` | 19 (sottoinsieme ammcom) | ❌ ridondante |
+| `ammmetropolitani.csv` | 17 (come ammprov) | ❌ non incluso (nichilistica) |
+| `organistraordinariincarica.csv` | 11 | ❌ non incluso |
 
 ## Analitico
 
-- `codice_regione`, `codice_provincia`, `codice_comune`: codici DAIT conservati come VARCHAR (leading zero preservato). DAIT usa un sistema di codifica comunale a 4 cifre (non 3 come ISTAT). `codice_dait_completo` = regione(2)\|\|provincia(3)\|\|comune(4) — 9 caratteri. Non è un codice ISTAT: serve mappatura verificata per join.
-- `denominazione_comune`, `sigla_provincia`: dati territoriali
-- `popolazione_censita_alla_data_elezione`: popolazione al momento dell'elezione (spesso NULL se non aggiornata)
-- `cognome`, `nome`, `sesso`: anagrafica (M/F) — sesso quasi sempre valorizzato
-- `data_nascita`: formato DD/MM/YYYY nel raw, parsato come DATE dal clean (tramite `clean.read.dateformat`)
-- `luogo_nascita`: comune di nascita (es. "ACQUI TERME (AL)")
-- `descrizione_carica`: valori osservati → Sindaco, Assessore, Consigliere, Consigliere candidato sindaco
-- `incarico`: sub-ruolo opzionale (Vicesindaco, Presidente del consiglio, ecc.)
-- `data_elezione`, `data_entrata_in_carica`: date in formato DD/MM/YYYY, parsate come DATE
-- `lista_appartenenza/collegamento`: nome della lista elettorale (rinominata in `lista_appartenenza` nel clean)
-- `titolo_studio`: categorizzazione amministrativa (es. "Laurea Magistrale", "Istruzione Secondaria di Secondo Grado")
-- `professione`: classificazione ISTAT-like delle professioni (es. "IMPRENDITORI TITOLARI E AMMIN. DELEGATI DI IMPRESE COMMERCIALI")
+- `livello_ente`: colonna iniettata da `inject_column` — `comune` / `provincia` / `regione`
+- `denominazione_ente`: unificata da `denominazione_{comune,provincia,regione}` via COALESCE (prima era `denominazione_comune` — breaking change documentato)
+- `codice_dait_completo`: 9 cifre (regione2+provincia3+comune4), valorizzato solo per `livello_ente='comune'`. Non è un codice ISTAT — serve mappatura verificata per join
+- `popolazione_censita`: solo comuni; auto-detect DuckDB la tipizza BIGINT (non serve NULLIF per vuoti)
+- `data_elezione_max_carica`: solo province (986/986 valorizzate)
+- `codice_regione`: codice DAIT (2 cifre), non ISTAT
+- Date (`data_nascita`, `data_elezione`, `data_entrata_in_carica`, `data_elezione_max_carica`): DD/MM/YYYY nel raw, DATE nel clean via `dateformat`
+- `lista_appartenenza/collegamento`: colonna con slash — richiede quoting DuckDB nel clean.sql
 
 ## Licenza e trattamento dati personali
 
@@ -60,27 +55,18 @@ Per unire file con schemi diversi servirebbe clean.sql manuale con UNION ALL e a
 
 ## Cautele
 
-- **Encoding**: i CSV attuali sono UTF-8, ma versioni passate usavano latin1 — verificare per serie storica
-- **Skip rows**: prime 2 righe = metadati ("Amministratori Comunali...", "Aggiornato al..."). Gestito con `clean.read.skip: 2`
-- **Colonna con slash**: `lista_appartenenza/collegamento` richiede quoting DuckDB (`"lista_appartenenza/collegamento"`). Rinominata a `lista_appartenenza` nel clean
-- **Popolazione censita**: spesso NULL se il comune non ha aggiornato il dato
-- **Professione/titolo_studio**: categorizzazioni amministrative verbose — da normalizzare in analisi
-- **Lista appartenenza**: formato libero, nomi molto lunghi e concatenati con `|` — richiede pulizia NLP
-- **Parallel scanner**: DuckDB richiede `parallel: false` con `null_padding: true` (righe con quoted newlines)
-- **Auto-inferenza tipi**: disabilitata con `columns` espliciti VARCHAR per evitare errori su date/campo popolazione
-- **Serie storica**: snapshot annuali hanno struttura e naming diversi tra anni → da verificare consistenza
-- **Dimensione**: 26.7 MB gestibile (~3 MB Parquet)
-- **Stato SO**: fonte `dait` è in `radar-only` — dopo intake si può valutare `catalog-watch`
+- **mode: all obbligatorio**: con `mode: latest` il toolkit seleziona solo il file primary — per multi-source serve `mode: all`
+- **Niente clean.read.columns espliciti**: disattiverebbero `union_by_name` e romperebbero l'unione con schemi diversi
+- **Auto-inferenza tipi**: con union_by_name, DuckDB tipizza `popolazione` come BIGINT e le date come DATE — il clean.sql non deve rifare cast con NULLIF su stringhe
+- **Mart filtrate su comune**: le 3 mart sono `WHERE livello_ente='comune'` per preservare le metriche storiche; province/regioni analizzabili ad hoc sul clean
+- **Encoding**: attuali UTF-8; la serie storica 1986–2022 usa latin-1 in parte (gestire nel preprocess del dataset storico)
+- **Serie storica**: da implementare come dataset separato (`dait_amministratori_storico`) — vedi piano
 
-## Aggiornamento 2026-08-01 (standard v1)
+## Aggiornamento 2026-10-09 (multi-livello)
 
-- Mart flat passthrough rimossa; 3 mart analitiche serie (profilo_carica,
-  profilo_demografico, territorio) — rispondono alle domande del README
-- Run passed: clean 124.716 righe (0% drop), mart 3/3, readiness 8/8
-- Numeri chiave: 7.769 sindaci su 7.768 comuni (~1:1); sindaci F 15,4%
-  (eta media 55,8) vs consiglieri F 35,9% (49,9); regione 03 (Lombardia)
-  1.492 sindaci
-- `codice_regione` è il codice DAIT (2 cifre), non ISTAT — join con dataset
-  ISTAT richiede mappatura (nota già presente nel clean.sql)
-- `popolazione_censita` e `codice_dait_completo` aggiunti a required_columns
-- read.mode al posto di read_mode (legacy)
+- Esteso il dataset da solo-ammcom a 3 livelli (comune/provincia/regione)
+- `inject_column: livello_ente` + `read.mode: all` + union_by_name (nessun preprocess)
+- Breaking change: `denominazione_comune` → `denominazione_ente`; aggiunte `livello_ente` e `data_elezione_max_carica`
+- Run: 127.805 righe, readiness 8/8; 4 mart (le 3 storiche filtrate su comune + mart_profilo_livello su tutti i livelli)
+- Numeri chiave: 7.783 sindaci su 7.880 comuni; sindaci F 15,5% (età media 55,8); regione 03 (Lombardia) 23.558 amministratori totali
+- Pattern da mart_profilo_livello: più si sale di livello, meno donne (Sindaci com F 15,5% → Presidenti prov F 9,0% → Presidenti reg F 11,8%) e più età (55,8 → 54,9 → 58,3)
