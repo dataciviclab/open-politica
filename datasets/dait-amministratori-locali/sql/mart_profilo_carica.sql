@@ -2,6 +2,8 @@
 --
 -- 1 riga = 1 carica (Sindaco, Assessore, Consigliere, ...): conteggi,
 -- età media (al 2026-06-01), % femmine, n comuni.
+-- Filtro livello_ente='comune' — province/regioni sono nel clean layer
+-- per analisi ad hoc, non in questa mart.
 -- Serve per: composizione della classe politica locale (README domanda
 -- principale), quanti per carica, differenze demografiche per carica.
 --
@@ -15,6 +17,7 @@ SELECT
     ROUND(100.0 * SUM(CASE WHEN sesso = 'F' THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 1) AS quota_femmine_pct,
     ROUND(100.0 * SUM(CASE WHEN sesso = 'M' THEN 1 ELSE 0 END) / NULLIF(COUNT(*), 0), 1) AS quota_maschi_pct
 FROM clean_input
-WHERE descrizione_carica IS NOT NULL
+WHERE livello_ente = 'comune'
+  AND descrizione_carica IS NOT NULL
 GROUP BY descrizione_carica
 ORDER BY n_amministratori DESC

@@ -1,6 +1,7 @@
 -- mart_profilo_demografico — Profilo demografico per carica
 --
 -- 1 riga = 1 carica: distribuzione per sesso e classe di età, età media.
+-- Filtro livello_ente='comune' — province/regioni sono nel clean layer.
 -- Serve per: quante donne elette (README), età media di sindaci/assessori/
 -- consiglieri, composizione anagrafica della classe politica locale.
 --
@@ -16,6 +17,7 @@ SELECT
     SUM(CASE WHEN DATE_DIFF('year', data_nascita, DATE '2026-06-01') BETWEEN 50 AND 64 THEN 1 ELSE 0 END) AS n_50_64,
     SUM(CASE WHEN DATE_DIFF('year', data_nascita, DATE '2026-06-01') >= 65 THEN 1 ELSE 0 END) AS n_over_65
 FROM clean_input
-WHERE descrizione_carica IS NOT NULL AND sesso IS NOT NULL AND data_nascita IS NOT NULL
+WHERE livello_ente = 'comune'
+  AND descrizione_carica IS NOT NULL AND sesso IS NOT NULL AND data_nascita IS NOT NULL
 GROUP BY descrizione_carica, sesso
 ORDER BY descrizione_carica, sesso
