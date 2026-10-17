@@ -67,7 +67,7 @@ def load_senato(clean: Path) -> list[tuple[int, str, str, int]]:
 
 def load_senato_all(clean_dir: Path) -> list[tuple[int, str, str, int]]:
     """Carica senatori da TUTTE le legislature disponibili.
-    
+
     Prima leggeva solo l'ultima legislatura (Leg19). Ora legge tutte
     le cartelle Legislature (13-19) per estendere la copertura del ponte.
     """
@@ -77,13 +77,13 @@ def load_senato_all(clean_dir: Path) -> list[tuple[int, str, str, int]]:
     )
     if not files:
         return []
-    
+
     all_senato: list[tuple[int, str, str, int]] = []
     for f in files:
         leg_rows = load_senato(f)
         all_senato.extend(leg_rows)
         print(f"  carica Leg {f.parent.name}: {len(leg_rows)} senatori")
-    
+
     # Dedup per senatore_id (può apparire in più legislature)
     seen: set[int] = set()
     deduped: list[tuple[int, str, str, int]] = []
@@ -158,7 +158,7 @@ def main() -> int:
             stats["senza_match"] += 1
 
     matched_personas = len({p for _, p, _ in matched if _})
-    print(f"--- match ---")
+    print("--- match ---")
     print(f"senatori 1:1 con un deputato: {stats['match_1to1']}  "
           f"({100.0 * stats['match_1to1'] / len(senato):.1f}%)")
     print(f"senatori ambigui (più deputati): {stats['ambigui']}")
