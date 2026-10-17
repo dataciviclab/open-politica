@@ -46,17 +46,52 @@ def load_camera(clean: Path) -> list[tuple[int, str, str]]:
         SELECT DISTINCT persona_id, nome, cognome
         FROM read_parquet('{clean}')
         WHERE persona_id IS NOT NULL
+          AND nome IS NOT NULL AND cognome IS NOT NULL
+          AND TRIM(nome) != '' AND TRIM(cognome) != ''
     """).fetchall()
     return [(int(pid), nome or "", cognome or "") for pid, nome, cognome in rows]
 
 
-def load_senato(clean: Path) -> list[tuple[int, str, str]]:
+def load_senato(clean: Path) -> list[tuple[int, str, str, int]]:
+    """Carica senatori da un file clean. Ritorna (senatore_id, nome, cognome, legislatura)."""
     rows = CON.execute(f"""
-        SELECT senatore_id, nome, cognome
+        SELECT senatore_id, nome, cognome, legislatura
         FROM read_parquet('{clean}')
         WHERE senatore_id IS NOT NULL
+          AND nome IS NOT NULL AND cognome IS NOT NULL
+          AND TRIM(nome) != '' AND TRIM(cognome) != ''
     """).fetchall()
-    return [(int(sid), nome or "", cognome or "") for sid, nome, cognome in rows]
+    return [(int(sid), nome or "", cognome or "", int(leg) if leg else 0)
+            for sid, nome, cognome, leg in rows]
+
+
+def load_senato_all(clean_dir: Path) -> list[tuple[int, str, str, int]]:
+    """Carica senatori da TUTTE le legislature disponibili.
+
+    Prima leggeva solo l'ultima legislatura (Leg19). Ora legge tutte
+    le cartelle Legislature (13-19) per estendere la copertura del ponte.
+    """
+    files = sorted(
+        clean_dir.glob("*/*_clean.parquet"),
+        key=lambda p: int(p.parent.name) if p.parent.name.isdigit() else -1,
+    )
+    if not files:
+        return []
+
+    all_senato: list[tuple[int, str, str, int]] = []
+    for f in files:
+        leg_rows = load_senato(f)
+        all_senato.extend(leg_rows)
+        print(f"  carica Leg {f.parent.name}: {len(leg_rows)} senatori")
+
+    # Dedup per senatore_id (può apparire in più legislature)
+    seen: set[int] = set()
+    deduped: list[tuple[int, str, str, int]] = []
+    for sid, nome, cognome, leg in all_senato:
+        if sid not in seen:
+            seen.add(sid)
+            deduped.append((sid, nome, cognome, leg))
+    return deduped
 
 
 def main() -> int:
@@ -68,27 +103,20 @@ def main() -> int:
 
     root = Path(args.root)
     camera_clean = root / "data/clean/camera_deputati_legislature/2026/camera_deputati_legislature_2026_clean.parquet"
-    # senato_anagrafica è multi-legislature (Leg13–19) dal 2026-10-02:
-    # prende l'ultima legislatura disponibile (Leg19 = cartella "19")
-    senato_candidates = sorted(
-        (root / "data/clean/senato_anagrafica").glob("*/*_clean.parquet"),
-        key=lambda p: int(p.parent.name) if p.parent.name.isdigit() else -1,
-    )
-    senato_clean = senato_candidates[-1] if senato_candidates else (
-        root / "data/clean/senato_anagrafica/19/senato_anagrafica_19_clean.parquet"
-    )
+    # senato_anagrafica è multi-legislature (Leg13–19): legge TUTTE le cartelle
+    senato_clean_dir = root / "data/clean/senato_anagrafica"
 
     if not camera_clean.exists():
         print(f"ERRORE: {camera_clean} non trovato — camera_deputati_legislature deve essere processato prima")
         return 1
-    if not senato_clean.exists():
-        print(f"ERRORE: {senato_clean} non trovato — senato_anagrafica deve essere processato prima")
+    if not senato_clean_dir.exists():
+        print(f"ERRORE: {senato_clean_dir} non trovato — senato_anagrafica deve essere processato prima")
         return 1
 
     camera = load_camera(camera_clean)
-    senato = load_senato(senato_clean)
+    senato = load_senato_all(senato_clean_dir)
     print(f"deputati (persone distinte): {len(camera)}")
-    print(f"senatori:                    {len(senato)}")
+    print(f"senatori (tutte legislature): {len(senato)}")
 
     by_name: dict[tuple[str, str], list[int]] = defaultdict(list)
     for pid, nome, cognome in camera:
@@ -117,7 +145,7 @@ def main() -> int:
 
     matched: list[tuple[int, int, str]] = []  # senatore_id, persona_id, tipo
     stats = {"match_1to1": 0, "ambigui": 0, "senza_match": 0}
-    for sid, nome, cognome in senato:
+    for sid, nome, cognome, _leg in senato:
         pids = match_camera(nome, cognome)
         if len(pids) == 1:
             matched.append((sid, pids[0], "1to1"))
@@ -130,7 +158,7 @@ def main() -> int:
             stats["senza_match"] += 1
 
     matched_personas = len({p for _, p, _ in matched if _})
-    print(f"--- match ---")
+    print("--- match ---")
     print(f"senatori 1:1 con un deputato: {stats['match_1to1']}  "
           f"({100.0 * stats['match_1to1'] / len(senato):.1f}%)")
     print(f"senatori ambigui (più deputati): {stats['ambigui']}")
