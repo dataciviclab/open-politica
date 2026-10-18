@@ -37,10 +37,17 @@ raw:
         output: "camera_sindisp_raw.parquet"
         filename: "camera_sindisp_raw.parquet"
 
+support:
+  # Ponte ODG → DDL: il numero del disegno di legge è nel titolo degli ODG
+  # ("P.D.L. 9/00005-A/004"). Il support materializza camera_ddl multi-leg.
+  - name: camera_ddl
+    config: "../camera-ddl/dataset.yml"
+    years: [13, 14, 15, 16, 17, 18, 19]
+
 clean:
   sql: "sql/clean.sql"
   read_mode: robust
-  required_columns: [atto_id, tipo_categoria, legislatura]
+  required_columns: [atto_id, tipo_categoria, legislatura, ddl_numero]
   read:
     source: auto
     mode: latest
@@ -62,8 +69,13 @@ mart:
       sql: "sql/mart_sintesi.sql"
     - name: "mart_anni"
       sql: "sql/mart_anni.sql"
+    - name: "mart_odg_ddl"
+      sql: "sql/mart_odg_ddl.sql"
+    - name: "mart_odg_ddl_sintesi"
+      sql: "sql/mart_odg_ddl_sintesi.sql"
   required_tables:
     - "mart_sintesi"
+    - "mart_odg_ddl"
   validate:
     table_rules:
       mart_sintesi:
@@ -72,6 +84,15 @@ mart:
         min_rows: 1
       mart_anni:
         required_columns: [legislatura, anno, tipo_categoria, n_atti]
+        min_rows: 1
+      mart_odg_ddl:
+        required_columns: [legislatura, id_ddl, ddl_titolo, matched, is_dl_o_bilancio, n_odg]
+        primary_key: [legislatura, id_ddl]
+        # Leg15 (legislatura breve) ha 76 DDL distinti con ODG
+        min_rows: 50
+      mart_odg_ddl_sintesi:
+        required_columns: [legislatura, n_odg, n_con_numero, n_con_match, n_dl_o_bilancio, pct_dl_o_bilancio]
+        primary_key: [legislatura]
         min_rows: 1
 
 validation:

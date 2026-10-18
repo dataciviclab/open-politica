@@ -19,6 +19,8 @@ import toolkit
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DATASETS = REPO_ROOT / "datasets"
 MACROS = Path(toolkit.__file__).parent / "sql" / "macros.sql"
+MART_ODG_DDL = DATASETS / "camera-sindisp" / "sql" / "mart_odg_ddl.sql"
+MART_ODG_DDL_SINTESI = DATASETS / "camera-sindisp" / "sql" / "mart_odg_ddl_sintesi.sql"
 
 
 def _connect() -> duckdb.DuckDBPyConnection:
@@ -161,3 +163,69 @@ def test_bridge_config_pk_qualificate():
     assert dest["clean"]["validate"]["primary_key"] == ["atto_id", "destinatario_uri"]
     assert "--mode firmatari" in firm["raw"]["sources"][0]["args"]["command"]
     assert "--mode destinatari" in dest["raw"]["sources"][0]["args"]["command"]
+
+
+def test_config_support_camera_ddl_e_mart_ponte():
+    cfg = _cfg("camera-sindisp")
+    support = {s["name"]: s for s in cfg["support"]}
+    assert support["camera_ddl"]["config"] == "../camera-ddl/dataset.yml"
+    assert support["camera_ddl"]["years"] == [13, 14, 15, 16, 17, 18, 19]
+    mart_names = {t["name"] for t in cfg["mart"]["tables"]}
+    assert {"mart_odg_ddl", "mart_odg_ddl_sintesi"} <= mart_names
+
+
+def test_clean_estrae_numero_ddl_dal_titolo_odg():
+    con = _connect()
+    con.execute(
+        """
+        CREATE TABLE raw_input AS SELECT * FROM (VALUES
+          ('a1', 'ODG - ORDINE DEL GIORNO IN ASSEMBLEA', '9/00005-A/004',
+           '20221110', 'ODG IN ASSEMBLEA SU P.D.L. 9/00005-A/004 presentata da X',
+           'testo', 'Camera dei Deputati', NULL, NULL, '1', NULL)
+        ) AS t(atto, tipo, numero, data, titolo, descrizione, ramo,
+               primo, primo_label, concluso, risposta)
+        """
+    )
+    out = con.execute(_clean_sql("camera-sindisp")).fetchdf()
+    assert out.iloc[0]["ddl_numero"] == 5
+
+
+def test_mart_odg_ddl_join_e_sintesi():
+    con = _connect()
+    con.execute(
+        """
+        CREATE TABLE clean_input AS SELECT * FROM (VALUES
+          ('a1', 'Ordine del giorno', 19, 5),
+          ('a2', 'Ordine del giorno', 19, 5),
+          ('a3', 'Ordine del giorno', 19, 7),
+          ('a4', 'Ordine del giorno', 19, NULL)
+        ) AS t(atto_id, tipo_categoria, legislatura, ddl_numero)
+        """
+    )
+    con.execute(
+        """
+        CREATE TABLE ddl_fixture AS SELECT * FROM (VALUES
+          (5, 19, 'Conversione in legge del decreto-legge X'),
+          (7, 19, 'Bilancio di previsione dello Stato')
+        ) AS t(id_ddl, legislatura, titolo)
+        """
+    )
+    mart = MART_ODG_DDL.read_text("utf-8").replace(
+        "read_parquet('{support.camera_ddl.clean}')", "ddl_fixture"
+    )
+    out = con.execute(mart).fetchdf().set_index("id_ddl")
+    assert int(out.loc[5, "n_odg"]) == 2
+    assert bool(out.loc[5, "matched"]) is True
+    assert bool(out.loc[5, "is_dl_o_bilancio"]) is True
+    assert int(out.loc[7, "n_odg"]) == 1
+    assert bool(out.loc[7, "is_dl_o_bilancio"]) is True
+
+    sintesi = MART_ODG_DDL_SINTESI.read_text("utf-8").replace(
+        "read_parquet('{support.camera_ddl.clean}')", "ddl_fixture"
+    )
+    row = con.execute(sintesi).fetchdf().iloc[0]
+    assert int(row["n_odg"]) == 4
+    assert int(row["n_con_numero"]) == 3
+    assert int(row["n_con_match"]) == 3
+    assert int(row["n_dl_o_bilancio"]) == 3
+    assert float(row["pct_con_match"]) == 75.0

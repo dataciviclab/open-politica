@@ -62,6 +62,16 @@ parsed AS (
             WHEN ramo_raw ILIKE '%Senato%' THEN 'Senato'
             ELSE ramo_raw
         END AS ramo,
+        -- Ponte ODG -> DDL: il titolo contiene "P.D.L. 9/00005[-A]/...".
+        -- Il numero è quello del disegno di legge Camera (id_ddl).
+        -- Per gli altri tipi il campo resta NULL: il link è testuale.
+        TRY_CAST(
+            regexp_extract(
+                titolo,
+                'P\.?D\.?L\.?\s*[0-9]+/([0-9]+)',
+                1
+            ) AS BIGINT
+        ) AS ddl_numero,
         regexp_extract(atto_id, 'aic[.]rdf/(.*)$', 1) AS atto_key
     FROM src
 ),
@@ -82,6 +92,7 @@ SELECT
     tipo,
     tipo_categoria,
     numero,
+    ddl_numero,
     data_presentazione,
     titolo,
     descrizione,

@@ -83,14 +83,36 @@ duplicate: il volume reale è il numero di **atti distinti** (tabella sopra).
 Mapping `tipo_categoria`: interrogazione scritta/orale/in commissione,
 interpellanza, mozione, risoluzione, ordine del giorno.
 
+## Ponte ODG → DDL
+
+Il numero del disegno di legge è nel titolo degli ODG
+(`P.D.L. 9/00005-A/004`). Il clean estrae `ddl_numero`; i mart
+`mart_odg_ddl` e `mart_odg_ddl_sintesi` fanno il join con `camera_ddl`
+su `id_ddl` + `legislatura`.
+
+| Leg | ODG | Con numero | Match DDL | % match | ODG su DL/bilancio | % DL/bilancio |
+|---:|---:|---:|---:|---:|---:|---:|
+| 13 | 4.856 | 4.168 | 3.132 | 64,5% | 911 | 18,8% |
+| 14 | 8.273 | 7.377 | 7.377 | 89,2% | 4.610 | 55,7% |
+| 15 | 3.202 | 2.084 | 2.084 | 65,1% | 1.463 | 45,7% |
+| 16 | 9.152 | 8.132 | 8.132 | 88,9% | 6.314 | 69,0% |
+| 17 | 16.759 | 13.667 | 13.667 | 81,6% | 7.518 | 44,9% |
+| 18 | 12.638 | 11.159 | 11.159 | 88,3% | 9.544 | 75,5% |
+| 19 | 10.495 | 10.004 | 9.981 | 95,1% | 7.107 | 67,7% |
+
+Il link è **testuale**: copre gli ODG (95,1% in Leg19), non gli altri tipi.
+Il DDL 2500 della Leg18 (DL 34/2020, "Rilancio") è il più contestato con 407
+ODG; nella Leg18 il 75,5% degli ODG riguarda un DL o un bilancio.
+
 ## Limiti noti
 
 - `dc:description` è il testo integrale (media ~3,6k caratteri; max ~105k):
   il clean pesa ~58 MB parquet per la sola Leg19.
 - `ocd:ramo` è assente per Leg13/16; per quelle legislature tutti gli atti
   sono Camera-origin (nessun suffisso `_S`).
-- Nessun link strutturato AIC→DDL trovato (`ocd:subject` non popolato sul
-  perimetro): il collegamento ODG→disegno di legge richiede parsing del testo.
+- Il link AIC→DDL è testuale (titolo `P.D.L.`): copre gli ODG, non gli altri
+  tipi. I numeri DDL orfani (non presenti in `camera_ddl`) restano nel mart con
+  `matched = false`.
 - `ha_risposta` dice solo che esiste un URI `ocd:risposta`; non misura la
   qualità né la tempestività della risposta.
 - Il mirror Senato (`_S`) non è incluso: il confronto Camera/Senato va fatto
