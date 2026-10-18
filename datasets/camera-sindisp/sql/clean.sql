@@ -14,11 +14,11 @@ WITH src AS (
         normalize_string(tipo)         AS tipo,
         normalize_string(numero)       AS numero,
         normalize_string(data)         AS data_raw,
-        normalize_string(titolo)       AS titolo,
-        normalize_string(descrizione)  AS descrizione,
+        normalize_string(html_unescape(CAST(titolo AS VARCHAR)))       AS titolo,
+        normalize_string(html_unescape(CAST(descrizione AS VARCHAR)))  AS descrizione,
         normalize_string(ramo)         AS ramo_raw,
         normalize_string(primo)        AS primo_firmatario_uri,
-        normalize_string(primo_label)  AS primo_firmatario_label,
+        normalize_string(html_unescape(CAST(primo_label AS VARCHAR)))  AS primo_firmatario_label,
         normalize_string(concluso)     AS concluso_raw,
         normalize_string(risposta)     AS risposta_uri
     FROM raw_input

@@ -4,8 +4,8 @@ WITH ddl AS (
         id_ddl,
         legislatura,
         (
-            lower(titolo) LIKE '%conversione in legge%'
-            OR lower(titolo) LIKE '%bilancio%'
+            lower(html_unescape(titolo)) LIKE '%conversione in legge%'
+            OR lower(html_unescape(titolo)) LIKE '%bilancio%'
         ) AS is_dl_o_bilancio
     FROM read_parquet('{support.camera_ddl.clean}')
     WHERE id_ddl IS NOT NULL

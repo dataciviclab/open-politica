@@ -30,6 +30,7 @@ import requests
 ENDPOINT = "https://dati.camera.it/sparql"
 PAGE_SIZE = 10000
 MAX_ATTEMPTS = 6
+MAX_PAGES = 1000  # tetto di sicurezza: 10M righe, molto sopra ogni legislatura
 
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("camera-sindisp")
@@ -182,6 +183,11 @@ def fetch_pages(
     page = 0
     while True:
         page += 1
+        if page > MAX_PAGES:
+            raise RuntimeError(
+                f"keyset pagination ha superato {MAX_PAGES} pagine: "
+                "chiave non monotona o endpoint degradato"
+            )
         if last is None:
             filtro = ""
         else:

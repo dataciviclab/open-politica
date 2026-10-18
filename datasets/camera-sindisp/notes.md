@@ -83,6 +83,10 @@ duplicate: il volume reale è il numero di **atti distinti** (tabella sopra).
 Mapping `tipo_categoria`: interrogazione scritta/orale/in commissione,
 interpellanza, mozione, risoluzione, ordine del giorno.
 
+I campi testuali (`titolo`, `descrizione`, `primo_firmatario_label`) sono
+decodificati da entità HTML (`html_unescape`): senza questo passaggio il
+testo conteneva `&agrave;`, `&quot;`, `&#8212;` ecc.
+
 ## Ponte ODG → DDL
 
 Il numero del disegno di legge è nel titolo degli ODG

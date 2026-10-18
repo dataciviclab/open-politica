@@ -9,9 +9,11 @@ Policy:
 """
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import duckdb
+import pytest
 import yaml
 
 import toolkit
@@ -229,3 +231,35 @@ def test_mart_odg_ddl_join_e_sintesi():
     assert int(row["n_con_match"]) == 3
     assert int(row["n_dl_o_bilancio"]) == 3
     assert float(row["pct_con_match"]) == 75.0
+
+
+def test_main_clean_decodifica_entita_html():
+    con = _connect()
+    con.execute(
+        """
+        CREATE TABLE raw_input AS SELECT * FROM (VALUES
+          ('a1', 'ODG - ORDINE DEL GIORNO IN ASSEMBLEA', 'x', '20230101',
+           'ODG &quot;test&quot;', 'sanit&agrave; e &quot;liste&quot;',
+           'Camera dei Deputati', NULL, NULL, '1', NULL)
+        ) AS t(atto, tipo, numero, data, titolo, descrizione, ramo,
+               primo, primo_label, concluso, risposta)
+        """
+    )
+    out = con.execute(_clean_sql("camera-sindisp")).fetchdf()
+    assert out.iloc[0]["titolo"] == 'ODG "test"'
+    assert "sanità" in out.iloc[0]["descrizione"]
+
+
+def test_script_pagination_ha_un_tetto(monkeypatch):
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import extract_camera_sindisp as ex
+
+    monkeypatch.setattr(ex, "PAGE_SIZE", 2)
+    monkeypatch.setattr(ex, "MAX_PAGES", 3)
+    monkeypatch.setattr(
+        ex,
+        "query",
+        lambda q: [{"atto": "a1", "akey": "a1"}, {"atto": "a2", "akey": "a2"}],
+    )
+    with pytest.raises(RuntimeError, match="superato"):
+        ex.fetch_pages(ex.QUERY_ATO, 19, "STR(?atto)", "atto", key_is_uri=False)
