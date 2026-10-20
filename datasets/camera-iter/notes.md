@@ -120,9 +120,10 @@ fallback `dibattito→atto` recupera 128 eventi non ambigui (145 totali con `att
 
 Il vecchio `evento_id` usava `regexp_extract(s, 'a\d+_(\d+)')` per tutte le
 assegnazioni. Gli URI non standard (`a19_19VII0743`, `a19_123_bis`) non hanno
-il numero nell'ultimo segmento: il numero estratto era vuoto e più eventi
-collidevano su `asn__19_{organo}`; il dedup ne perdeva **779 in Leg19**
-(9.142 eventi invece di 9.921; 113.443 totali invece di 114.222).
+il numero nell'ultimo segmento: la regex non era ancorata a fine stringa,
+quindi estraeva solo le cifre iniziali (`19` da `a19_19VII0743`). Eventi
+diversi collidevano su `asn_19_19_{organo}`; il dedup ne perdeva **779 in
+Leg19** (9.142 eventi invece di 9.921; 113.443 totali invece di 114.222).
 
 Ora il fallback usa lo slug completo (`asn_19VII0743_19_{organo}`). Verifica
 Leg19 dopo il fix: **9.921 assegnazioni distinte** (15.428 righe multi-organo),

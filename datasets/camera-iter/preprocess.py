@@ -469,7 +469,9 @@ def build_final(out_dir: Path, cache_dir: Path, legislature: list[int],
                         -- (a19_19153). Gli URI non standard (a19_19VII0743,
                         -- a19_123_bis) devono usare lo slug completo: altrimenti
                         -- più eventi collidono sullo stesso evento_id e il dedup
-                        -- li perde. Fallback: se il numero non c'è, tutto lo slug.
+                        -- li perde. La regex standard è ancorata a fine stringa; senza `$`
+                        -- estrarrebbe le cifre iniziali (19 da a19_19VII0743).
+                        -- Fallback: se il numero non è un segmento finale, tutto lo slug.
                         CASE _class
                             WHEN 'assegnazione' THEN 'asn_' || COALESCE(
                                 NULLIF(regexp_extract(CAST(s AS VARCHAR), 'a\d+_(\d+)$', 1), ''),

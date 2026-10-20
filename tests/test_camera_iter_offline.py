@@ -40,7 +40,7 @@ def _fixture_rows() -> dict[str, list[dict]]:
              "sede": "Referente", "ident": "2", "dib": f"{OCD}dibattito.rdf/d19_5",
              "ac": f"{OCD}attocamera.rdf/ac19_101", "label": None},
             # URI non standard: il numero non è l'ultimo segmento numerico.
-            # Prima del fix entrambi collassavano su asn__19_10.
+            # Prima del fix entrambi collassavano su asn_19_19_10.
             {"s": f"{OCD}assegnazione.rdf/a19_19VII0743",
              "org": f"{OCD}organo.rdf/o19_10",
              "orgLabel": "I Commissione(Affari costituzionali)",
