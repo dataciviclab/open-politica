@@ -36,3 +36,6 @@ Thumbs.db
 
 # Note locali (non versionate)
 _local/
+
+# Cache estrazione camera-iter (runtime artifact)
+datasets/*/_cache/
