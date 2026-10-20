@@ -6,6 +6,7 @@ e verifica link atto, fallback dibattito, date range, numero Senato e PK.
 from __future__ import annotations
 
 import importlib.util
+import json
 from pathlib import Path
 
 import duckdb
@@ -38,6 +39,18 @@ def _fixture_rows() -> dict[str, list[dict]]:
              "orgLabel": "Bilancio", "date": None, "dataAsn": "20230302",
              "sede": "Referente", "ident": "2", "dib": f"{OCD}dibattito.rdf/d19_5",
              "ac": f"{OCD}attocamera.rdf/ac19_101", "label": None},
+            # URI non standard: il numero non è l'ultimo segmento numerico.
+            # Prima del fix entrambi collassavano su asn__19_10.
+            {"s": f"{OCD}assegnazione.rdf/a19_19VII0743",
+             "org": f"{OCD}organo.rdf/o19_10",
+             "orgLabel": "I Commissione(Affari costituzionali)",
+             "date": None, "dataAsn": "20230303", "sede": "Referente",
+             "ident": "19VII0743", "dib": None, "ac": None, "label": None},
+            {"s": f"{OCD}assegnazione.rdf/a19_19VII0744",
+             "org": f"{OCD}organo.rdf/o19_10",
+             "orgLabel": "I Commissione(Affari costituzionali)",
+             "date": None, "dataAsn": "20230304", "sede": "Referente",
+             "ident": "19VII0744", "dib": None, "ac": None, "label": None},
         ],
         "statoIter": [
             {"s": f"{OCD}statoIter.rdf/si19_1", "label": "In corso",
@@ -71,6 +84,9 @@ def _write_cache(pp, cache: Path) -> None:
             row["_class"] = cls
             row["_leg"] = 19
         pp.write_rows(rows, folder / "batch_00000.parquet", pp.CANONICAL_EVENT_COLUMNS)
+        (cache / f"count_19_{cls}.json").write_text(
+            json.dumps({"n": len({r["s"] for r in rows})}), encoding="utf-8"
+        )
 
     links = {
         "assegnazione": [
@@ -106,13 +122,16 @@ def test_build_clean_mart_offline(tmp_path: Path):
     con.execute(f"CREATE VIEW raw_input AS SELECT * FROM read_parquet('{final.as_posix()}')")
 
     events = con.execute("SELECT * FROM raw_input ORDER BY evento_id").fetchdf()
-    assert len(events) == 7
+    assert len(events) == 9
     assert set(events["tipo_evento"]) == {
         "assegnazione", "statoIter", "trasmissione", "richiestaParere"}
 
     asn = events[events["tipo_evento"] == "assegnazione"]
     assert set(asn["atto_id"].dropna().astype(int)) == {100, 101}
     assert (asn[asn["atto_id"] == 101]["atto_source"] == "dibattito").all()
+    ns = asn[asn["evento_uri"].str.contains("19VII074")]
+    assert len(ns) == 2
+    assert ns["evento_id"].nunique() == 2, "URI non standard collassati su evento_id"
 
     trs = events[events["tipo_evento"] == "trasmissione"].iloc[0]
     assert trs["senato_atto_num"] == "393"
@@ -145,4 +164,4 @@ def test_build_clean_mart_offline(tmp_path: Path):
     row101 = mi[mi["atto_id"] == 101].iloc[0]
     assert (row101["n_eventi"], row101["n_assegnazioni"], row101["n_pareri"]) == (2, 1, 1)
     organo10 = mc[mc["organo_id"].str.endswith("o19_10")].iloc[0]
-    assert (organo10["n_assegnazioni"], organo10["n_pareri"]) == (2, 1)
+    assert (organo10["n_assegnazioni"], organo10["n_pareri"]) == (4, 1)

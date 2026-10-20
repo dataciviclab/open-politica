@@ -17,7 +17,7 @@ ricevono le commissioni?
 - **Granularità**: una riga = un evento (assegnazione, stato, trasmissione, parere).
   Le assegnazioni a commissioni riunite generano più righe per lo stesso evento.
 - **Volumi LOD**: 114.222 eventi distinti (36.874 assegnazioni, 62.226 stati, 2.871 trasmissioni, 12.251 pareri).
-- **Righe clean**: 125.825 (multi-organo espanso), 0 duplicati su `evento_id`.
+- **Righe clean**: 125.825 (multi-organo espanso), 0 duplicati su `evento_id` — conteggio del run **pre-fix**; dopo il fix Leg19 passa a 30.291 righe e il totale sarà ripubblicato dalla pipeline.
 - **`atto_id`**: 62.602 eventi (49,8%) — 50.223 via link inverso `attocamera`, 12.379 via `dibattito→atto`, 503 ambigui lasciati NULL.
 - **Data**: 125.053 eventi (99,4%).
 - **Unità di analisi**: evento; per l'analisi per atto usare `mart_iter_per_atto`.
@@ -91,6 +91,7 @@ Test offline (senza endpoint): `python -m pytest tests/test_camera_iter_offline.
 ## Stato
 
 - [x] Predicate LOD verificate, scaffold allineato
+- [x] Fix `evento_id` per URI non standard (`a19_19VII...`): 779 assegnazioni Leg19 recuperate
 - [x] Run completo Leg16–19 (125.825 righe clean, 0 duplicati)
 - [x] Mapping organi pareri robusto a varianti label (fix Leg18)
 - [x] Flag `data_anomala` ed esclusione dai tempi

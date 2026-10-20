@@ -92,7 +92,12 @@ fallback `dibattito→atto` recupera 128 eventi non ambigui (145 totali con `att
 2. `mart_tempi` — PK `(tipo_evento, esito, anno)`: durate tra eventi consecutivi dello stesso atto; filtra `esito IS NOT NULL` e `NOT data_anomala`.
 3. `mart_commissioni` — PK `(legislatura, organo_id)`: assegnazioni, pareri, atti toccati.
 
-## Run finale (2026-10-19)
+## Run finale (2026-10-19) — pre-fix
+
+> Questo run è **pre-fix**: in Leg19 mancavano 779 assegnazioni per la
+> collisione di `evento_id` sugli URI non standard. Dopo il fix (2026-10-20)
+> la sola Leg19 produce 30.291 righe e 9.921 assegnazioni distinte; il run
+> multi-leg completo sarà ripubblicato dalla pipeline.
 
 - 125.825 righe clean, 0 duplicati: Leg16 27.979, Leg17 34.646, Leg18 33.751, Leg19 29.449.
 - 62.602 con `atto_id` (49,8%), 125.053 con `data` (99,4%).
@@ -109,3 +114,20 @@ fallback `dibattito→atto` recupera 128 eventi non ambigui (145 totali con `att
 - **Date anomale**: 53 `statoIter` pre-legislatura, flaggate e escluse dai tempi.
 - **Multi-organo**: assegnazioni in commissioni riunite → più righe per evento (documentato).
 - **Endpoint instabile**: retry con backoff; cache obbligatoria per run lunghi.
+
+
+## Fix 2026-10-20 — `evento_id` non standard
+
+Il vecchio `evento_id` usava `regexp_extract(s, 'a\d+_(\d+)')` per tutte le
+assegnazioni. Gli URI non standard (`a19_19VII0743`, `a19_123_bis`) non hanno
+il numero nell'ultimo segmento: il numero estratto era vuoto e più eventi
+collidevano su `asn__19_{organo}`; il dedup ne perdeva **779 in Leg19**
+(9.142 eventi invece di 9.921; 113.443 totali invece di 114.222).
+
+Ora il fallback usa lo slug completo (`asn_19VII0743_19_{organo}`). Verifica
+Leg19 dopo il fix: **9.921 assegnazioni distinte** (15.428 righe multi-organo),
+**30.291 righe** totali, **24.784 eventi distinti**, 0 duplicati.
+
+`build_final` ora verifica per classe/legislatura che gli `evento_uri`
+distinti coincidano con il `COUNT DISTINCT` del LOD (cache `count_*.json`),
+anche in `--build-only`. Se il conteggio non torna, il run fallisce.
