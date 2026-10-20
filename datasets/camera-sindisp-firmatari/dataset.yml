@@ -63,6 +63,7 @@ mart:
       sql: "sql/mart_per_deputato.sql"
   required_tables:
     - "mart_firmatari_per_atto"
+    - "mart_per_deputato"
   validate:
     table_rules:
       mart_firmatari_per_atto:

@@ -124,9 +124,21 @@ ODG; nella Leg18 il 75,5% degli ODG riguarda un DL o un bilancio.
 
 ## Rebuild
 
+`camera_sindisp` ha un support `camera_ddl`: il mart/clean fallisce se il
+support non è già materializzato. Va costruito prima (oppure usa
+`make run-datasets`, che in ordine alfabetico esegue `camera-ddl` prima di
+`camera-sindisp`).
+
 ```bash
-# pilota Leg19
+# 1) support (solo se non già presente)
+toolkit run -c datasets/camera-ddl/dataset.yml
+
+# 2) pilota Leg19
 TOOLKIT_ALLOW_SCRIPT_SOURCE=1 toolkit run -c datasets/camera-sindisp/dataset.yml --year 19
-# multi-leg 13–19
+
+# 3) multi-leg 13–19
 TOOLKIT_ALLOW_SCRIPT_SOURCE=1 toolkit run -c datasets/camera-sindisp/dataset.yml
+
+# oppure tutti i dataset in ordine (support già incluso)
+make run-datasets
 ```

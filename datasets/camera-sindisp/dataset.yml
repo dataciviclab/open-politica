@@ -75,7 +75,9 @@ mart:
       sql: "sql/mart_odg_ddl_sintesi.sql"
   required_tables:
     - "mart_sintesi"
+    - "mart_anni"
     - "mart_odg_ddl"
+    - "mart_odg_ddl_sintesi"
   validate:
     table_rules:
       mart_sintesi:

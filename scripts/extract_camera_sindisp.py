@@ -7,12 +7,15 @@ ORDER BY), sintassi che Virtuoso rifiuta. Qui la paginazione keyset è
 implementata a mano, con il FILTER dentro la WHERE.
 
 Uso:
-    python preprocess.py --legislature 19 --mode ato --out camera_sindisp.csv
-    python preprocess.py --legislature 19 --mode firmatari --out ...
-    python preprocess.py --legislature 19 --mode destinatari --out ...
+    python extract_camera_sindisp.py --legislature 19 --mode ato --out camera_sindisp_raw.parquet
+    python extract_camera_sindisp.py --legislature 19 --mode firmatari --out ...
+    python extract_camera_sindisp.py --legislature 19 --mode destinatari --out ...
 
-Il file di output è un CSV con le colonne SPARQL originali; il clean SQL
-fa parsing, normalizzazione e dedup.
+Il file di output è un parquet con le colonne SPARQL originali; il clean SQL
+fa parsing, normalizzazione e dedup. Il nome del file è deciso da dataset.yml
+(viene passato con ``--out`` dal source ``script`` del toolkit).
+
+La paginazione ha un tetto di sicurezza ``MAX_PAGES`` contro loop infiniti.
 """
 
 from __future__ import annotations
