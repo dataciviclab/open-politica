@@ -1,0 +1,101 @@
+# Sindacato ispettivo della Camera — atti di indirizzo e controllo (Leg13–19)
+#
+# Fonte: dati.camera.it SPARQL, classe ocd:aic (default graph).
+# Un atto per riga. I firmatari e i destinatari stanno nei dataset ponte:
+#   camera_sindisp_firmatari, camera_sindisp_destinatari.
+#
+# Il mirror Senato (URI con suffisso "_S") è escluso: la fonte canonica
+# per il ramo Senato è senato_sindisp.
+
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_sindisp"
+  source_id: "dati_camera"
+  tags: [politica, camera, sindacato-ispettivo, interrogazioni, interpellanze, mozioni, accountability]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    # Legislature XIII (1996) → XIX (2026)
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    # Script invece del source sparql: il plugin keyset del toolkit inietta
+    # FILTER dopo la WHERE (non valido per Virtuoso). Lo script fa keyset
+    # manuale con FILTER dentro la WHERE, per legislatura.
+    - name: "camera_sindisp_raw"
+      type: "script"
+      primary: true
+      client:
+        timeout: 2400
+      args:
+        command: "python ../../scripts/extract_camera_sindisp.py --legislature {year} --mode ato --out camera_sindisp_raw.parquet"
+        output: "camera_sindisp_raw.parquet"
+        filename: "camera_sindisp_raw.parquet"
+
+support:
+  # Ponte ODG → DDL: il numero del disegno di legge è nel titolo degli ODG
+  # ("P.D.L. 9/00005-A/004"). Il support materializza camera_ddl multi-leg.
+  - name: camera_ddl
+    config: "../camera-ddl/dataset.yml"
+    years: [13, 14, 15, 16, 17, 18, 19]
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [atto_id, tipo_categoria, legislatura, ddl_numero]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [atto_id, tipo_categoria]
+    # una riga = un atto di indirizzo e controllo (URI)
+    primary_key: [atto_id]
+    # Leg15 è la più piccola (~15k atti); margine per stagioni parziali
+    min_rows: 5000
+
+mart:
+  tables:
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    - name: "mart_anni"
+      sql: "sql/mart_anni.sql"
+    - name: "mart_odg_ddl"
+      sql: "sql/mart_odg_ddl.sql"
+    - name: "mart_odg_ddl_sintesi"
+      sql: "sql/mart_odg_ddl_sintesi.sql"
+  required_tables:
+    - "mart_sintesi"
+    - "mart_anni"
+    - "mart_odg_ddl"
+    - "mart_odg_ddl_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [legislatura, tipo_categoria, n_atti, n_con_risposta, pct_con_risposta]
+        primary_key: [legislatura, tipo_categoria]
+        min_rows: 1
+      mart_anni:
+        required_columns: [legislatura, anno, tipo_categoria, n_atti]
+        min_rows: 1
+      mart_odg_ddl:
+        required_columns: [legislatura, id_ddl, ddl_titolo, matched, is_dl_o_bilancio, n_odg]
+        primary_key: [legislatura, id_ddl]
+        # Leg15 (legislatura breve) ha 76 DDL distinti con ODG
+        min_rows: 50
+      mart_odg_ddl_sintesi:
+        required_columns: [legislatura, n_odg, n_con_numero, n_con_match, n_dl_o_bilancio, pct_dl_o_bilancio]
+        primary_key: [legislatura]
+        min_rows: 1
+
+validation:
+  fail_on_error: true
