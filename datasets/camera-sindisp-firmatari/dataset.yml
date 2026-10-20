@@ -1,0 +1,78 @@
+# Firmatari degli atti di indirizzo e controllo della Camera (Leg13–19)
+#
+# Fonte: dati.camera.it SPARQL, classe ocd:aic.
+# Una riga = (atto, firmatario, ruolo). Il ruolo è "primo" o "altro".
+# Join: atto_id → camera_sindisp.atto_id; persona_id → camera_deputati.persona_id.
+#
+# Paginazione keyset su una chiave sintetica (atto|firmatario|ruolo):
+# ?atto da solo non è una chiave monotona per pagina (un atto ha più firmatari).
+
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_sindisp_firmatari"
+  source_id: "dati_camera"
+  tags: [politica, camera, sindacato-ispettivo, firmatari, accountability]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    # Script per la stessa ragione del dataset principale: keyset manuale.
+    # ?atto non è una chiave monotona per pagina (più firmatari per atto):
+    # la chiave è sintetica (atto|firmatario|ruolo).
+    - name: "camera_sindisp_firmatari_raw"
+      type: "script"
+      primary: true
+      client:
+        timeout: 3600
+      args:
+        command: "python ../../scripts/extract_camera_sindisp.py --legislature {year} --mode firmatari --out camera_sindisp_firmatari_raw.parquet"
+        output: "camera_sindisp_firmatari_raw.parquet"
+        filename: "camera_sindisp_firmatari_raw.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [atto_id, firmatario_uri, ruolo, legislatura]
+  read:
+    source: auto
+    mode: latest
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    not_null: [atto_id, firmatario_uri, ruolo]
+    # una riga = un firmatario di un atto (ruolo qualificato)
+    primary_key: [atto_id, firmatario_uri, ruolo]
+    # Leg15 ~15k atti × ~5,6 firmatari (83k righe)
+    min_rows: 10000
+
+mart:
+  tables:
+    - name: "mart_firmatari_per_atto"
+      sql: "sql/mart_firmatari_per_atto.sql"
+    - name: "mart_per_deputato"
+      sql: "sql/mart_per_deputato.sql"
+  required_tables:
+    - "mart_firmatari_per_atto"
+    - "mart_per_deputato"
+  validate:
+    table_rules:
+      mart_firmatari_per_atto:
+        required_columns: [atto_id, n_firmatari, n_primo, n_altro]
+        primary_key: [atto_id]
+        min_rows: 1000
+      mart_per_deputato:
+        required_columns: [persona_id, legislatura, n_firmate]
+        min_rows: 10
+
+validation:
+  fail_on_error: true
