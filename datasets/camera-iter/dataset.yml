@@ -1,0 +1,69 @@
+# Iter legislativo Camera (assegnazioni, stati, trasmissioni, pareri) — SPARQL dati.camera.it
+# Legislature 16-19 (il LOD Camera non espone l'iter per Leg13-15)
+# Issue: #75
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "camera_iter"
+  source_id: "dati_camera"
+  tags: [politica, camera, iter, iter-legislativo, commissioni, trasmissione, accountability]
+  category: politica
+  years: [2026]
+  time_coverage:
+    start_year: 2008
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "camera_iter_parquet"
+      type: "script"
+      primary: true
+      client:
+        timeout: 7200
+      args:
+        command: "python preprocess.py --legislature 16 17 18 19 --out ."
+        output: "camera_iter.parquet"
+        filename: "camera_iter.parquet"
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: auto
+    mode: latest
+  required_columns: [evento_id, evento_uri, tipo_evento, legislatura, atto_id, atto_source, data, data_anomala, organo_id, organo_label, esito, senato_atto_num]
+  validate:
+    not_null: [evento_id, tipo_evento, legislatura]
+    primary_key: [evento_id]
+    min_rows: 100000
+
+mart:
+  tables:
+    - name: "mart_iter_per_atto"
+      sql: "sql/mart_iter_per_atto.sql"
+    - name: "mart_tempi"
+      sql: "sql/mart_tempi.sql"
+    - name: "mart_commissioni"
+      sql: "sql/mart_commissioni.sql"
+  required_tables:
+    - "mart_iter_per_atto"
+    - "mart_tempi"
+    - "mart_commissioni"
+  validate:
+    table_rules:
+      mart_iter_per_atto:
+        required_columns: [legislatura, atto_id, stato_iniziale, stato_finale, n_eventi, durata_giorni]
+        primary_key: [legislatura, atto_id]
+        min_rows: 1000
+      mart_tempi:
+        required_columns: [tipo_evento, esito, anno, n_eventi, durata_media_giorni]
+        primary_key: [tipo_evento, esito, anno]
+        min_rows: 10
+      mart_commissioni:
+        required_columns: [legislatura, organo_id, n_assegnazioni, n_pareri]
+        primary_key: [legislatura, organo_id]
+        min_rows: 10
+
+validation:
+  fail_on_error: true
