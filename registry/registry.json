@@ -934,6 +934,279 @@
       ]
     },
     {
+      "slug": "camera_sindisp",
+      "name": "Camera Sindisp",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "sindacato-ispettivo",
+        "interrogazioni",
+        "interpellanze",
+        "mozioni",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "atto_key",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_categoria",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ddl_numero",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_presentazione",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "descrizione",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ramo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "primo_firmatario_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "primo_firmatario_label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "concluso",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "risposta_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ha_risposta",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "anno",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "year"
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_sindisp/*/camera_sindisp_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_sindisp__mart_sintesi",
+        "camera_sindisp__mart_anni",
+        "camera_sindisp__mart_odg_ddl",
+        "camera_sindisp__mart_odg_ddl_sintesi"
+      ]
+    },
+    {
+      "slug": "camera_sindisp_destinatari",
+      "name": "Camera Sindisp Destinatari",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "sindacato-ispettivo",
+        "governo",
+        "ministri",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "destinatario_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "organo_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "destinatario_label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ha_risposta",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_sindisp_destinatari/*/camera_sindisp_destinatari_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_sindisp_destinatari__mart_per_ministro"
+      ]
+    },
+    {
+      "slug": "camera_sindisp_firmatari",
+      "name": "Camera Sindisp Firmatari",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "sindacato-ispettivo",
+        "firmatari",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "firmatario_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "ruolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "firmatario_label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_sindisp_firmatari/*/camera_sindisp_firmatari_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_sindisp_firmatari__mart_firmatari_per_atto",
+        "camera_sindisp_firmatari__mart_per_deputato"
+      ]
+    },
+    {
       "slug": "camera_votazioni_sparql",
       "name": "Camera Votazioni Sparql",
       "description": "",
@@ -4335,6 +4608,76 @@
       }
     },
     {
+      "slug": "camera_sindisp__mart_anni",
+      "dataset": "camera_sindisp",
+      "table": "mart_anni",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/19/mart_anni.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_sindisp__mart_odg_ddl",
+      "dataset": "camera_sindisp",
+      "table": "mart_odg_ddl",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/19/mart_odg_ddl.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_sindisp__mart_odg_ddl_sintesi",
+      "dataset": "camera_sindisp",
+      "table": "mart_odg_ddl_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/19/mart_odg_ddl_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_sindisp__mart_sintesi",
+      "dataset": "camera_sindisp",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/19/mart_sintesi.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_sindisp_destinatari__mart_per_ministro",
+      "dataset": "camera_sindisp_destinatari",
+      "table": "mart_per_ministro",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp_destinatari/19/mart_per_ministro.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_sindisp_firmatari__mart_firmatari_per_atto",
+      "dataset": "camera_sindisp_firmatari",
+      "table": "mart_firmatari_per_atto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp_firmatari/19/mart_firmatari_per_atto.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_sindisp_firmatari__mart_per_deputato",
+      "dataset": "camera_sindisp_firmatari",
+      "table": "mart_per_deputato",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp_firmatari/19/mart_per_deputato.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_votazioni_sparql__camera_votazioni",
       "dataset": "camera_votazioni_sparql",
       "table": "camera_votazioni",
@@ -5156,7 +5499,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084342Z_7ff5b62f",
+        "run_id": "20261020T100503Z_d2d8fac1",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -5165,18 +5508,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 3144,
-          "clean": 3118,
-          "mart": 366
+          "raw": 3174,
+          "clean": 3148,
+          "mart": 367
         },
         "output_bytes": {
-          "raw": 1338889,
-          "clean": 200199,
-          "mart": 5736
+          "raw": 1351852,
+          "clean": 202576,
+          "mart": 5738
         },
-        "started_at": "2026-09-28T08:43:42.709912+00:00",
-        "finished_at": "2026-09-28T08:43:44.258747+00:00",
-        "duration_seconds": 1.549
+        "started_at": "2026-10-20T10:05:03.422118+00:00",
+        "finished_at": "2026-10-20T10:05:05.147559+00:00",
+        "duration_seconds": 1.725
       }
     },
     {
@@ -5423,6 +5766,96 @@
         "started_at": "2026-10-08T18:14:59.356366+00:00",
         "finished_at": "2026-10-08T18:15:03.332843+00:00",
         "duration_seconds": 3.976
+      }
+    },
+    {
+      "id": "camera_sindisp",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_sindisp",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261020T100844Z_7fcf9560",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 31063,
+          "mart": 333
+        },
+        "output_bytes": {
+          "raw": 58272067,
+          "clean": 33394792,
+          "mart": 24569
+        },
+        "started_at": "2026-10-20T10:08:44.651087+00:00",
+        "finished_at": "2026-10-20T10:09:33.893852+00:00",
+        "duration_seconds": 49.243
+      }
+    },
+    {
+      "id": "camera_sindisp_destinatari",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_sindisp_destinatari",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261020T101037Z_698a7262",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 28024,
+          "mart": 39
+        },
+        "output_bytes": {
+          "raw": 468647,
+          "clean": 151798,
+          "mart": 2214
+        },
+        "started_at": "2026-10-20T10:10:37.249665+00:00",
+        "finished_at": "2026-10-20T10:10:43.028728+00:00",
+        "duration_seconds": 5.779
+      }
+    },
+    {
+      "id": "camera_sindisp_firmatari",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_sindisp_firmatari",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261020T101738Z_c331b173",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 132005,
+          "mart": 31455
+        },
+        "output_bytes": {
+          "raw": 1791814,
+          "clean": 989073,
+          "mart": 204427
+        },
+        "started_at": "2026-10-20T10:17:38.904404+00:00",
+        "finished_at": "2026-10-20T10:18:23.104938+00:00",
+        "duration_seconds": 44.201
       }
     },
     {
@@ -6289,6 +6722,12 @@
             "semantic_type": "person_id"
           },
           {
+            "slug": "camera_sindisp_firmatari",
+            "name": "Camera Sindisp Firmatari",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
             "slug": "camera_voti",
             "name": "Camera Voti",
             "column": "deputato_id",
@@ -6374,7 +6813,7 @@
           }
         ],
         "types": {
-          "person_id": 10,
+          "person_id": 11,
           "senator_id": 10
         }
       },
@@ -6515,6 +6954,12 @@
             "semantic_type": "year"
           },
           {
+            "slug": "camera_sindisp",
+            "name": "Camera Sindisp",
+            "column": "anno",
+            "semantic_type": "year"
+          },
+          {
             "slug": "dait_amministratori_locali",
             "name": "Dait Amministratori Locali",
             "column": "anno",
@@ -6534,7 +6979,7 @@
           }
         ],
         "types": {
-          "year": 4,
+          "year": 5,
           "month": 1
         }
       }
