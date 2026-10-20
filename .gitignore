@@ -2,6 +2,9 @@
 out/*
 !out/.gitignore
 
+# Local runtime data (legacy ponte_persona build)
+data/
+
 # Script-generated outputs (preprocess.py writes parquet here)
 datasets/*/chunks/
 datasets/*/*.parquet
