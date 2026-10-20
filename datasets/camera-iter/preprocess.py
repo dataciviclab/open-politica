@@ -365,7 +365,8 @@ EVENT_QUERIES = {
 }
 
 
-def build_final(out_dir: Path, cache_dir: Path, legislature: list[int]) -> Path:
+def build_final(out_dir: Path, cache_dir: Path, legislature: list[int],
+                verify: bool = True) -> Path:
     events: list[dict] = []
     links: list[dict] = []
     organi: list[dict] = []
@@ -464,11 +465,26 @@ def build_final(out_dir: Path, cache_dir: Path, legislature: list[int]) -> Path:
                         CAST(senato AS VARCHAR)      AS senato,
                         CAST(_class AS VARCHAR)      AS _class,
                         CAST(_leg AS BIGINT)         AS _leg,
+                        -- Il numero "standard" è l'ultimo segmento numerico
+                        -- (a19_19153). Gli URI non standard (a19_19VII0743,
+                        -- a19_123_bis) devono usare lo slug completo: altrimenti
+                        -- più eventi collidono sullo stesso evento_id e il dedup
+                        -- li perde. La regex standard è ancorata a fine stringa; senza `$`
+                        -- estrarrebbe le cifre iniziali (19 da a19_19VII0743).
+                        -- Fallback: se il numero non è un segmento finale, tutto lo slug.
                         CASE _class
-                            WHEN 'assegnazione' THEN 'asn_' || regexp_extract(CAST(s AS VARCHAR), 'a\d+_(\d+)', 1)
-                            WHEN 'statoIter' THEN 'stt_' || regexp_extract(CAST(s AS VARCHAR), 'si\d+_(\d+)', 1)
-                            WHEN 'trasmissione' THEN 'trs_' || regexp_extract(CAST(s AS VARCHAR), 'tr\d+_(\d+)', 1)
-                            ELSE 'rqp_' || regexp_extract(CAST(s AS VARCHAR), 'rp\d+_(\d+)', 1)
+                            WHEN 'assegnazione' THEN 'asn_' || COALESCE(
+                                NULLIF(regexp_extract(CAST(s AS VARCHAR), 'a\d+_(\d+)$', 1), ''),
+                                regexp_extract(CAST(s AS VARCHAR), 'a\d+_(.*)$', 1))
+                            WHEN 'statoIter' THEN 'stt_' || COALESCE(
+                                NULLIF(regexp_extract(CAST(s AS VARCHAR), 'si\d+_(\d+)$', 1), ''),
+                                regexp_extract(CAST(s AS VARCHAR), 'si\d+_(.*)$', 1))
+                            WHEN 'trasmissione' THEN 'trs_' || COALESCE(
+                                NULLIF(regexp_extract(CAST(s AS VARCHAR), 'tr\d+_(\d+)$', 1), ''),
+                                regexp_extract(CAST(s AS VARCHAR), 'tr\d+_(.*)$', 1))
+                            ELSE 'rqp_' || COALESCE(
+                                NULLIF(regexp_extract(CAST(s AS VARCHAR), 'rp\d+_(\d+)$', 1), ''),
+                                regexp_extract(CAST(s AS VARCHAR), 'rp\d+_(.*)$', 1))
                         END || '_' || CAST(_leg AS VARCHAR)
                             || COALESCE('_' || regexp_extract(CAST(org AS VARCHAR), '(\d+)$', 1), '')
                             AS evento_id
@@ -609,6 +625,29 @@ def build_final(out_dir: Path, cache_dir: Path, legislature: list[int]) -> Path:
         nd = con.execute(f"SELECT count(*) FROM read_parquet('{final_path.as_posix()}') WHERE data IS NOT NULL").fetchone()[0]
         ndup = con.execute(f"SELECT count(*) - count(DISTINCT evento_id) FROM read_parquet('{final_path.as_posix()}')").fetchone()[0]
 
+        if verify:
+            # Completezza per classe/legislatura: il numero di evento_uri
+            # distinti nel finale deve coincidere con il COUNT DISTINCT del
+            # LOD (cache_count scritto da fetch_ids). Protegge da dedup
+            # aggressivi su evento_id e da batch di dettagli incompleti.
+            for leg in legislature:
+                for cls in EVENT_QUERIES:
+                    count_path = cache_dir / f"count_{leg}_{cls}.json"
+                    if not count_path.exists():
+                        log.warning("completezza %s leg%d: count cache assente", cls, leg)
+                        continue
+                    expected = int(json.loads(count_path.read_text(encoding="utf-8"))["n"])
+                    got = con.execute(
+                        "SELECT count(DISTINCT evento_uri) FROM read_parquet(?) "
+                        "WHERE legislatura = ? AND tipo_evento = ?",
+                        [final_path.as_posix(), leg, cls],
+                    ).fetchone()[0]
+                    if got != expected:
+                        raise RuntimeError(
+                            f"completezza {cls} leg{leg}: {got} eventi distinti, "
+                            f"attesi {expected}"
+                        )
+
     log.info("finale: %d eventi, %d con atto, %d con data, %d duplicati",
              n, na, nd, ndup)
     if ndup:
@@ -662,7 +701,7 @@ def main() -> int:
             log.error("Rilancia lo stesso comando per riprendere.")
             return 2
 
-    build_final(out_dir, cache_dir, args.legislature)
+    build_final(out_dir, cache_dir, args.legislature, verify=not args.no_verify)
     return 0
 
 
