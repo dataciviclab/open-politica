@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-10-17",
+  "updated_at": "2026-10-20",
   "datasets": [
     {
       "slug": "camera_atti_dibattito",
@@ -597,6 +597,136 @@
       "mart_refs": [
         "camera_interventi__mart_sintesi",
         "camera_interventi__mart_top_parlanti"
+      ]
+    },
+    {
+      "slug": "camera_iter",
+      "name": "Camera Iter",
+      "description": "",
+      "source": "",
+      "source_id": "dati_camera",
+      "period": {
+        "start": 2008,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "camera",
+        "iter",
+        "iter-legislativo",
+        "commissioni",
+        "trasmissione",
+        "accountability"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "evento_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "evento_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo_evento",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "atto_source",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_anomala",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "organo_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "organo_label",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sede",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "esito",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "target_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "provenienza",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "senato_atto_num",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "identifier",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/camera_iter/2026/camera_iter_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "camera_iter__mart_iter_per_atto",
+        "camera_iter__mart_tempi",
+        "camera_iter__mart_commissioni"
       ]
     },
     {
@@ -4115,6 +4245,36 @@
       }
     },
     {
+      "slug": "camera_iter__mart_commissioni",
+      "dataset": "camera_iter",
+      "table": "mart_commissioni",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_iter/2026/mart_commissioni.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_iter__mart_iter_per_atto",
+      "dataset": "camera_iter",
+      "table": "mart_iter_per_atto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_iter/2026/mart_iter_per_atto.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "camera_iter__mart_tempi",
+      "dataset": "camera_iter",
+      "table": "mart_tempi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/camera_iter/2026/mart_tempi.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_leggi__mart_anno",
       "dataset": "camera_leggi",
       "table": "mart_anno",
@@ -5171,6 +5331,36 @@
         "started_at": "2026-09-28T08:45:19.484044+00:00",
         "finished_at": "2026-09-28T08:45:26.975731+00:00",
         "duration_seconds": 7.492
+      }
+    },
+    {
+      "id": "camera_iter",
+      "source_id": "dati_camera",
+      "status": "ok",
+      "label": "camera_iter",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261020T084812Z_6acc94f2",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 125825,
+          "mart": 12921
+        },
+        "output_bytes": {
+          "raw": 2380173,
+          "clean": 1610981,
+          "mart": 95446
+        },
+        "started_at": "2026-10-20T08:48:12.332615+00:00",
+        "finished_at": "2026-10-20T08:54:55.377186+00:00",
+        "duration_seconds": 403.045
       }
     },
     {
