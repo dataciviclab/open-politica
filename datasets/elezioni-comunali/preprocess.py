@@ -83,6 +83,25 @@ def parse_csv(content: str) -> list[list[str]]:
     return [row for row in reader if any(cell.strip() for cell in row)]
 
 
+TEXT_SUFFIXES = (".csv", ".txt")
+
+
+def iter_text_entries(zf: zipfile.ZipFile):
+    """Yield ``(basename, rows)`` per le sole entry testuali dello zip.
+
+    L'archivio DAIT non contiene solo CSV: dal 2024 include anche fogli XLSX
+    (``Comunali_*_ListeLivSez.xlsx``). Passare un binario a ``csv.reader``
+    solleva ``_csv.Error``; filtrare qui tiene il contratto in un punto solo.
+    """
+    for name in zf.namelist():
+        base = os.path.basename(name)
+        if base.startswith("~") or base.startswith("."):
+            continue
+        if not base.lower().endswith(TEXT_SUFFIXES):
+            continue
+        yield base, parse_csv(smart_decode(zf.read(name)))
+
+
 def normalize_columns(header: list[str]) -> tuple[list[str], list[int]]:
     norm = []
     indices = []
@@ -100,18 +119,11 @@ def normalize_columns(header: list[str]) -> tuple[list[str], list[int]]:
 
 
 def extract_scrutini_from_txt(zf: zipfile.ZipFile) -> list[list[str]]:
-    for name in zf.namelist():
-        base = os.path.basename(name)
-        if base.startswith("~") or base.startswith("."):
+    for base, rows in iter_text_entries(zf):
+        if "preferenze" in base.lower():
             continue
-        if base.lower().endswith(".txt") or base.lower().endswith(".csv"):
-            if "preferenze" in base.lower():
-                continue
-            content = zf.read(name)
-            decoded = smart_decode(content)
-            rows = parse_csv(decoded)
-            if rows:
-                return rows
+        if rows:
+            return rows
     return []
 
 
@@ -185,13 +197,7 @@ def process_2024(url: str, election_date: str) -> list[dict]:
     liste = []
 
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
-        for name in zf.namelist():
-            base = os.path.basename(name)
-            if base.startswith("~") or base.startswith("."):
-                continue
-            content = zf.read(name)
-            decoded = smart_decode(content)
-            rows = parse_csv(decoded)
+        for base, rows in iter_text_entries(zf):
             if not rows:
                 continue
             if "scrutini" in base.lower():
