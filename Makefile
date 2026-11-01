@@ -13,17 +13,27 @@ run-all: run-datasets run-compose
 
 .PHONY: run-datasets
 run-datasets:
-	@for f in $(DATASETS); do \
+	@fail=""; \
+	for f in $(DATASETS); do \
 		echo "→ $$f"; \
-		$(TOOLKIT) run -c "$$f" || exit 1; \
-	done
+		$(TOOLKIT) run -c "$$f" || { echo "::error title=dataset fallito::$$f"; fail="$$fail $$f"; }; \
+	done; \
+	if [ -n "$$fail" ]; then \
+		echo "::error title=pipeline dataset::falliti:$$fail"; \
+		exit 1; \
+	fi
 
 .PHONY: run-compose
 run-compose:
-	@for f in $(COMPOSES); do \
+	@fail=""; \
+	for f in $(COMPOSES); do \
 		echo "→ $$f"; \
-		$(TOOLKIT) run -c "$$f" || exit 1; \
-	done
+		$(TOOLKIT) run -c "$$f" || { echo "::error title=compose fallito::$$f"; fail="$$fail $$f"; }; \
+	done; \
+	if [ -n "$$fail" ]; then \
+		echo "::error title=pipeline compose::falliti:$$fail"; \
+		exit 1; \
+	fi
 
 # --- Batch selettivo (PR post-merge: solo dataset cambiati) -----------
 
