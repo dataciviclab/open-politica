@@ -21,16 +21,47 @@ dataset:
 raw:
   output_policy: overwrite
   sources:
-    # Script per la stessa ragione del dataset principale: keyset manuale.
+    # Keyset dichiarativo su chiave sintetica (atto|destinatario). {keyset}
+    # isola il FILTER nella sottoquery (bug ottimizzatore Virtuoso su
+    # FILTER + OPTIONAL). {year} = legislatura.
     - name: "camera_sindisp_destinatari_raw"
-      type: "script"
+      type: "sparql"
       primary: true
       client:
-        timeout: 1800
+        timeout: 600
       args:
-        command: "python ../../scripts/extract_camera_sindisp.py --legislature {year} --mode destinatari --out camera_sindisp_destinatari_raw.parquet"
-        output: "camera_sindisp_destinatari_raw.parquet"
-        filename: "camera_sindisp_destinatari_raw.parquet"
+        endpoint: "https://dati.camera.it/sparql"
+        accept_format: "sparql-results+json"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT ?key ?atto ?dest ?label ?risposta
+          WHERE {
+            {
+              SELECT DISTINCT ?key ?atto ?dest WHERE {
+                ?atto a ocd:aic ;
+                      ocd:destinatario ?dest ;
+                      ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
+                FILTER(!STRENDS(STR(?atto), "_S"))
+                BIND(CONCAT(STR(?atto), "|", STR(?dest)) AS ?key)
+                {keyset}
+              }
+              ORDER BY ?key
+              LIMIT 10000
+            }
+            OPTIONAL { ?dest rdfs:label ?label }
+            OPTIONAL { ?atto ocd:risposta ?risposta }
+          }
+          ORDER BY ?key
+          LIMIT 10000
+        pages: 1000
+        step: 10000
+        pagination:
+          mode: keyset
+          key: "?key"
+          key_column: "key"
+          key_literal: "string"
 
 clean:
   sql: "sql/clean.sql"

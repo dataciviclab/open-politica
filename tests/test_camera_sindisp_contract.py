@@ -1,19 +1,18 @@
 """Contract camera_sindisp — atto, firmatari, destinatari.
 
 Policy:
-- il raw passa da uno script (keyset manuale): il plugin sparql del toolkit
-  inietta FILTER dopo la WHERE e Virtuoso lo rifiuta;
+- il raw è dichiarativo (`type: sparql`) con keyset: il FILTER vive nella
+  sottoquery via placeholder {keyset}, perché su Virtuoso un FILTER nella
+  stessa WHERE di un OPTIONAL può essere ignorato dall'ottimizzatore;
 - un atto per riga nel dataset principale (PK atto_id);
 - firmatari e destinatari sono dataset ponte con PK qualificate;
 - il mirror Senato (URI `_S`) è escluso alla fonte.
 """
 from __future__ import annotations
 
-import sys
 from pathlib import Path
 
 import duckdb
-import pytest
 import yaml
 
 import toolkit
@@ -39,13 +38,21 @@ def _clean_sql(slug: str) -> str:
     return (DATASETS / slug / "sql" / "clean.sql").read_text("utf-8").replace("{year}", "19")
 
 
-def test_main_config_usa_script_e_partiziona_per_legislatura():
+def test_main_config_keyset_dichiarativo():
+    """Il raw è sparql dichiarativo: keyset isolato nella sottoquery."""
     cfg = _cfg("camera-sindisp")
     source = cfg["raw"]["sources"][0]
-    assert source["type"] == "script"
-    assert "--legislature {year}" in source["args"]["command"]
-    assert "--mode ato" in source["args"]["command"]
-    assert source["args"]["output"].endswith(".parquet")
+    assert source["type"] == "sparql"
+    args = source["args"]
+    assert args["endpoint"] == "https://dati.camera.it/sparql"
+    assert "repubblica_{year}" in args["query"]
+    assert "{keyset}" in args["query"]
+    pag = args["pagination"]
+    assert pag["mode"] == "keyset"
+    assert pag["key"] == "?atto"
+    assert pag["key_expr"] == "STR(?atto)"
+    assert pag["key_column"] == "atto"
+    assert pag["key_literal"] == "string"
     assert cfg["dataset"]["years"] == [13, 14, 15, 16, 17, 18, 19]
     assert cfg["clean"]["validate"]["primary_key"] == ["atto_id"]
 
@@ -163,8 +170,12 @@ def test_bridge_config_pk_qualificate():
     dest = _cfg("camera-sindisp-destinatari")
     assert firm["clean"]["validate"]["primary_key"] == ["atto_id", "firmatario_uri", "ruolo"]
     assert dest["clean"]["validate"]["primary_key"] == ["atto_id", "destinatario_uri"]
-    assert "--mode firmatari" in firm["raw"]["sources"][0]["args"]["command"]
-    assert "--mode destinatari" in dest["raw"]["sources"][0]["args"]["command"]
+    for cfg in (firm, dest):
+        source = cfg["raw"]["sources"][0]
+        assert source["type"] == "sparql"
+        assert "{keyset}" in source["args"]["query"]
+        assert source["args"]["pagination"]["key"] == "?key"
+        assert source["args"]["pagination"]["key_literal"] == "string"
 
 
 def test_config_support_camera_ddl_e_mart_ponte():
@@ -248,18 +259,3 @@ def test_main_clean_decodifica_entita_html():
     out = con.execute(_clean_sql("camera-sindisp")).fetchdf()
     assert out.iloc[0]["titolo"] == 'ODG "test"'
     assert "sanità" in out.iloc[0]["descrizione"]
-
-
-def test_script_pagination_ha_un_tetto(monkeypatch):
-    sys.path.insert(0, str(REPO_ROOT / "scripts"))
-    import extract_camera_sindisp as ex
-
-    monkeypatch.setattr(ex, "PAGE_SIZE", 2)
-    monkeypatch.setattr(ex, "MAX_PAGES", 3)
-    monkeypatch.setattr(
-        ex,
-        "query",
-        lambda q: [{"atto": "a1", "akey": "a1"}, {"atto": "a2", "akey": "a2"}],
-    )
-    with pytest.raises(RuntimeError, match="superato"):
-        ex.fetch_pages(ex.QUERY_ATO, 19, "STR(?atto)", "atto", key_is_uri=False)
