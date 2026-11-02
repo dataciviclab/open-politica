@@ -9,7 +9,8 @@ più ministri. Include `ha_risposta` per il tasso di risposta per ministro.
   `ocd:risposta`
 - **Perimetro**: Leg13–19, multi-leg
 - **PK**: `(atto_id, destinatario_uri)`
-- **Estratto con**: `scripts/extract_camera_sindisp.py --mode destinatari`
+- **Estratto con**: source `sparql` (keyset sintetico `atto|destinatario`,
+  placeholder `{keyset}` nella sottoquery)
 
 ## Volumi (multi-leg 13–19)
 

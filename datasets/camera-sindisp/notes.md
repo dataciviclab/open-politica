@@ -54,22 +54,19 @@ successive) ed è fuori da questo dataset. I dataset ponte contengono
 **1.188.225** link firmatario (287.557 atti, 2.690 persone) e **308.058**
 link destinatario (215.697 atti, 344 organi).
 
-## Perché uno script (e non il source `sparql`)
+## Perché il keyset è dichiarativo (e non uno script)
 
-Il plugin `sparql` del toolkit, in modalità keyset, inietta
-`FILTER(?key > ...)` **dopo** la WHERE (prima di `ORDER BY`): Virtuoso lo
-rifiuta con `SP030 syntax error at 'FILTER'`. Lo script
-`scripts/extract_camera_sindisp.py` fa keyset manuale con il FILTER dentro
-la WHERE.
+Il source `sparql` del toolkit è usato in modalità keyset: il `FILTER` viene
+sostituito al placeholder `{keyset}`, che il dataset tiene **dentro una
+sottoquery senza OPTIONAL**. Serve perché su questo endpoint:
 
-Sul endpoint Camera sono emersi due comportamenti da tenere presenti:
-- `FILTER` + `OPTIONAL` nella stessa WHERE può essere ignorato
+- un `FILTER` + `OPTIONAL` nella stessa WHERE può essere ignorato
   dall'ottimizzatore (verificato: il filtro `!STRENDS(..., "_S")` spariva
-  con `BIND`/`OPTIONAL`). Il filtro sta in una **sottoquery senza OPTIONAL**;
-  la sottoquery seleziona la pagina di URI, la query esterna aggiunge i metadati.
+  con `BIND`/`OPTIONAL`). La sottoquery seleziona la pagina di URI, la query
+  esterna aggiunge i metadati;
 - `ORDER BY ?atto` e keyset su IRI non sono coerenti (l'ordine degli IRI in
   Virtuoso non è lessicografico). Si usa `ORDER BY STR(?atto)` e keyset su
-  stringa.
+  stringa (`key_expr: STR(?atto)`, `key_literal: string`).
 
 I conteggi `COUNT(*)` su `ocd:aic` sono gonfiati da triple `rdf:type`
 duplicate: il volume reale è il numero di **atti distinti** (tabella sopra).

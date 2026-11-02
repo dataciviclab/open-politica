@@ -9,8 +9,8 @@ Ponte tra `camera_sindisp.atto_id` e `camera_deputati_legislature.persona_id`.
   `ocd:altro_firmatario`
 - **Perimetro**: Leg13–19, multi-leg
 - **PK**: `(atto_id, firmatario_uri, ruolo)`
-- **Estratto con**: `scripts/extract_camera_sindisp.py --mode firmatari`
-  (keyset sintetico `atto|firmatario|ruolo`)
+- **Estratto con**: source `sparql` (keyset sintetico `atto|firmatario|ruolo`,
+  placeholder `{keyset}` nella sottoquery)
 
 ## Volumi (multi-leg 13–19)
 

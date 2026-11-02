@@ -24,18 +24,57 @@ dataset:
 raw:
   output_policy: overwrite
   sources:
-    # Script invece del source sparql: il plugin keyset del toolkit inietta
-    # FILTER dopo la WHERE (non valido per Virtuoso). Lo script fa keyset
-    # manuale con FILTER dentro la WHERE, per legislatura.
+    # Keyset dichiarativo. Il FILTER vive nella sottoquery (placeholder
+    # {keyset}): su Virtuoso un FILTER nella stessa WHERE di un OPTIONAL può
+    # essere ignorato dall'ottimizzatore. {year} = legislatura.
     - name: "camera_sindisp_raw"
-      type: "script"
+      type: "sparql"
       primary: true
       client:
-        timeout: 2400
+        timeout: 600
       args:
-        command: "python ../../scripts/extract_camera_sindisp.py --legislature {year} --mode ato --out camera_sindisp_raw.parquet"
-        output: "camera_sindisp_raw.parquet"
-        filename: "camera_sindisp_raw.parquet"
+        endpoint: "https://dati.camera.it/sparql"
+        accept_format: "sparql-results+json"
+        query: |
+          PREFIX ocd: <http://dati.camera.it/ocd/>
+          PREFIX dc: <http://purl.org/dc/elements/1.1/>
+          PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+          SELECT DISTINCT ?atto ?tipo ?numero ?data ?titolo ?descrizione ?ramo
+                 ?primo ?primo_label ?concluso ?risposta
+          WHERE {
+            {
+              SELECT DISTINCT ?atto WHERE {
+                ?atto a ocd:aic ;
+                      ocd:rif_leg <http://dati.camera.it/ocd/legislatura.rdf/repubblica_{year}> .
+                FILTER(!STRENDS(STR(?atto), "_S"))
+                {keyset}
+              }
+              ORDER BY STR(?atto)
+              LIMIT 10000
+            }
+            OPTIONAL { ?atto dc:type ?tipo }
+            OPTIONAL { ?atto dc:identifier ?numero }
+            OPTIONAL { ?atto dc:date ?data }
+            OPTIONAL { ?atto dc:title ?titolo }
+            OPTIONAL { ?atto dc:description ?descrizione }
+            OPTIONAL { ?atto ocd:ramo ?ramo }
+            OPTIONAL {
+              ?atto ocd:primo_firmatario ?primo .
+              OPTIONAL { ?primo rdfs:label ?primo_label }
+            }
+            OPTIONAL { ?atto ocd:concluso ?concluso }
+            OPTIONAL { ?atto ocd:risposta ?risposta }
+          }
+          ORDER BY STR(?atto)
+          LIMIT 10000
+        pages: 1000
+        step: 10000
+        pagination:
+          mode: keyset
+          key: "?atto"
+          key_expr: "STR(?atto)"
+          key_column: "atto"
+          key_literal: "string"
 
 support:
   # Ponte ODG → DDL: il numero del disegno di legge è nel titolo degli ODG
