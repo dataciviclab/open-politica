@@ -48,3 +48,10 @@ Top destinatari (tutte le legislature):
 - `ha_risposta` replica il flag dell'atto: se un atto ha più destinatari,
   il flag è lo stesso per tutti.
 - Non tutti gli atti hanno destinatario (Leg19: ~82%).
+- La fonte può restituire `ocd:destinatario` troncato a
+  `.../organoGoverno.rdf/og` (organo generico `GOVERNO`). Al 2026-11-02 erano
+  **2.538** righe contro le **1.968** del pubblicato del 20/10: **1.402 atti**
+  sono passati da un ministero specifico a `/og`. Per questo il totale può
+  **calare** anche con atti nuovi. Non è perdita di righe: il
+  `COUNT(DISTINCT atto|destinatario)` sul LOD coincide con l'estratto
+  (28.014 per la XIX legislatura).
