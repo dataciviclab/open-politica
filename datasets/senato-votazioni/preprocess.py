@@ -16,9 +16,7 @@ Uso:
 from __future__ import annotations
 
 import argparse
-import json
 import logging
-import subprocess
 import sys
 import time
 from pathlib import Path
@@ -26,6 +24,7 @@ from pathlib import Path
 import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
+from lab_connectors.http import execute_sparql_rows_curl
 
 OSR = "http://dati.senato.it/osr/"
 ENDPOINT = "https://dati.senato.it/sparql"
@@ -47,37 +46,23 @@ log = logging.getLogger("senato-votazioni")
 
 
 def query(sparql: str, timeout: int = 120) -> list[dict]:
-    """Esegue una SELECT via curl e restituisce i bindings con valori primitivi.
+    """Esegue una SELECT via curl condiviso (lab-connectors) e retry.
 
     Il WAF di dati.senato.it:
     - fa TLS-fingerprinting: le librerie Python ricevono 403/risposte vuote;
       il binario curl passa;
     - ha rate-limit per IP a burst: dopo poche query pesanti risponde 403
-      (HTML) per ~1 minuto. Rileviamo l'HTML e attendiamo 90s prima di
-      ritentare, con backoff progressivo.
+      (HTML) per ~1 minuto. Il client condiviso solleva RuntimeError su
+      risposta non-JSON/HTTP non-200; qui si ritenta con backoff progressivo.
     - serve risultati vuoti per query con variabili lunghe (vedi fetch_*).
     """
     attempts = [5, 15, 45, 90, 180, 300]
     for i, wait in enumerate(attempts):
         try:
-            out = subprocess.run(
-                ["curl", "-s", "--max-time", str(timeout), "-G", ENDPOINT,
-                 "--data-urlencode", f"query={sparql}",
-                 "-H", "Accept: application/sparql-results+json"],
-                capture_output=True, text=True, check=True,
-            ).stdout
-            if out.lstrip().startswith("<") or out.lstrip().startswith("Virtuoso"):
-                # HTML (403 WAF) o errore Virtuoso → throttle/limit: attesa lunga
-                log.warning("risposta non-JSON (tentativo %d) — attesa %ds", i + 1, wait)
-                time.sleep(wait)
-                continue
-            rows = json.loads(out)["results"]["bindings"]
+            rows = execute_sparql_rows_curl(ENDPOINT, sparql, timeout=timeout)
             time.sleep(8)
-            return [
-                {k: v.get("value") for k, v in r.items()}
-                for r in rows
-            ]
-        except (subprocess.CalledProcessError, json.JSONDecodeError) as exc:
+            return rows
+        except RuntimeError as exc:
             log.warning("query fallita (tentativo %d): %s — attesa %ds", i + 1, exc, wait)
             time.sleep(wait)
     raise RuntimeError(f"query fallita dopo {len(attempts)} tentativi: {sparql[:120]}...")

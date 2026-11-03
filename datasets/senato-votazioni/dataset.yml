@@ -20,7 +20,9 @@ raw:
       type: "script"
       primary: true
       client:
-        timeout: 1200
+        # Full extraction misurata il 2026-11-03: 1333s (1.22M righe, 8284
+        # votazioni). 1200 era troppo stretto; 1800 lascia ~35% di margine.
+        timeout: 1800
       args:
         command: "python preprocess.py --legislature 19 --out ."
         output: "senato_votazioni.parquet"

@@ -38,7 +38,7 @@ from pathlib import Path
 import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
-import requests
+from lab_connectors.http import execute_sparql_rows
 
 OCD = "http://dati.camera.it/ocd/"
 ENDPOINT = "https://dati.camera.it/sparql"
@@ -66,39 +66,33 @@ CANONICAL_LINK_COLUMNS = ["a", "e", "_class"]
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("camera-iter")
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "Mozilla/5.0 DataCivicLab/1.0"})
-
 
 class EndpointUnavailable(RuntimeError):
     """L'endpoint non risponde dopo tutti i tentativi; la cache è preservata."""
 
 
 def sparql(query: str, timeout: int = 240, max_retries: int = 8) -> list[dict]:
+    """Esegue una SELECT con il client condiviso (lab-connectors) e retry.
+
+    Lo stack HTTP è unico (lab-connectors); qui restano solo la politica di
+    retry con jitter e la semantica "endpoint irraggiungibile → cache intatta".
+    """
     last_error = ""
     for attempt in range(max_retries):
         try:
-            resp = SESSION.post(
-                ENDPOINT, data={"query": query},
-                headers={"Accept": "application/sparql-results+json,application/json"},
-                timeout=timeout,
-            )
-            if resp.status_code in (405, 414):
-                resp = SESSION.get(
-                    ENDPOINT, params={"query": query},
-                    headers={"Accept": "application/sparql-results+json,application/json"},
-                    timeout=timeout,
-                )
-            if resp.status_code == 200:
-                rows = resp.json()["results"]["bindings"]
-                time.sleep(0.25)
-                return [{k: v.get("value") for k, v in r.items()} for r in rows]
-            last_error = f"HTTP {resp.status_code}"
-        except (requests.RequestException, ValueError) as exc:
+            rows = execute_sparql_rows(ENDPOINT, query, timeout=timeout)
+            time.sleep(0.25)  # pacing: evita di martellare l'endpoint
+            return rows
+        except (RuntimeError, ValueError) as exc:
             last_error = str(exc)[:120]
-        wait = min(120, 5 * (2 ** attempt)) + random.uniform(0, 3)
-        log.warning("query fallita (%d/%d): %s — retry in %.0fs",
-                    attempt + 1, max_retries, last_error, wait)
+        wait = min(120, 5 * (2**attempt)) + random.uniform(0, 3)
+        log.warning(
+            "query fallita (%d/%d): %s — retry in %.0fs",
+            attempt + 1,
+            max_retries,
+            last_error,
+            wait,
+        )
         time.sleep(wait)
     raise EndpointUnavailable(last_error)
 
@@ -107,17 +101,11 @@ def endpoint_alive(timeout: int = 30, tries: int = 3) -> bool:
     """Preflight rapido: evita di restare bloccati su un endpoint down."""
     for attempt in range(tries):
         try:
-            resp = SESSION.post(
-                ENDPOINT, data={"query": "SELECT (1 AS ?x) WHERE {}"},
-                headers={"Accept": "application/sparql-results+json,application/json"},
-                timeout=timeout,
-            )
-            if resp.status_code == 200:
-                return True
-            log.warning("preflight HTTP %s (%d/%d)", resp.status_code, attempt + 1, tries)
-        except requests.RequestException as exc:
+            execute_sparql_rows(ENDPOINT, "SELECT (1 AS ?x) WHERE {}", timeout=timeout)
+            return True
+        except (RuntimeError, ValueError) as exc:
             log.warning("preflight errore %s (%d/%d)", str(exc)[:80], attempt + 1, tries)
-        time.sleep(min(30, 5 * (2 ** attempt)))
+        time.sleep(min(30, 5 * (2**attempt)))
     return False
 
 

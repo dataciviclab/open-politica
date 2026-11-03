@@ -22,7 +22,7 @@ from pathlib import Path
 import duckdb
 import pyarrow as pa
 import pyarrow.parquet as pq
-import requests
+from lab_connectors.http import execute_sparql_rows
 
 OCD = "http://dati.camera.it/ocd/"
 ENDPOINT = "https://dati.camera.it/sparql"
@@ -30,36 +30,23 @@ ENDPOINT = "https://dati.camera.it/sparql"
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("camera-voti")
 
-SESSION = requests.Session()
-SESSION.headers.update({"User-Agent": "Mozilla/5.0 DataCivicLab/1.0"})
-
 
 def query(sparql: str, timeout: int = 120) -> list[dict]:
+    """Esegue una SELECT con il client condiviso (lab-connectors) e retry.
+
+    POST form-encoded nel client: niente limite URL, quindi le IN-list lunghe
+    non producono 414.
+    """
     for attempt in range(5):
         try:
-            # POST form-encoded: la query va nel BODY (niente limite URL →
-            # evita il 414 con IN-list lunghe). Stesso pattern del toolkit.
-            resp = SESSION.post(
-                ENDPOINT, data={"query": sparql},
-                headers={"Accept": "application/sparql-results+json,application/json"},
-                timeout=timeout,
-            )
-            if resp.status_code in (405, 414):
-                # fallback GET se POST non supportata
-                resp = SESSION.get(
-                    ENDPOINT, params={"query": sparql},
-                    headers={"Accept": "application/sparql-results+json,application/json"},
-                    timeout=timeout,
-                )
-            resp.raise_for_status()
-            rows = resp.json()["results"]["bindings"]
+            rows = execute_sparql_rows(ENDPOINT, sparql, timeout=timeout)
             time.sleep(0.3)
-            return [{k: v.get("value") for k, v in r.items()} for r in rows]
-        except (requests.RequestException, ValueError) as exc:
-            wait = 8 * (2 ** attempt)
+            return rows
+        except (RuntimeError, ValueError) as exc:
+            wait = 8 * (2**attempt)
             log.warning("query fallita (tentativo %d): %s — retry in %ds", attempt + 1, exc, wait)
             time.sleep(wait)
-    raise RuntimeError(f"query fallita dopo 5 tentativi")
+    raise RuntimeError("query fallita dopo 5 tentativi")
 
 
 def fetch_votazioni(legislatura: int) -> list[str]:
