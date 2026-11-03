@@ -24,7 +24,7 @@ on:
         default: ""
 
 concurrency:
-  group: open-politica-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
+  group: open-politica-pipeline
   cancel-in-progress: false
 
 jobs:

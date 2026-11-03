@@ -1,0 +1,47 @@
+# Pipeline (pesanti, VM) — open-politica
+#
+# camera-voti (5M+), senato-votazioni (500k+), camera-iter girano full in
+# ~1h+ e vanno in timeout su runner GitHub. Girano QUI, su runner self-hosted
+# con disco persistente (`clean: false`): la baseline incrementale (parquet) e
+# la cache di camera-iter sopravvivono tra un run e l'altro. Con `--incremental`
+# (camera-voti, senato-votazioni) si estraggono solo le novità.
+#
+# Restano fuori dalla pipeline GitHub: il Makefile li esclude da `run-all` e
+# `run-batch` (variabile HEAVY).
+#
+# Prerequisito: un runner self-hosted ORG-LEVEL con label `self-hosted`
+# (VM con disco persistente). Finché non esiste, il job resta in coda.
+
+name: Pipeline (pesanti, VM)
+
+on:
+  schedule:
+    # Ogni 5 giorni: sono le fonti che si muovono a ogni seduta.
+    - cron: '0 6 */5 * *'
+  workflow_dispatch:
+  # Un merge che tocca uno script pesante lo riesegue qui (la pipeline GitHub
+  # lo salta, filtrato dal Makefile).
+  pull_request:
+    types: [closed]
+    paths:
+      - "datasets/camera-voti/**"
+      - "datasets/senato-votazioni/**"
+      - "datasets/camera-iter/**"
+
+# Stesso gruppo della pipeline GitHub: scrivono sullo stesso bucket GCS e sulla
+# stessa branch del registry, quindi non devono sovrapporsi.
+concurrency:
+  group: open-politica-pipeline
+  cancel-in-progress: false
+
+jobs:
+  pipeline:
+    if: github.event.pull_request.merged == true || github.event_name != 'pull_request'
+    uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
+    with:
+      repo-slug: "open-politica"
+      runs-on: "self-hosted"
+      clean: "false"
+      run-command: "make run-heavy"
+      sync-pattern: "per-dataset"
+    secrets: inherit

@@ -22,7 +22,7 @@ raw:
       client:
         timeout: 1800
       args:
-        command: "python preprocess.py --legislature 19 --out ."
+        command: "python preprocess.py --legislature 19 --out . --incremental"
         output: "camera_voti.parquet"
         filename: "camera_voti.parquet"
 
