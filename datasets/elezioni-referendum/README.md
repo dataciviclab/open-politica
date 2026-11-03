@@ -1,6 +1,6 @@
 # elezioni-referendum
 
-Risultati dei referendum abrogativi e costituzionali in Italia per comune e quesito (1995-2022).
+Risultati dei referendum abrogativi e costituzionali in Italia per comune e quesito (1974-2022).
 
 **Fonte**: Eligendo — Archivio storico elettorale del DAIT (Ministero dell'Interno)
 **Licenza**: dati pubblici
@@ -11,9 +11,9 @@ Come ha votato l'Italia nei referendum? Quali territori hanno votato SI o NO e c
 
 ## Dataset
 
-- **Copertura**: 1995–2022 (12 tornate, 41 quesiti)
-- **Granularità**: provinciale (1995-2006), comunale (2011-2022)
-- **Righe**: ~100.000
+- **Copertura**: 1974–2022 (23 tornate, 77 quesiti)
+- **Granularità**: comunale (1974-1985), provinciale (1987-2006), comunale (2009-2022)
+- **Righe**: ~198.000
 - **Colonne**: 14 (data_elezione, regione, provincia, comune, elettori, votanti, voti_si, voti_no, ...)
 
 ## Schema (14 colonne)
@@ -22,8 +22,8 @@ Come ha votato l'Italia nei referendum? Quali territori hanno votato SI o NO e c
 |---|---|---|
 | `data_elezione` | DATE | Data del voto |
 | `regione` | VARCHAR | Regione |
-| `provincia` | VARCHAR | Provincia (solo 2011-2022: comune) |
-| `comune` | VARCHAR | Comune (NULL per 1995-2006: dati provinciali) |
+| `provincia` | VARCHAR | Provincia |
+| `comune` | VARCHAR | Comune (NULL per 1987-2006: dati provinciali) |
 | `elettori` / `elettori_uomini` | BIGINT | Elettori |
 | `votanti` / `votanti_uomini` | BIGINT | Votanti |
 | `voti_si` / `voti_no` | BIGINT | Voti |
@@ -35,7 +35,7 @@ Come ha votato l'Italia nei referendum? Quali territori hanno votato SI o NO e c
 | Mart | Granularità | Cosa produce |
 |---|---|---|
 | `mart_voti_quesito_comune` | comune × quesito | Voti SI/NO, affluenza%, pct_si, pct_no, esito |
-| `mart_trend` | regione × anno | Trend affluenza referendaria (solo 2011-2022) |
+| `mart_trend` | regione × anno | Trend affluenza referendaria (tutti gli anni con `regione`) |
 
 ## Dati salienti
 
@@ -50,10 +50,11 @@ Come ha votato l'Italia nei referendum? Quali territori hanno votato SI o NO e c
 
 ## Note
 
-- **1995-2006**: solo granularità provinciale (comune = NULL)
-- **2011-2022**: granularità comunale completa
+- **1987-2006**: solo granularità provinciale (comune = NULL)
+- **1974-1985 e 2009-2022**: granularità comunale completa
+- **2025-2026**: non inclusi, la fonte pubblica solo XLSX (supporto XLSX da fare)
 - `mart_trend`: legge da tutti i clean parquet locali via glob (`{root}/data/clean/elezioni_referendum/*/...`). Non serve manutenzione: ogni nuovo anno runnato entra automaticamente.
 
 ## Stato
 
-`candidate` — run verificato su tutte le 12 tornate.
+`candidate` — run verificato su tutte le 22 annualità (23 tornate).

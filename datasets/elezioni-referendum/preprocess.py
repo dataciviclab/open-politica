@@ -4,15 +4,79 @@
 Uso: python preprocess.py <anno> <output.csv>
 """
 
-import sys
 import csv
 import io
 import os
 import re
+import sys
 import zipfile
+
 from lab_connectors.http.download import download as _lab_download
 
 SOURCES: dict[int, list[tuple[str, str, bool]]] = {
+    1974: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19740512.zip",
+            "1974-05-12",
+            True,
+        )
+    ],
+    1978: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19780611.zip",
+            "1978-06-11",
+            True,
+        )
+    ],
+    1981: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19810517.zip",
+            "1981-05-17",
+            True,
+        )
+    ],
+    1985: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19850609.zip",
+            "1985-06-09",
+            True,
+        )
+    ],
+    1987: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19871108.zip",
+            "1987-11-08",
+            True,
+        )
+    ],
+    1989: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19890618.zip",
+            "1989-06-18",
+            True,
+        )
+    ],
+    1990: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19900603.zip",
+            "1990-06-03",
+            True,
+        )
+    ],
+    1991: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19910609.zip",
+            "1991-06-09",
+            True,
+        )
+    ],
+    1993: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19930418.zip",
+            "1993-04-18",
+            True,
+        )
+    ],
     1995: [
         (
             "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-19950611.zip",
@@ -69,6 +133,13 @@ SOURCES: dict[int, list[tuple[str, str, bool]]] = {
             True,
         )
     ],
+    2009: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-20090621.zip",
+            "2009-06-21",
+            True,
+        )
+    ],
     2011: [
         (
             "https://dait.interno.gov.it/documenti/opendata/referendum/referendum-20110612.zip",
@@ -103,6 +174,23 @@ SOURCES: dict[int, list[tuple[str, str, bool]]] = {
         )
     ],
 }
+
+# Alcuni ZIP storici (es. 1985) non hanno la riga di intestazione: le colonne
+# sono in ordine fisso. Usato solo quando la prima riga non ha nomi riconoscibili.
+HEADERLESS_COLS = [
+    "REGIONE",
+    "PROVINCIA",
+    "COMUNE",
+    "NUM_REFERENDUM",
+    "QUESITO",
+    "ELETTORI",
+    "ELETTORI_MASCHI",
+    "VOTANTI",
+    "VOTANTI_MASCHI",
+    "NUMVOTISI",
+    "NUMVOTINO",
+    "SCHEDE_BIANCHE",
+]
 
 COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^REGIONE$", re.I), "regione"),
@@ -176,8 +264,7 @@ def normalize_columns(header: list[str]) -> tuple[list[str], list[int]]:
     return norm, indices
 
 
-def process_zip(url: str, election_date: str) -> list[dict]:
-    raw = download(url)
+def parse_zip_bytes(raw: bytes, election_date: str) -> list[dict]:
     records = []
     with zipfile.ZipFile(io.BytesIO(raw)) as zf:
         for name in zf.namelist():
@@ -193,11 +280,14 @@ def process_zip(url: str, election_date: str) -> list[dict]:
             rows = parse_csv(decoded)
             if not rows:
                 continue
-            header = rows[0]
-            col_names, col_indices = normalize_columns(header)
-            if not col_names:
-                continue
-            for row in rows[1:]:
+            col_names, col_indices = normalize_columns(rows[0])
+            if col_names:
+                data_rows = rows[1:]
+            else:
+                # Fonte senza intestazione (es. 1985): la prima riga è già un record.
+                col_names, col_indices = normalize_columns(HEADERLESS_COLS)
+                data_rows = rows
+            for row in data_rows:
                 if not row or not any(cell.strip() for cell in row):
                     continue
                 rec = {"data_elezione": election_date}
@@ -220,6 +310,10 @@ def process_zip(url: str, election_date: str) -> list[dict]:
                         rec[cname] = val
                 records.append(rec)
     return records
+
+
+def process_zip(url: str, election_date: str) -> list[dict]:
+    return parse_zip_bytes(download(url), election_date)
 
 
 def main():
