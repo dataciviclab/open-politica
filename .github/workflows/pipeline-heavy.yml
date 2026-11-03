@@ -28,10 +28,13 @@ on:
       - "datasets/senato-votazioni/**"
       - "datasets/camera-iter/**"
 
-# Stesso gruppo della pipeline GitHub: scrivono sullo stesso bucket GCS e sulla
-# stessa branch del registry, quindi non devono sovrapporsi.
+# Gruppo separato dalla pipeline GitHub: corsie diverse, dataset diversi.
+# Le due possono sovrapporsi (GCS scrive prefissi slug diversi, nessun
+# conflitto). Nota: il registry è condiviso → due lane che pushano lo stesso
+# branch `schedule-registry` in contemporanea possono entrare in conflitto
+# (force-with-lease). Fix completo = branch per-corsia nell'action; follow-up.
 concurrency:
-  group: open-politica-pipeline
+  group: open-politica-pipeline-heavy
   cancel-in-progress: false
 
 jobs:

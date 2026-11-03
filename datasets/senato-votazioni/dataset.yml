@@ -24,6 +24,9 @@ raw:
         # votazioni). 1200 era troppo stretto; 1800 lascia ~35% di margine.
         timeout: 1800
       args:
+        # --incremental script-level (vedi camera-voti): delta su max(data) con
+        # >= (il confine del giorno non perde voti), merge con dedup dentro il
+        # parquet. Richiede la baseline presente → runner con disco persistente (VM).
         command: "python preprocess.py --legislature 19 --out . --incremental"
         output: "senato_votazioni.parquet"
         filename: "senato_votazioni.parquet"
