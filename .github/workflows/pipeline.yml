@@ -2,7 +2,9 @@
 #
 # Post-merge + refresh. Usa pipeline-reusable.yml dell'org.
 # Su PR merged: solo i dataset toccati (detect + batch).
-# Su schedule/dispatch: tutti i dataset.
+# Su schedule: tutti i dataset.
+# Su dispatch: un singolo dataset (slug o path) se `dataset` è valorizzato,
+# altrimenti tutti. Il dispatch salta il detect e sincronizza su GCS.
 
 name: Pipeline
 
@@ -15,6 +17,11 @@ on:
   schedule:
     - cron: '0 6 1 * *'
   workflow_dispatch:
+    inputs:
+      dataset:
+        description: "Slug o path di un singolo dataset (es. camera-sindisp o datasets/camera-sindisp/dataset.yml). Vuoto = tutti."
+        required: false
+        default: ""
 
 concurrency:
   group: open-politica-pipeline-${{ github.event.pull_request.number || github.ref || 'schedule' }}
@@ -26,7 +33,7 @@ jobs:
     uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
     with:
       repo-slug: "open-politica"
-      run-command: "make run-all"
+      run-command: ${{ inputs.dataset == '' && 'make run-all' || format('toolkit run --config {0}', inputs.dataset) }}
       run-batch-command: "make run-batch"
       detect-paths: "datasets compose"
       sync-pattern: "per-dataset"
