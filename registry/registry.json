@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-10-30",
+  "updated_at": "2026-11-03",
   "datasets": [
     {
       "slug": "camera_atti_dibattito",
@@ -5511,7 +5511,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261020T100503Z_d2d8fac1",
+        "run_id": "20261103T093535Z_22f4d4d8",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -5520,18 +5520,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 3174,
-          "clean": 3148,
-          "mart": 367
+          "raw": 3199,
+          "clean": 3172,
+          "mart": 368
         },
         "output_bytes": {
-          "raw": 1351852,
-          "clean": 202576,
-          "mart": 5738
+          "raw": 1364149,
+          "clean": 204166,
+          "mart": 5750
         },
-        "started_at": "2026-10-20T10:05:03.422118+00:00",
-        "finished_at": "2026-10-20T10:05:05.147559+00:00",
-        "duration_seconds": 1.725
+        "started_at": "2026-11-03T09:35:35.298387+00:00",
+        "finished_at": "2026-11-03T09:35:37.358957+00:00",
+        "duration_seconds": 2.061
       }
     },
     {
@@ -5788,7 +5788,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261020T100844Z_7fcf9560",
+        "run_id": "20261103T093939Z_3269f72f",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -5797,17 +5797,18 @@
           "mart": 100
         },
         "output_rows": {
-          "clean": 31063,
-          "mart": 333
+          "raw": 31479,
+          "clean": 31479,
+          "mart": 338
         },
         "output_bytes": {
-          "raw": 58272067,
-          "clean": 33394792,
-          "mart": 24569
+          "raw": 126596309,
+          "clean": 33872378,
+          "mart": 24900
         },
-        "started_at": "2026-10-20T10:08:44.651087+00:00",
-        "finished_at": "2026-10-20T10:09:33.893852+00:00",
-        "duration_seconds": 49.243
+        "started_at": "2026-11-03T09:39:39.104681+00:00",
+        "finished_at": "2026-11-03T09:40:19.466608+00:00",
+        "duration_seconds": 40.362
       }
     },
     {
