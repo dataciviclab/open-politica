@@ -7,16 +7,143 @@ Scarica ZIP/CSV da Eligendo per l'anno specificato, estrae il file scrutini,
 normalizza colonne e numeri, e produce un CSV unico con schema standard.
 """
 
-import sys
 import csv
 import io
 import os
 import re
-import zipfile
+import sys
 import urllib.request
+import zipfile
 
 # ── mappa anni → lista di (url, data_elezione, is_zip) ──────────────────
 SOURCES: dict[int, list[tuple[str, str, bool]]] = {
+    1970: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-19700607.zip",
+            "1970-06-07",
+            True,
+        ),
+    ],
+    1975: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-19750615.zip",
+            "1975-06-15",
+            True,
+        ),
+    ],
+    1980: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-19800608.zip",
+            "1980-06-08",
+            True,
+        ),
+    ],
+    1985: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-19850512.zip",
+            "1985-05-12",
+            True,
+        ),
+    ],
+    1990: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-19900506.zip",
+            "1990-05-06",
+            True,
+        ),
+    ],
+    1995: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-19950423.zip",
+            "1995-04-23",
+            True,
+        ),
+    ],
+    2000: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20000416.zip",
+            "2000-04-16",
+            True,
+        ),
+    ],
+    2001: [
+        # 2001-06-24: elezione suppletiva in Sicilia, CSV dentro ZIP.
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20010624.zip",
+            "2001-06-24",
+            True,
+        ),
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20011111.zip",
+            "2001-11-11",
+            True,
+        ),
+    ],
+    2005: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20050403.zip",
+            "2005-04-03",
+            True,
+        ),
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20050417.zip",
+            "2005-04-17",
+            True,
+        ),
+    ],
+    2006: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20061105.zip",
+            "2006-11-05",
+            True,
+        ),
+    ],
+    2008: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20081214.zip",
+            "2008-12-14",
+            True,
+        ),
+    ],
+    2010: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20100328.zip",
+            "2010-03-28",
+            True,
+        ),
+    ],
+    # 2011-10-16 escluso: la fonte pubblica solo XLSX.
+    2013: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20130224.zip",
+            "2013-02-24",
+            True,
+        ),
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20131117.zip",
+            "2013-11-17",
+            True,
+        ),
+    ],
+    2014: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20140525.zip",
+            "2014-05-25",
+            True,
+        ),
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20141123.zip",
+            "2014-11-23",
+            True,
+        ),
+    ],
+    2015: [
+        (
+            "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20150531.zip",
+            "2015-05-31",
+            True,
+        ),
+    ],
     2018: [
         (
             "https://dait.interno.gov.it/documenti/opendata/regionali/regionali-20180304.zip",
@@ -144,6 +271,23 @@ def parse_csv(content: str) -> list[list[str]]:
 
 # ── Mappa normalizzazione colonne ───────────────────────────────────────
 # (pattern nel nome colonna → nome normalizzato)
+# Colonne attese da clean.sql: garantite anche per le tornate storiche che non
+# le portano (es. 1970-1990 senza candidato/circoscrizione).
+CANONICAL_COLS = [
+    "data_elezione",
+    "regione",
+    "circoscrizione",
+    "provincia",
+    "comune",
+    "elettori",
+    "votanti",
+    "schede_bianche",
+    "candidato",
+    "voti_candidato",
+    "lista",
+    "voti_lista",
+]
+
 COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^REG(IONE)?$", re.I), "regione"),
     (re.compile(r"^CIRC(OSCR(IZIONE)?)?$", re.I), "circoscrizione"),
@@ -156,7 +300,7 @@ COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^(NOME|NOME_CANDIDATO)$", re.I), "nome"),
     (re.compile(r"^(LISTA|DESCRLISTA)$", re.I), "lista"),
     (re.compile(r"^(VOTI_LISTA|VOTILISTA)$", re.I), "voti_lista"),
-    (re.compile(r"^(VOTI_CAND(IDATO)?|VOTICAND(IDATO)?)$", re.I), "voti_candidato"),
+    (re.compile(r"^(VOTI_CAND(IDATO)?|VOTICAND(IDATO)?|VOTICANDIDLEADER)$", re.I), "voti_candidato"),
 ]
 
 
@@ -218,6 +362,13 @@ def process_url(url: str, election_date: str, is_zip: bool) -> list[dict]:
     return records
 
 
+def ensure_canonical(records: list[dict]) -> None:
+    """Garantisce le colonne attese da clean.sql su ogni record."""
+    for rec in records:
+        for col in CANONICAL_COLS:
+            rec.setdefault(col, "")
+
+
 def main():
     year = int(sys.argv[1]) if len(sys.argv) > 1 else 2023
     output = sys.argv[2] if len(sys.argv) > 2 else "raw_input.csv"
@@ -238,8 +389,16 @@ def main():
         print("Nessun dato estratto!", file=sys.stderr)
         sys.exit(1)
 
-    # Ricava header da tutti i record
-    fieldnames = list(all_records[0].keys())
+    ensure_canonical(all_records)
+
+    # Ricava header dall'unione delle chiavi di tutti i record
+    fieldnames: list[str] = []
+    seen: set[str] = set()
+    for rec in all_records:
+        for key in rec:
+            if key not in seen:
+                seen.add(key)
+                fieldnames.append(key)
 
     with open(output, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=";")
