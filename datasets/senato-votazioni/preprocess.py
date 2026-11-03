@@ -255,30 +255,36 @@ def main() -> int:
             sedute_map = {s["s"]: s["d"] for s in fetch_sedute(args.legislature)}
             new_votazioni = {
                 m["v"] for m in all_meta
-                if sedute_map.get(m["seduta"]) and str(sedute_map[m["seduta"]]) > str(last_date)
+                if sedute_map.get(m["seduta"]) and str(sedute_map[m["seduta"]]) >= str(last_date)
             }
-            log.info("incremental: %d votazioni nuove (data > %s)", len(new_votazioni), last_date)
+            log.info("incremental: %d votazioni nuove (data >= %s)", len(new_votazioni), last_date)
             if not new_votazioni:
                 log.info("niente di nuovo — parquet invariato: %s", final_path)
                 return 0
         else:
             new_votazioni = None
 
+        incr = last_date is not None
         for g in graphs:
             graph_name = g.rstrip('/').split('/')[-2]
-            f = out_dir / f"voti_{graph_name}.parquet"
-            if f.exists():
-                log.info("  graph %s: già estratto, salto", graph_name)
-                voti_files.append(f)
-                continue
+            if incr:
+                # Incrementale: niente cache per-graph (serve al resume di un
+                # full). I voti nuovi vanno in file dedicati; il merge li unisce
+                # all'esistente con dedup. Un run incrementale morto a metà non
+                # lascia cache che il run dopo salterebbe.
+                f = out_dir / f"voti_incr_{graph_name}.parquet"
+            else:
+                f = out_dir / f"voti_{graph_name}.parquet"
+                if f.exists():
+                    log.info("  graph %s: già estratto, salto", graph_name)
+                    voti_files.append(f)
+                    continue
             try:
-                if last_date is not None:
-                    meta_in_g = [m for m in all_meta if m["seduta"]]
+                if incr:
                     voti = fetch_voti_filtered(g, new_votazioni)
                     voti = [v for v in voti if v["v"] in new_votazioni]
                     log.info("  graph %s: %d voti nuovi", graph_name, len(voti))
                 else:
-                    meta_in_g = meta
                     voti = fetch_voti(g)
             except Exception as exc:
                 log.error("  graph %s: ERRORE %s — salto", graph_name, exc)
@@ -296,6 +302,12 @@ def main() -> int:
             pq.write_table(table, f)
             voti_files.append(f)
             log.info("  graph %s: salvato %s (%d voti)", graph_name, f.name, len(voti))
+
+        if not voti_files:
+            # Nessun graph ha prodotto voti (incrementale senza novità, o tutti
+            # i graph falliti): non tentare il merge con read_parquet([]).
+            log.info("nessun voto nuovo — parquet invariato: %s", final_path)
+            return 0
 
         log.info("metadati: %d votazioni", len(all_meta))
         sedute = fetch_sedute(args.legislature)
@@ -343,7 +355,7 @@ def main() -> int:
         globs = ", ".join(f"'{p}'" for p in voti_files)
         con.execute(f"""
             CREATE OR REPLACE TABLE finale AS
-            SELECT * FROM (
+            SELECT DISTINCT * FROM (
             SELECT v.votazione,
                    TRY_CAST(REGEXP_EXTRACT(v.senatore, '(\\d+)$', 1) AS BIGINT) AS senatore_id,
                    v.voto,

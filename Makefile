@@ -3,8 +3,14 @@ export TOOLKIT_ALLOW_SCRIPT_SOURCE := 1
 
 # --- Dataset -----------------------------------------------------------
 
-DATASETS := $(shell find datasets -name dataset.yml 2>/dev/null | sort)
+ALL_DATASETS := $(shell find datasets -name dataset.yml 2>/dev/null | sort)
 COMPOSES := $(shell find compose -name dataset.yml 2>/dev/null | sort)
+
+# Dataset pesanti (script, full lento): girano SOLO sulla VM con disco
+# persistente (baseline/cache incrementale), non nella pipeline GitHub.
+HEAVY := datasets/camera-voti/dataset.yml datasets/senato-votazioni/dataset.yml datasets/camera-iter/dataset.yml
+
+DATASETS := $(filter-out $(HEAVY),$(ALL_DATASETS))
 
 # --- Pipeline completa (datasets → compose) ---------------------------
 
@@ -35,12 +41,37 @@ run-compose:
 		exit 1; \
 	fi
 
+# --- Dataset pesanti (solo VM, disco persistente) ----------------------
+
+.PHONY: run-heavy
+run-heavy:
+	@fail=""; \
+	for f in $(HEAVY); do \
+		echo "→ $$f"; \
+		$(TOOLKIT) run -c "$$f" || { echo "::error title=dataset pesante fallito::$$f"; fail="$$fail $$f"; }; \
+	done; \
+	if [ -n "$$fail" ]; then \
+		echo "::error title=pipeline pesanti::falliti:$$fail"; \
+		exit 1; \
+	fi
+
 # --- Batch selettivo (PR post-merge: solo dataset cambiati) -----------
 
 .PHONY: run-batch
 run-batch:
 	@if [ -s batch.txt ]; then \
-		$(TOOLKIT) run --batch batch.txt; \
+		: > /tmp/batch.filtered.txt; \
+		while IFS= read -r f; do \
+			case " $(HEAVY) " in \
+				*" $$f "*) ;; \
+				*) echo "$$f" >> /tmp/batch.filtered.txt ;; \
+			esac; \
+		done < batch.txt; \
+		if [ -s /tmp/batch.filtered.txt ]; then \
+			$(TOOLKIT) run --batch /tmp/batch.filtered.txt; \
+		else \
+			echo "solo dataset pesanti — girano sulla VM"; \
+		fi; \
 	else \
 		echo "Nessun dataset da processare"; \
 	fi
@@ -58,7 +89,7 @@ extract-camera-voti:
 
 .PHONY: check
 check:
-	@for f in $(DATASETS) $(COMPOSES); do \
+	@for f in $(ALL_DATASETS) $(COMPOSES); do \
 		echo "→ $$f"; \
 		$(TOOLKIT) run preflight --config "$$f" > /dev/null 2>&1 || exit 1; \
 	done

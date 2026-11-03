@@ -152,11 +152,11 @@ def main() -> int:
         dates = fetch_votazione_dates(args.legislature)
         new_dates = {
             d["vr"] for d in dates
-            if d["d"] and str(d["d"])[:8] > incremental_existing.replace("-", "")
+            if d["d"] and str(d["d"])[:8] >= incremental_existing.replace("-", "")
         }
         votazioni = sorted(votazioni, key=lambda x: x)
         votazioni = [v for v in votazioni if v in new_dates]
-        log.info("incremental: %d/%d votazioni nuove (data > %s)",
+        log.info("incremental: %d/%d votazioni nuove (data >= %s)",
                  len(votazioni), len(dates), incremental_existing)
         if not votazioni:
             log.info("niente di nuovo — parquet invariato: %s", final_path)
