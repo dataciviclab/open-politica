@@ -303,6 +303,12 @@ def main() -> int:
             voti_files.append(f)
             log.info("  graph %s: salvato %s (%d voti)", graph_name, f.name, len(voti))
 
+        if not voti_files:
+            # Nessun graph ha prodotto voti (incrementale senza novità, o tutti
+            # i graph falliti): non tentare il merge con read_parquet([]).
+            log.info("nessun voto nuovo — parquet invariato: %s", final_path)
+            return 0
+
         log.info("metadati: %d votazioni", len(all_meta))
         sedute = fetch_sedute(args.legislature)
         log.info("sedute: %d", len(sedute))
