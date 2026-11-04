@@ -34,6 +34,13 @@ voti_candidato.
 - 1970: liste con `VOTI`/`SEGGI` (non `VOTILISTA`/`SEGGILISTA`)
 - 1980: Scrutini con refuso `ComuneSut` al posto di `Comune`
 
+## Lettura CSV
+`clean.read` usa `all_varchar: true` + `ignore_errors: true`, **senza**
+`strict_mode: false`: la combinazione `strict_mode`+`ignore_errors` di DuckDB
+scartava silenziosamente le righe con valori non numerici nelle colonne
+numeriche (1975: -122 righe). Le cast restano in `clean.sql`
+(`TRY_CAST`/macro).
+
 ## Codice condiviso
 `datasets/_shared/eligendo.py` (`select_entries`, `read_table`, `merge_on`)
 evita di duplicare download/ZIP/CSV/XLSX nei preprocess dei dataset elettorali.

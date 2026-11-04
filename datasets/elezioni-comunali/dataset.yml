@@ -27,8 +27,8 @@ clean:
     delim: ";"
     encoding: "utf-8"
     header: true
-    strict_mode: false
     ignore_errors: true
+    all_varchar: true
   validate:
     not_null: [data_elezione]
     min_rows: 100
