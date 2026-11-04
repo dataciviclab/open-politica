@@ -38,5 +38,6 @@ jobs:
         ${{ inputs.datasets == '' && 'make run-all' || format('for d in $(echo "{0}" | tr "," " "); do toolkit run --config "$d"; done', inputs.datasets) }}
       run-batch-command: "make run-batch"
       detect-paths: "datasets compose"
+      extra-env: TOOLKIT_ALLOW_SCRIPT_SOURCE=1
       sync-pattern: "per-dataset"
     secrets: inherit

@@ -1,24 +1,31 @@
-# Pipeline (pesanti, VM) — open-politica
+# Pipeline (pesanti) — open-politica
 #
-# camera-voti (5M+), senato-votazioni (500k+), camera-iter girano full in
-# ~1h+ e vanno in timeout su runner GitHub. Girano QUI, su runner self-hosted
-# con disco persistente (`clean: false`): la baseline incrementale (parquet) e
-# la cache di camera-iter sopravvivono tra un run e l'altro. Con `--incremental`
-# (camera-voti, senato-votazioni) si estraggono solo le novità.
+# camera-voti (5M+), senato-votazioni (500k+), camera-iter: estrazioni lunghe
+# e incrementali. Girano su runner GitHub-hosted con `actions/cache` al posto
+# del disco persistente della VM: la baseline (parquet) e la cache di
+# camera-iter sopravvivono tra un run e l'altro via cache-paths/cache-key.
+# Con `--incremental` (camera-voti, senato-votazioni) si estraggono solo le
+# novità.
 #
-# Restano fuori dalla pipeline GitHub: il Makefile li esclude da `run-all` e
-# `run-batch` (variabile HEAVY).
+# Restano fuori dalla pipeline principale perché hanno cadenza diversa: il
+# Makefile li esclude da `run-all`/`run-batch` (variabile HEAVY) e questa
+# corsia gira ogni 5 giorni, perché le fonti si muovono a ogni seduta.
 #
-# Prerequisito: un runner self-hosted ORG-LEVEL con label `self-hosted`
-# (VM con disco persistente). Finché non esiste, il job resta in coda.
+# Cache: il primo run è full (cache miss), poi incrementale. Le baseline sono
+# `datasets/<slug>/*.parquet` e `datasets/camera-iter/_cache` (gitignored).
 
-name: Pipeline (pesanti, VM)
+name: Pipeline (pesanti)
 
 on:
   schedule:
     # Ogni 5 giorni: sono le fonti che si muovono a ogni seduta.
     - cron: '0 6 */5 * *'
   workflow_dispatch:
+    inputs:
+      datasets:
+        description: "Uno o più slug pesanti separati da virgola (es. camera-iter, camera-voti). Vuoto = tutti (make run-heavy). Vedi ADR-002."
+        required: false
+        default: ""
   # Un merge che tocca uno script pesante lo riesegue qui (la pipeline GitHub
   # lo salta, filtrato dal Makefile).
   pull_request:
@@ -43,8 +50,17 @@ jobs:
     uses: dataciviclab/.github/.github/workflows/pipeline-reusable.yml@main
     with:
       repo-slug: "open-politica"
-      runs-on: "self-hosted"
-      clean: "false"
-      run-command: "make run-heavy"
+      runs-on: "ubuntu-latest"
+      clean: "true"
+      run-command: >-
+        ${{ inputs.datasets == '' && 'make run-heavy' || format('for d in $(echo "{0}" | tr "," " "); do toolkit run --config "$d"; done', inputs.datasets) }}
+      # Baseline incrementale: ripristinata prima del run, salvata nel post-step
+      # (anche se il run fallisce). Sostituisce il disco persistente della VM.
+      cache-paths: |
+        datasets/camera-voti/camera_voti.parquet
+        datasets/senato-votazioni/senato_votazioni.parquet
+        datasets/camera-iter/_cache
+      cache-key: open-politica-heavy-v1
+      extra-env: TOOLKIT_ALLOW_SCRIPT_SOURCE=1
       sync-pattern: "per-dataset"
     secrets: inherit
