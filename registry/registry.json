@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-11-03",
+  "updated_at": "2026-11-04",
   "datasets": [
     {
       "slug": "camera_atti_dibattito",
@@ -5998,10 +5998,10 @@
       "source_id": "eligendo",
       "status": "ok",
       "label": "elezioni_comunali",
-      "detail": "anni 2016-2024 — mart: si",
+      "detail": "anni 1964-2024 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084629Z_b50765a4",
+        "run_id": "20261104T110234Z_34e4e3b0",
         "year": 2024,
         "status": "SUCCESS",
         "quality_score": {
@@ -6010,18 +6010,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 10342,
-          "clean": 10342,
-          "mart": 10342
+          "raw": 10343,
+          "clean": 10343,
+          "mart": 10343
         },
         "output_bytes": {
-          "raw": 1738425,
-          "clean": 280742,
-          "mart": 278876
+          "raw": 1738573,
+          "clean": 280789,
+          "mart": 278990
         },
-        "started_at": "2026-09-28T08:46:29.096331+00:00",
-        "finished_at": "2026-09-28T08:46:30.762444+00:00",
-        "duration_seconds": 1.666
+        "started_at": "2026-11-04T11:02:34.886783+00:00",
+        "finished_at": "2026-11-04T11:02:38.267408+00:00",
+        "duration_seconds": 3.381
       }
     },
     {
@@ -6091,10 +6091,10 @@
       "source_id": "eligendo",
       "status": "ok",
       "label": "elezioni_referendum",
-      "detail": "anni 1995-2022 — mart: si",
+      "detail": "anni 1974-2022 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084857Z_2dffccdb",
+        "run_id": "20261104T110316Z_7f56a32f",
         "year": 2022,
         "status": "SUCCESS",
         "quality_score": {
@@ -6105,16 +6105,16 @@
         "output_rows": {
           "raw": 39515,
           "clean": 39515,
-          "mart": 39755
+          "mart": 39955
         },
         "output_bytes": {
           "raw": 3140054,
           "clean": 613561,
-          "mart": 649769
+          "mart": 651079
         },
-        "started_at": "2026-09-28T08:48:57.795968+00:00",
-        "finished_at": "2026-09-28T08:49:00.419701+00:00",
-        "duration_seconds": 2.624
+        "started_at": "2026-11-04T11:03:16.586263+00:00",
+        "finished_at": "2026-11-04T11:03:19.994317+00:00",
+        "duration_seconds": 3.408
       }
     },
     {
@@ -6122,10 +6122,10 @@
       "source_id": "eligendo",
       "status": "ok",
       "label": "elezioni_regionali",
-      "detail": "anni 2018-2024 — mart: si",
+      "detail": "anni 1970-2024 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084913Z_53a07e17",
+        "run_id": "20261104T110430Z_282e011e",
         "year": 2024,
         "status": "SUCCESS",
         "quality_score": {
@@ -6141,11 +6141,11 @@
         "output_bytes": {
           "raw": 1557369,
           "clean": 66752,
-          "mart": 123877
+          "mart": 123699
         },
-        "started_at": "2026-09-28T08:49:13.966512+00:00",
-        "finished_at": "2026-09-28T08:49:15.337031+00:00",
-        "duration_seconds": 1.371
+        "started_at": "2026-11-04T11:04:30.209352+00:00",
+        "finished_at": "2026-11-04T11:04:32.979051+00:00",
+        "duration_seconds": 2.77
       }
     },
     {
