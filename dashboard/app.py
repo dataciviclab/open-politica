@@ -25,9 +25,6 @@ pages = {
         st.Page("pages/03_Come_Votano.py", title="Come Votano", icon="🗳️"),
         st.Page("pages/07_Sindacato.py", title="Sindacato Ispettivo", icon="🔍"),
     ],
-    "Elezioni": [
-        st.Page("pages/04_Elezioni.py", title="Affluenza & Trend", icon="🗳️"),
-    ],
     "Legislazione": [
         st.Page("pages/05_DDL.py", title="DDL & Governo", icon="📜"),
     ],
