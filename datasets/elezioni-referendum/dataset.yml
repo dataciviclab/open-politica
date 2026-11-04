@@ -6,7 +6,7 @@ dataset:
   source_id: "eligendo"
   tags: [politica, elezioni, referendum]
   category: politica
-  years: [1995, 1997, 1999, 2000, 2001, 2003, 2005, 2006, 2011, 2016, 2020, 2022]
+  years: [1974, 1978, 1981, 1985, 1987, 1989, 1990, 1991, 1993, 1995, 1997, 1999, 2000, 2001, 2003, 2005, 2006, 2009, 2011, 2016, 2020, 2022]
 
 raw:
   output_policy: overwrite
@@ -31,7 +31,9 @@ clean:
     ignore_errors: true
   validate:
     not_null: [data_elezione]
-    min_rows: 100
+    # 90 e non 100: le tornate provinciali a quesito unico (1989, 1991)
+    # hanno 95 righe (una per provincia). Resta una soglia anti-output-vuoto.
+    min_rows: 90
 
 mart:
   tables:
@@ -42,7 +44,7 @@ mart:
   validate:
     table_rules:
       mart_voti_quesito_comune:
-        min_rows: 100
+        min_rows: 90
       mart_trend:
         min_rows: 10
 

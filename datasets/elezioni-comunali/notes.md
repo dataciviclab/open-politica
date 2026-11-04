@@ -7,20 +7,49 @@ DataCivicLab/dataset-incubator#633
 Eligendo — https://elezionistorico.interno.gov.it/
 Open data DAIT: https://dait.interno.gov.it/elezioni/open-data
 
+## Perimetro
+41 anni, 160 tornate (1964-2024). Restano fuori:
+- 2024-11-17, 2025, 2026: formato per sezione (Scrutini/Liste/LivSez)
+
 ## Schema raw
-Colonne variabili per anno (normalizzate via COL_MAP regex):
-- regione, provincia, comune, turno, elettori, votanti, lista, voti_lista, seggi_lista,
-  cognome, nome, data_nascita, sesso, cod_tipo_elettore, voti_candidato
+Colonne variabili per tornata (normalizzate via COL_MAP regex):
+regione, provincia, comune, turno, elettori, votanti, lista, voti_lista,
+seggi_lista, cognome, nome, data_nascita, sesso, cod_tipo_elettore,
+voti_candidato.
+
+`ensure_canonical` garantisce le 15 colonne di clean.sql: per 1989-1992
+`turno`, `candidato` e `voti_candidato` restano vuoti.
 
 ## Formato fonti
-- 2016-2021: CSV/TXT in ZIP
-- 2022-2023: XLSX (non gestito dal preprocess.py corrente)
+- 1964-1990: XLSX Scrutini+Liste, join su (regione, provincia, comune)
+- 1989-2021: TXT/CSV in ZIP (schema per epoca)
+- 2022-06-12: XLSX (Scrutini Primo/Secondo Turno), `turno` iniettato
+- 2022-11-27: TXT
+- 2023: XLSX single-file
+- 2024-06-09: ZIP con Scrutini + Liste separati (merge)
+- 2024-07-28: CSV combinato in ZIP
+- Non gestiti: 2024-11-17, 2025, 2026 (formato per sezione)
+
+## Differenze sorgente degne di nota
+- 1970: liste con `VOTI`/`SEGGI` (non `VOTILISTA`/`SEGGILISTA`)
+- 1980: Scrutini con refuso `ComuneSut` al posto di `Comune`
+
+## Lettura CSV
+`clean.read` usa `all_varchar: true` + `ignore_errors: true`, **senza**
+`strict_mode: false`: la combinazione `strict_mode`+`ignore_errors` di DuckDB
+scartava silenziosamente le righe con valori non numerici nelle colonne
+numeriche (1975: -122 righe). Le cast restano in `clean.sql`
+(`TRY_CAST`/macro).
+
+## Codice condiviso
+`datasets/_shared/eligendo.py` (`select_entries`, `read_table`, `merge_on`)
+evita di duplicare download/ZIP/CSV/XLSX nei preprocess dei dataset elettorali.
 
 ## Encoding
 UTF-8 con BOM o ISO-8859-1, delimitatore punto e virgola.
 
 ## Note
 - Non tutti i comuni votano ogni anno: ogni comune ha elezioni ogni 5 anni.
-  La copertura annuale varia (606 comuni nel 2020 causa COVID, 3.653 nel 2019).
-- 2022 e 2023 hanno dati in formato XLSX su Eligendo, coprono elezioni parziali
-  e straordinarie. Da implementare lettura XLSX nel preprocess.py.
+- Molte annualità hanno più tornate (1989: 31, 1991: 24, 2019: 6).
+- Alcuni ZIP (es. 2006, 2008) includono fogli XLSX accanto ai CSV;
+  `iter_text_entries` filtra le entry non testuali.

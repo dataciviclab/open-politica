@@ -15,91 +15,99 @@ datasets/elezioni-regionali/
 
 ## Perimetro
 
-6 anni, 9 tornate, esclusa 2020-09-20 (XLSX).
+21 anni, 28 tornate (1970-2024). Esclusi:
+- **2011-10-16** e **2020-09-20**: la fonte pubblica solo XLSX.
+- **2024**: coperta solo la tornata del 09/06 (Piemonte); le altre 4 date
+  (10/03, 21/04, 27/10, 17/11) usano il formato per sezione
+  (Scrutini + Preferenze) non gestito dal parser attuale.
+- **2025**: formato nuovo (SCRUTINI/PREFERENZE/VOTANTI + `dato per sezione/`).
 
 ## Mappa fonti
 
-| Anno | URL | Formato |
+| Periodo | File principale | Note |
 |---|---|---|
-| 2018 | ZIP `regionali-20180304.zip` | 2 TXT (scrutini + preferenze) |
-| 2019a | ZIP `regionali-20190210.zip` | 2 TXT |
-| 2019b | ZIP `regionali-20190324.zip` | 2 TXT |
-| 2019c | ZIP `regionali-20190526.zip` | 2 TXT |
-| 2019d | ZIP `regionali-20191027.zip` | 2 TXT |
-| 2020 | ZIP `regionali-20200126.zip` | 2 TXT |
-| 2021 | ZIP `regionali-20211003.zip` | 2 TXT (nomi file diversi) |
-| 2023 | CSV diretto catalogoagid | 1 CSV |
-| 2024 | ZIP `regionali-20240609.zip` | 1 CSV (combinato) |
+| 1970-1990 | `regionali-YYYYMMDD.txt` | solo liste, nessun candidato |
+| 1995-2015 | `regionali-YYYYMMDD.txt` | liste + candidato |
+| 2001-06-24 | `regionali-20010624.csv` (in ZIP) | schema abbreviato REG/CIRC/PROV |
+| 2008 | `regionali-20081214.txt` | `VOTICANDIDLEADER`, `ELETTORI_M` |
+| 2015 | `regionali-20150531.txt` | aggiunge `CIRCOSCRIZIONE` |
+| 2018-2024 | vari | vedi README |
 
-## Variazioni schema raw tra anni
+## Variazioni schema raw normalizzate
 
-Il `preprocess.py` normalizza tutte queste differenze:
+| Concetto | 1970-1990 | 1995-2015 | 2001-06 | 2008 | 2021-2024 |
+|---|---|---|---|---|---|
+| Regione | `REGIONE` | `REGIONE` | `REG` | `REGIONE` | `REGIONE`/`REG` |
+| Circoscrizione | — | 2015: `CIRCOSCRIZIONE` | `CIRC` | — | `CIRCOSCRIZIONE`/`CIRC` |
+| Provincia | `PROVINCIA` | `PROVINCIA` | `PROV` | `PROVINCIA` | `PROVINCIA`/`PROV` |
+| Elettori | `ELETTORI` | `ELETTORI` | `ELETTORITOT` | `ELETTORI` | `ELETTORI(TOT)` |
+| Voti candidato | — | `VOTI_CANDIDATO` | `VOTICANDIDATO` | `VOTICANDIDLEADER` | `VOTICAND…` |
+| Lista | `LISTA` | `LISTA` | `DESCRLISTA` | `LISTA` | `LISTA`/`DESCRLISTA` |
+| Voti lista | `VOTI_LISTA` | `VOTI_LISTA` | `VOTILISTA` | `VOTILISTA` | `VOTI_LISTA`/`VOTILISTA` |
 
-### Nomi colonna
-| Concetto | 2018-2020 | 2021 | 2023 | 2024 |
-|---|---|---|---|---|
-| Regione | `REGIONE` | `REGIONE` | `REGIONE` | `REG` |
-| Circoscrizione | `CIRCOSCRIZIONE` | `CIRCOSCRIZIONE` | `CIRCOSCRIZIONE` | `CIRC` |
-| Provincia | `PROVINCIA` | `provincia` (lower!) | `PROVINCIA` | `PROV` |
-| Elettori | `ELETTORI` | `ELETTORI` | `ELETTORITOT` | `ELETTORITOT` |
-| Voti candidato | `VOTI_CANDIDATO` | `VOTI_CANDIDATO` | `VOTICAND` | `VOTICANDIDATO` |
-| Lista | `LISTA` | `LISTA` | `DESCRLISTA` | `DESCRLISTA` |
+`main()` garantisce sempre le 12 colonne di `clean.sql` (anche quando la tornata
+non le porta): per 1970-1990 `candidato` e `voti_candidato` restano vuoti.
 
 ### Formato numeri
-- 2018-2021: comma decimal (`5849,00`) — il preprocess normalizza a interi
+- 2018-2021: comma decimale (`5849,00`) — normalizzato a interi
 - 2023-2024: interi diretti
 
 ### Encoding
-- 2019-05-26 (Piemonte): ISO-8859-1 (lettere accentate in nomi/luoghi)
+- 2019-05-26 (Piemonte): ISO-8859-1
 - Tutti gli altri: ASCII / UTF-8
-- Preprocess: tentativo UTF-8 → latin-1 → cp1252
-
-### Nomi file dentro ZIP
-| Periodo | File scrutini | File preferenze |
-|---|---|---|
-| 2018-2020, 2023 | `regionali-YYYYMMDD.txt` / `.csv` | `Preferenze_*.txt` / `.csv` |
-| 2021 | `scrutini-YYYYMMDD.txt` | `CandidatiLista-Preferenze_*.txt` |
-| 2024 | `regionali-YYYYMMDD.csv` (unico) | N/A |
+- Preprocess: UTF-8 → latin-1 → cp1252
 
 ## Note implementative
 
 ### Perché preprocess invece di http_file diretto
-- Ogni anno ha URL diverso (non template {year} semplice)
+- URL diversi per tornata
 - ZIP con 2 file di cui serve solo 1 (scrutini)
 - Nomi colonna e formati numerici variano per anno
-- Encoding misto (utf-8 / latin-1)
+- Encoding misto
 
 ### TOOLKIT_ALLOW_SCRIPT_SOURCE
 Il source type `script` è disabilitato di default per sicurezza.
 Va attivato con `TOOLKIT_ALLOW_SCRIPT_SOURCE=1` nell'ambiente di run.
 
 ### Esclusioni
-- **2020-09-20**: file XLSX. Il toolkit non gestisce Excel via ZIP extractor.
-  Soluzione futura: estrarre XLSX manualmente o estendere toolkit.
-- **2014 e precedenti**: schema diverso (no circoscrizione, formato intero).
-  Estendere in futuro.
-- **File preferenze**: ogni ZIP ha un secondo file con i voti di preferenza
-  ai singoli consiglieri. Non incluso nel perimetro iniziale.
+- **2011-10-16** e **2020-09-20**: file XLSX.
+- **2024 (altre date) e 2025**: formato per sezione, parser dedicato da fare.
+- **File preferenze**: ogni ZIP ha un secondo file con le preferenze ai
+  consiglieri. Non incluso nel perimetro.
 
 ## Verifica
 
 ```bash
 cd open-politica
-TOOLKIT_ALLOW_SCRIPT_SOURCE=1 toolkit run full \
-  --config datasets/elezioni-regionali/dataset.yml \
-  --years 2018,2019,2020,2021,2023,2024
+TOOLKIT_ALLOW_SCRIPT_SOURCE=1 toolkit run -c datasets/elezioni-regionali/dataset.yml
 ```
 
 ## Output pipeline
 
-| Anno | Layer | Righe | Qualità |
-|---|---|---|---|
-| 2018 | clean | 35.060 | 100 |
-| 2019 | clean | 24.645 | 100 |
-| 2020 | clean | 10.299 | 100 |
-| 2021 | clean | 8.484 | 100 |
-| 2023 | clean | 24.125 | 100 |
-| 2024 | clean | 15.266 | 100 |
+| Anno | Righe clean |
+|---|---|
+| 1970 | 59.077 |
+| 1975 | 53.835 |
+| 1980 | 64.051 |
+| 1985 | 76.266 |
+| 1990 | 91.672 |
+| 1995 | 77.628 |
+| 2000 | 103.120 |
+| 2001 | 7.871 |
+| 2005 | 100.670 |
+| 2006 | 2.124 |
+| 2008 | 4.114 |
+| 2010 | 94.234 |
+| 2013 | 39.605 |
+| 2014 | 34.180 |
+| 2015 | 35.999 |
+| 2018 | 35.060 |
+| 2019 | 24.645 |
+| 2020 | 10.299 |
+| 2021 | 8.484 |
+| 2023 | 24.125 |
+| 2024 | 15.266 |
+| **Totale** | **~962.000** |
 
 ## Cross-repo
 

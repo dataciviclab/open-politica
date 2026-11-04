@@ -1,33 +1,95 @@
 #!/usr/bin/env python3
-"""Scarica e normalizza i CSV delle elezioni comunali da Eligendo.
+"""Scarica e normalizza i CSV/XLSX delle elezioni comunali da Eligendo.
 
 Uso: python preprocess.py <anno> <output.csv>
 """
 
-import sys
 import csv
 import io
 import os
 import re
-import zipfile
+import sys
 import urllib.request
-from collections import defaultdict
+import zipfile
+from pathlib import Path
+
+# Helper di dominio condiviso (datasets/_shared), fuori dal package: il
+# preprocess gira con cwd = directory del dataset.
+_DATASETS_DIR = Path(__file__).resolve().parents[1]
+if str(_DATASETS_DIR) not in sys.path:
+    sys.path.insert(0, str(_DATASETS_DIR))
+
+from _shared.eligendo import (  # noqa: E402
+    download_bytes,
+    merge_on,
+    read_table,
+    select_entries,
+)
+
+BASE_URL = "https://dait.interno.gov.it/documenti/opendata/comunali"
+
+# Tornate gestite dal preprocess: testuali (CSV/TXT) e XLSX (single-file o
+# Scrutini+Liste da joinare). Restano fuori: 2024-11-17, 2025, 2026 (formato
+# per sezione).
+XLSX_JOIN_YEARS = {1964, 1970, 1975, 1980, 1985, 1990}
+
+DATES: dict[int, list[str]] = {
+    1964: ["19641122"],
+    1970: ["19700607"],
+    1975: ["19750615"],
+    1980: ["19800608"],
+    1985: ["19850512"],
+    1989: ["19890101", "19890108", "19890115", "19890122", "19890129", "19890305", "19890312", "19890319", "19890409", "19890423", "19890507", "19890528", "19890611", "19890702", "19890706", "19890709", "19890716", "19890723", "19890730", "19890903", "19890917", "19890924", "19891008", "19891015", "19891022", "19891029", "19891105", "19891112", "19891126", "19891203", "19891210"],
+    1990: ["19900506"],
+    1991: ["19910113", "19910120", "19910224", "19910310", "19910317", "19910324", "19910331", "19910407", "19910421", "19910512", "19910519", "19910602", "19910609", "19910616", "19910623", "19910630", "19910707", "19910714", "19910728", "19910922", "19910929", "19911124", "19911212", "19911215"],
+    1992: ["19920607", "19920627", "19920705", "19920926", "19920927", "19921213"],
+    1993: ["19930606", "19931121"],
+    1994: ["19940612", "19941120"],
+    1995: ["19950423", "19950528", "19951119"],
+    1996: ["19960602", "19960609", "19961117", "19961201"],
+    1997: ["19970427", "19971116", "19971130"],
+    1998: ["19980524", "19981129"],
+    1999: ["19990613"],
+    2000: ["20000416", "20000430", "20000604", "20001112"],
+    2001: ["20010513"],
+    2002: ["20020526"],
+    2003: ["20030525", "20030608", "20030622"],
+    2004: ["20040612", "20040626"],
+    2005: ["20050403", "20050417", "20050508", "20051127"],
+    2006: ["20060528", "20060604", "20060611", "20060618", "20060709", "20060716", "20061001"],
+    2007: ["20070527", "20070610", "20070617", "20070715"],
+    2008: ["20080413", "20080427", "20080608", "20080615"],
+    2009: ["20090607", "20091129"],
+    2010: ["20100328", "20100411", "20100418", "20100530", "20101128"],
+    2011: ["20110515", "20110522", "20111127"],
+    2012: ["20120506", "20120610", "20120617", "20120624", "20121028"],
+    2013: ["20130526", "20131117"],
+    2014: ["20140525", "20141026"],
+    2015: ["20150531", "20151115"],
+    2016: ["20160605", "20161113"],
+    2017: ["20170611", "20171105"],
+    2018: ["20180610", "20180729", "20181021"],
+    2019: ["20190526", "20190616", "20190623", "20190707", "20190714", "20191110"],
+    2020: ["20200920", "20201025"],
+    2021: ["20211003", "20211010", "20211107"],
+    2022: ["20220612", "20221127"],
+    2023: ["20230514", "20230528", "20231022"],
+    2024: ["20240609", "20240728"],
+}
 
 SOURCES: dict[int, list[tuple[str, str, bool]]] = {
-    2016: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20160605.zip", "2016-06-05", True)],
-    2017: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20170611.zip", "2017-06-11", True)],
-    2018: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20180610.zip", "2018-06-10", True)],
-    2019: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20190526.zip", "2019-05-26", True)],
-    2020: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20200920.zip", "2020-09-20", True)],
-    2021: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20211003.zip", "2021-10-03", True)],
-    2024: [("https://dait.interno.gov.it/documenti/opendata/comunali/comunali-20240609.zip", "2024-06-09", True)],
+    year: [
+        (f"{BASE_URL}/comunali-{d}.zip", f"{d[:4]}-{d[4:6]}-{d[6:]}", True)
+        for d in dates
+    ]
+    for year, dates in DATES.items()
 }
 
 COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^DATAELEZIONE$", re.I), "data_elezione_raw"),
     (re.compile(r"^REG(IONE)?$", re.I), "regione"),
     (re.compile(r"^PROV(INCIA)?$", re.I), "provincia"),
-    (re.compile(r"^COMUNE$", re.I), "comune"),
+    (re.compile(r"^(COMUNE|COMUNE[ _]?SUT)$", re.I), "comune"),
     (re.compile(r"^TURNO$", re.I), "turno"),
     (re.compile(r"^(ELETTORI(TOT)?|ELETTORITOTALI)$", re.I), "elettori"),
     (re.compile(r"^(ELETTORI_MASCHI|ELETTORIMASCHI)$", re.I), "elettori_maschi"),
@@ -40,14 +102,30 @@ COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^(LUOGONASCITA|LUOGO_NASCITA)$", re.I), "luogo_nascita"),
     (re.compile(r"^SESSO$", re.I), "sesso"),
     (re.compile(r"^(CODTIPOELETTO|ELETTO)$", re.I), "cod_tipo_elettore"),
-    (re.compile(r"^(VOTI_CANDIDATO|VOTICAND(IDATO)?|VOTICANDIDSINDACO)$", re.I), "voti_candidato"),
+    (re.compile(r"^(VOTI_CANDIDATO|VOTICAND(IDATO)?|VOTICANDIDSINDACO|VOTICANDLEADER)$", re.I), "voti_candidato"),
     (re.compile(r"^(LISTA|DESCR_LISTA|DESCRLISTA)$", re.I), "lista"),
-    (re.compile(r"^(VOTI_LISTA|VOTILISTA)$", re.I), "voti_lista"),
-    (re.compile(r"^(SEGGI_LISTA|SEGGILISTA|seggilista)$", re.I), "seggi_lista"),
+    (re.compile(r"^(VOTI_LISTA|VOTILISTA|TOTVOTI|VOTI)$", re.I), "voti_lista"),
+    (re.compile(r"^(SEGGI_LISTA|SEGGILISTA|seggilista|SEGGI)$", re.I), "seggi_lista"),
     (re.compile(r"^votivalidiliste$", re.I), "voti_validi_liste"),
     (re.compile(r"^votivalidicandidsindaco$", re.I), "voti_validi_candidato"),
     (re.compile(r"^codtipoinvalidita$", re.I), "cod_tipo_invalidita"),
 ]
+
+NUMERIC_FIELDS = frozenset(
+    {
+        "elettori",
+        "elettori_maschi",
+        "votanti",
+        "votanti_maschi",
+        "schede_bianche",
+        "voti_candidato",
+        "voti_lista",
+        "seggi_lista",
+        "turno",
+        "voti_validi_liste",
+        "voti_validi_candidato",
+    }
+)
 
 
 def download(url: str) -> bytes:
@@ -216,7 +294,6 @@ def process_2024(url: str, election_date: str) -> list[dict]:
         for row in scrutini[1:]:
             if not row or not any(cell.strip() for cell in row):
                 continue
-            key_parts = []
             vals = {}
             for name, idx in zip(s_names, s_indices):
                 if idx < len(row):
@@ -263,6 +340,104 @@ def process_2024(url: str, election_date: str) -> list[dict]:
     return records
 
 
+def records_from_rows(
+    header: list[str],
+    rows: list[list[str]],
+    election_date: str,
+    inject: dict | None = None,
+) -> list[dict]:
+    """Normalizza header+righe di una tabella Eligendo in record canonici."""
+    col_names, col_indices = normalize_columns(header)
+    records: list[dict] = []
+    for row in rows:
+        if not row or not any(cell.strip() for cell in row):
+            continue
+        rec = {"data_elezione": election_date}
+        rec.update(inject or {})
+        for cname, idx in zip(col_names, col_indices):
+            if idx < len(row):
+                val = row[idx].strip().strip('"')
+                if cname in NUMERIC_FIELDS:
+                    val = normalize_number(val)
+                rec[cname] = val
+        if "cognome" in rec and "nome" in rec:
+            rec["candidato"] = f"{rec.pop('cognome', '')} {rec.pop('nome', '')}".strip()
+        records.append(rec)
+    return records
+
+
+def process_xlsx(url: str, election_date: str, specs: list[dict]) -> list[dict]:
+    """Legge una o più entry XLSX di uno ZIP Eligendo.
+
+    ``specs`` è una lista di ``{"match": glob, "inject": {...}}``: permette di
+    leggere più file (es. Scrutini 1° e 2° turno) e iniettare ``turno``.
+    """
+    payload = download_bytes(url)
+    records: list[dict] = []
+    for spec in specs:
+        entries = select_entries(
+            payload,
+            match=spec.get("match", "*.xlsx"),
+            only_ext=[".xlsx"],
+        )
+        for name, data in entries.items():
+            header, rows = read_table(data, name)
+            if header:
+                records.extend(
+                    records_from_rows(header, rows, election_date, spec.get("inject"))
+                )
+    return records
+
+
+def process_xlsx_join(
+    url: str,
+    election_date: str,
+    *,
+    scrutini: str,
+    liste: str,
+    keys: list[str],
+) -> list[dict]:
+    """Legge due XLSX (Scrutini + Liste) e li unisce sulle chiavi territoriali."""
+    payload = download_bytes(url)
+    tables: dict[str, list[dict]] = {}
+    for role, pattern in (("scrutini", scrutini), ("liste", liste)):
+        entries = select_entries(payload, match=pattern, only_ext=[".xlsx"])
+        if not entries:
+            raise ValueError(f"Nessuna entry '{pattern}' nello ZIP {url}")
+        name, data = next(iter(entries.items()))
+        header, rows = read_table(data, name)
+        tables[role] = records_from_rows(header, rows, election_date)
+    return merge_on(tables["liste"], tables["scrutini"], keys=keys)
+
+
+# Colonne attese da clean.sql: garantite anche per le tornate storiche che non
+# le portano (es. 1989-1992 senza turno/candidato).
+CANONICAL_COLS = [
+    "data_elezione",
+    "regione",
+    "provincia",
+    "comune",
+    "turno",
+    "candidato",
+    "lista",
+    "voti_candidato",
+    "voti_lista",
+    "seggi_lista",
+    "elettori",
+    "elettori_maschi",
+    "votanti",
+    "votanti_maschi",
+    "schede_bianche",
+]
+
+
+def ensure_canonical(records: list[dict]) -> None:
+    """Garantisce le colonne attese da clean.sql su ogni record."""
+    for rec in records:
+        for col in CANONICAL_COLS:
+            rec.setdefault(col, "")
+
+
 def main():
     year = int(sys.argv[1]) if len(sys.argv) > 1 else 2024
     output = sys.argv[2] if len(sys.argv) > 2 else "raw_input.csv"
@@ -275,14 +450,31 @@ def main():
     all_records: list[dict] = []
     for url, election_date, is_zip in sources:
         print(f"  {election_date} -> download...", file=sys.stderr)
-        if year in (2016, 2017, 2018, 2019, 2020):
-            records = process_2016_2020(url, election_date)
+        if year in XLSX_JOIN_YEARS:
+            records = process_xlsx_join(
+                url,
+                election_date,
+                scrutini="*SCRUTINI*",
+                liste="*LISTE*",
+                keys=["regione", "provincia", "comune"],
+            )
+        elif election_date == "2022-06-12":
+            records = process_xlsx(
+                url,
+                election_date,
+                [
+                    {"match": "*Scrutini*Primo*", "inject": {"turno": "1"}},
+                    {"match": "*Scrutini*Secondo*", "inject": {"turno": "2"}},
+                ],
+            )
+        elif year == 2023:
+            records = process_xlsx(url, election_date, [{"match": "*.xlsx"}])
+        elif election_date == "2024-06-09":
+            records = process_2024(url, election_date)
         elif year == 2021:
             records = process_2021(url, election_date)
-        elif year == 2024:
-            records = process_2024(url, election_date)
         else:
-            records = []
+            records = process_2016_2020(url, election_date)
         print(f"    {len(records)} righe", file=sys.stderr)
         all_records.extend(records)
 
@@ -290,7 +482,15 @@ def main():
         print("Nessun dato estratto!", file=sys.stderr)
         sys.exit(1)
 
-    fieldnames = list(all_records[0].keys())
+    ensure_canonical(all_records)
+
+    fieldnames: list[str] = []
+    seen: set[str] = set()
+    for rec in all_records:
+        for key in rec:
+            if key not in seen:
+                seen.add(key)
+                fieldnames.append(key)
 
     with open(output, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=";")
