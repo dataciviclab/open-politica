@@ -21,17 +21,26 @@ if str(_DATASETS_DIR) not in sys.path:
 
 from _shared.eligendo import (  # noqa: E402
     download_bytes,
+    merge_on,
     read_table,
     select_entries,
 )
 
 BASE_URL = "https://dait.interno.gov.it/documenti/opendata/comunali"
 
-# Tornate con dati testuali (CSV/TXT) o XLSX gestiti dal preprocess.
-# Restano fuori: 1964, 1970, 1975, 1980, 1985, 1990 (XLSX da joinare),
-# 2024-11-17, 2025, 2026 (formato per sezione).
+# Tornate gestite dal preprocess: testuali (CSV/TXT) e XLSX (single-file o
+# Scrutini+Liste da joinare). Restano fuori: 2024-11-17, 2025, 2026 (formato
+# per sezione).
+XLSX_JOIN_YEARS = {1964, 1970, 1975, 1980, 1985, 1990}
+
 DATES: dict[int, list[str]] = {
+    1964: ["19641122"],
+    1970: ["19700607"],
+    1975: ["19750615"],
+    1980: ["19800608"],
+    1985: ["19850512"],
     1989: ["19890101", "19890108", "19890115", "19890122", "19890129", "19890305", "19890312", "19890319", "19890409", "19890423", "19890507", "19890528", "19890611", "19890702", "19890706", "19890709", "19890716", "19890723", "19890730", "19890903", "19890917", "19890924", "19891008", "19891015", "19891022", "19891029", "19891105", "19891112", "19891126", "19891203", "19891210"],
+    1990: ["19900506"],
     1991: ["19910113", "19910120", "19910224", "19910310", "19910317", "19910324", "19910331", "19910407", "19910421", "19910512", "19910519", "19910602", "19910609", "19910616", "19910623", "19910630", "19910707", "19910714", "19910728", "19910922", "19910929", "19911124", "19911212", "19911215"],
     1992: ["19920607", "19920627", "19920705", "19920926", "19920927", "19921213"],
     1993: ["19930606", "19931121"],
@@ -80,7 +89,7 @@ COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^DATAELEZIONE$", re.I), "data_elezione_raw"),
     (re.compile(r"^REG(IONE)?$", re.I), "regione"),
     (re.compile(r"^PROV(INCIA)?$", re.I), "provincia"),
-    (re.compile(r"^COMUNE$", re.I), "comune"),
+    (re.compile(r"^(COMUNE|COMUNE[ _]?SUT)$", re.I), "comune"),
     (re.compile(r"^TURNO$", re.I), "turno"),
     (re.compile(r"^(ELETTORI(TOT)?|ELETTORITOTALI)$", re.I), "elettori"),
     (re.compile(r"^(ELETTORI_MASCHI|ELETTORIMASCHI)$", re.I), "elettori_maschi"),
@@ -95,7 +104,7 @@ COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^(CODTIPOELETTO|ELETTO)$", re.I), "cod_tipo_elettore"),
     (re.compile(r"^(VOTI_CANDIDATO|VOTICAND(IDATO)?|VOTICANDIDSINDACO|VOTICANDLEADER)$", re.I), "voti_candidato"),
     (re.compile(r"^(LISTA|DESCR_LISTA|DESCRLISTA)$", re.I), "lista"),
-    (re.compile(r"^(VOTI_LISTA|VOTILISTA)$", re.I), "voti_lista"),
+    (re.compile(r"^(VOTI_LISTA|VOTILISTA|TOTVOTI|VOTI)$", re.I), "voti_lista"),
     (re.compile(r"^(SEGGI_LISTA|SEGGILISTA|seggilista|SEGGI)$", re.I), "seggi_lista"),
     (re.compile(r"^votivalidiliste$", re.I), "voti_validi_liste"),
     (re.compile(r"^votivalidicandidsindaco$", re.I), "voti_validi_candidato"),
@@ -331,6 +340,32 @@ def process_2024(url: str, election_date: str) -> list[dict]:
     return records
 
 
+def records_from_rows(
+    header: list[str],
+    rows: list[list[str]],
+    election_date: str,
+    inject: dict | None = None,
+) -> list[dict]:
+    """Normalizza header+righe di una tabella Eligendo in record canonici."""
+    col_names, col_indices = normalize_columns(header)
+    records: list[dict] = []
+    for row in rows:
+        if not row or not any(cell.strip() for cell in row):
+            continue
+        rec = {"data_elezione": election_date}
+        rec.update(inject or {})
+        for cname, idx in zip(col_names, col_indices):
+            if idx < len(row):
+                val = row[idx].strip().strip('"')
+                if cname in NUMERIC_FIELDS:
+                    val = normalize_number(val)
+                rec[cname] = val
+        if "cognome" in rec and "nome" in rec:
+            rec["candidato"] = f"{rec.pop('cognome', '')} {rec.pop('nome', '')}".strip()
+        records.append(rec)
+    return records
+
+
 def process_xlsx(url: str, election_date: str, specs: list[dict]) -> list[dict]:
     """Legge una o più entry XLSX di uno ZIP Eligendo.
 
@@ -347,28 +382,32 @@ def process_xlsx(url: str, election_date: str, specs: list[dict]) -> list[dict]:
         )
         for name, data in entries.items():
             header, rows = read_table(data, name)
-            if not header:
-                continue
-            col_names, col_indices = normalize_columns(header)
-            if not col_names:
-                continue
-            for row in rows:
-                if not row or not any(cell.strip() for cell in row):
-                    continue
-                rec = {"data_elezione": election_date}
-                rec.update(spec.get("inject") or {})
-                for cname, idx in zip(col_names, col_indices):
-                    if idx < len(row):
-                        val = row[idx].strip().strip('"')
-                        if cname in NUMERIC_FIELDS:
-                            val = normalize_number(val)
-                        rec[cname] = val
-                if "cognome" in rec and "nome" in rec:
-                    rec["candidato"] = (
-                        f"{rec.pop('cognome', '')} {rec.pop('nome', '')}".strip()
-                    )
-                records.append(rec)
+            if header:
+                records.extend(
+                    records_from_rows(header, rows, election_date, spec.get("inject"))
+                )
     return records
+
+
+def process_xlsx_join(
+    url: str,
+    election_date: str,
+    *,
+    scrutini: str,
+    liste: str,
+    keys: list[str],
+) -> list[dict]:
+    """Legge due XLSX (Scrutini + Liste) e li unisce sulle chiavi territoriali."""
+    payload = download_bytes(url)
+    tables: dict[str, list[dict]] = {}
+    for role, pattern in (("scrutini", scrutini), ("liste", liste)):
+        entries = select_entries(payload, match=pattern, only_ext=[".xlsx"])
+        if not entries:
+            raise ValueError(f"Nessuna entry '{pattern}' nello ZIP {url}")
+        name, data = next(iter(entries.items()))
+        header, rows = read_table(data, name)
+        tables[role] = records_from_rows(header, rows, election_date)
+    return merge_on(tables["liste"], tables["scrutini"], keys=keys)
 
 
 # Colonne attese da clean.sql: garantite anche per le tornate storiche che non
@@ -411,7 +450,15 @@ def main():
     all_records: list[dict] = []
     for url, election_date, is_zip in sources:
         print(f"  {election_date} -> download...", file=sys.stderr)
-        if election_date == "2022-06-12":
+        if year in XLSX_JOIN_YEARS:
+            records = process_xlsx_join(
+                url,
+                election_date,
+                scrutini="*SCRUTINI*",
+                liste="*LISTE*",
+                keys=["regione", "provincia", "comune"],
+            )
+        elif election_date == "2022-06-12":
             records = process_xlsx(
                 url,
                 election_date,

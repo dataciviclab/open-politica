@@ -8,8 +8,7 @@ Eligendo — https://elezionistorico.interno.gov.it/
 Open data DAIT: https://dait.interno.gov.it/elezioni/open-data
 
 ## Perimetro
-35 anni, 154 tornate (1989-2024). Restano fuori:
-- 1964, 1970, 1975, 1980, 1985, 1990: XLSX con Scrutini+Liste da joinare
+41 anni, 160 tornate (1964-2024). Restano fuori:
 - 2024-11-17, 2025, 2026: formato per sezione (Scrutini/Liste/LivSez)
 
 ## Schema raw
@@ -22,13 +21,18 @@ voti_candidato.
 `turno`, `candidato` e `voti_candidato` restano vuoti.
 
 ## Formato fonti
+- 1964-1990: XLSX Scrutini+Liste, join su (regione, provincia, comune)
 - 1989-2021: TXT/CSV in ZIP (schema per epoca)
 - 2022-06-12: XLSX (Scrutini Primo/Secondo Turno), `turno` iniettato
 - 2022-11-27: TXT
 - 2023: XLSX single-file
 - 2024-06-09: ZIP con Scrutini + Liste separati (merge)
 - 2024-07-28: CSV combinato in ZIP
-- XLSX non gestiti: 1964-1990, 2024-11-17, 2025, 2026
+- Non gestiti: 2024-11-17, 2025, 2026 (formato per sezione)
+
+## Differenze sorgente degne di nota
+- 1970: liste con `VOTI`/`SEGGI` (non `VOTILISTA`/`SEGGILISTA`)
+- 1980: Scrutini con refuso `ComuneSut` al posto di `Comune`
 
 ## Codice condiviso
 `datasets/_shared/eligendo.py` (`select_entries`, `read_table`, `merge_on`)

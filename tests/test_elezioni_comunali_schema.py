@@ -37,7 +37,7 @@ def test_ensure_canonical_riempie_le_colonne_mancanti():
 def test_sources_generati_dalle_date():
     preprocess = _load_preprocess()
 
-    assert 1990 not in preprocess.SOURCES
+    assert 1990 in preprocess.SOURCES
     url, election_date, is_zip = preprocess.SOURCES[1989][0]
     assert election_date == "1989-01-01"
     assert url.endswith("/comunali-19890101.zip")
@@ -63,4 +63,19 @@ def test_header_2022_text_mappa_seggi_e_leader():
 
     assert "seggi_lista" in names
     assert "voti_candidato" in names
+
+
+def test_header_join_1970_1980():
+    preprocess = _load_preprocess()
+
+    names_1970, _ = preprocess.normalize_columns(
+        ["REGIONE", "PROVINCIA", "COMUNE", "LISTA", "VOTI", "SEGGI"]
+    )
+    names_1980, _ = preprocess.normalize_columns(
+        ["DataElezione", "Regione", "Provincia", "ComuneSut", "ElettoriTotali"]
+    )
+
+    assert {"lista", "voti_lista", "seggi_lista"} <= set(names_1970)
+    assert {"regione", "provincia", "comune", "elettori"} <= set(names_1980)
+
 
