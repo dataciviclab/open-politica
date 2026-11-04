@@ -11,16 +11,16 @@ Come si distribuisce il voto alle elezioni comunali nei comuni italiani? Quali c
 
 ## Dataset
 
-- **Copertura**: 1989–2024 (33 anni, 149 tornate)
+- **Copertura**: 1989–2024 (35 anni, 154 tornate)
 - **Granularità**: comunale per candidato, lista e turno
-- **Righe**: ~193.000
+- **Righe**: ~200.000
 - **Colonne**: 15 (data_elezione, regione, provincia, comune, turno, candidato, lista, voti_candidato, voti_lista, ...)
 - **Comuni coperti**: varia per tornata (scadenze mandato)
 
 ## Stato
 
-`candidate` — run verificato su 33 annualità.
+`candidate` — run verificato su 35 annualità.
 
 ## Gap noti
-- 1964, 1970, 1975, 1980, 1985, 1990, 2022, 2023, 2025, 2026: solo XLSX, non ancora gestiti
-- 2024-11-17: formato per sezione
+- 1964, 1970, 1975, 1980, 1985, 1990: XLSX con Scrutini+Liste da joinare
+- 2024-11-17, 2025, 2026: formato per sezione

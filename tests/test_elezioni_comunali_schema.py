@@ -49,3 +49,18 @@ def test_2024_esclude_la_tornata_a_formato_sezione():
     dates = [d for _url, d, _zip in preprocess.SOURCES[2024]]
 
     assert dates == ["2024-06-09", "2024-07-28"]
+
+
+def test_header_2022_text_mappa_seggi_e_leader():
+    preprocess = _load_preprocess()
+    header = [
+        "REGIONE", "PROVINCIA", "COMUNE", "ELETTORITOT", "ELETTORIMASCHI",
+        "VOTANTITOT", "VOTANTIMASCHI", "SKBIANCHE", "DESCRLISTA", "VOTILISTA",
+        "SEGGI", "COGNOME", "NOME", "CODTIPOELETTO", "VOTICANDLEADER",
+    ]
+
+    names, _ = preprocess.normalize_columns(header)
+
+    assert "seggi_lista" in names
+    assert "voti_candidato" in names
+

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Scarica e normalizza i CSV delle elezioni comunali da Eligendo.
+"""Scarica e normalizza i CSV/XLSX delle elezioni comunali da Eligendo.
 
 Uso: python preprocess.py <anno> <output.csv>
 """
@@ -11,12 +11,25 @@ import re
 import sys
 import urllib.request
 import zipfile
+from pathlib import Path
+
+# Helper di dominio condiviso (datasets/_shared), fuori dal package: il
+# preprocess gira con cwd = directory del dataset.
+_DATASETS_DIR = Path(__file__).resolve().parents[1]
+if str(_DATASETS_DIR) not in sys.path:
+    sys.path.insert(0, str(_DATASETS_DIR))
+
+from _shared.eligendo import (  # noqa: E402
+    download_bytes,
+    read_table,
+    select_entries,
+)
 
 BASE_URL = "https://dait.interno.gov.it/documenti/opendata/comunali"
 
-# Tornate con dati testuali (CSV/TXT) compatibili con il parser unificato.
-# Esclusi perché solo XLSX: 1964, 1970, 1975, 1980, 1985, 1990, 2022, 2023,
-# 2025, 2026. Esclusa 2024-11-17 (formato per sezione).
+# Tornate con dati testuali (CSV/TXT) o XLSX gestiti dal preprocess.
+# Restano fuori: 1964, 1970, 1975, 1980, 1985, 1990 (XLSX da joinare),
+# 2024-11-17, 2025, 2026 (formato per sezione).
 DATES: dict[int, list[str]] = {
     1989: ["19890101", "19890108", "19890115", "19890122", "19890129", "19890305", "19890312", "19890319", "19890409", "19890423", "19890507", "19890528", "19890611", "19890702", "19890706", "19890709", "19890716", "19890723", "19890730", "19890903", "19890917", "19890924", "19891008", "19891015", "19891022", "19891029", "19891105", "19891112", "19891126", "19891203", "19891210"],
     1991: ["19910113", "19910120", "19910224", "19910310", "19910317", "19910324", "19910331", "19910407", "19910421", "19910512", "19910519", "19910602", "19910609", "19910616", "19910623", "19910630", "19910707", "19910714", "19910728", "19910922", "19910929", "19911124", "19911212", "19911215"],
@@ -50,6 +63,8 @@ DATES: dict[int, list[str]] = {
     2019: ["20190526", "20190616", "20190623", "20190707", "20190714", "20191110"],
     2020: ["20200920", "20201025"],
     2021: ["20211003", "20211010", "20211107"],
+    2022: ["20220612", "20221127"],
+    2023: ["20230514", "20230528", "20231022"],
     2024: ["20240609", "20240728"],
 }
 
@@ -78,14 +93,30 @@ COL_MAP: list[tuple[re.Pattern, str]] = [
     (re.compile(r"^(LUOGONASCITA|LUOGO_NASCITA)$", re.I), "luogo_nascita"),
     (re.compile(r"^SESSO$", re.I), "sesso"),
     (re.compile(r"^(CODTIPOELETTO|ELETTO)$", re.I), "cod_tipo_elettore"),
-    (re.compile(r"^(VOTI_CANDIDATO|VOTICAND(IDATO)?|VOTICANDIDSINDACO)$", re.I), "voti_candidato"),
+    (re.compile(r"^(VOTI_CANDIDATO|VOTICAND(IDATO)?|VOTICANDIDSINDACO|VOTICANDLEADER)$", re.I), "voti_candidato"),
     (re.compile(r"^(LISTA|DESCR_LISTA|DESCRLISTA)$", re.I), "lista"),
     (re.compile(r"^(VOTI_LISTA|VOTILISTA)$", re.I), "voti_lista"),
-    (re.compile(r"^(SEGGI_LISTA|SEGGILISTA|seggilista)$", re.I), "seggi_lista"),
+    (re.compile(r"^(SEGGI_LISTA|SEGGILISTA|seggilista|SEGGI)$", re.I), "seggi_lista"),
     (re.compile(r"^votivalidiliste$", re.I), "voti_validi_liste"),
     (re.compile(r"^votivalidicandidsindaco$", re.I), "voti_validi_candidato"),
     (re.compile(r"^codtipoinvalidita$", re.I), "cod_tipo_invalidita"),
 ]
+
+NUMERIC_FIELDS = frozenset(
+    {
+        "elettori",
+        "elettori_maschi",
+        "votanti",
+        "votanti_maschi",
+        "schede_bianche",
+        "voti_candidato",
+        "voti_lista",
+        "seggi_lista",
+        "turno",
+        "voti_validi_liste",
+        "voti_validi_candidato",
+    }
+)
 
 
 def download(url: str) -> bytes:
@@ -300,6 +331,46 @@ def process_2024(url: str, election_date: str) -> list[dict]:
     return records
 
 
+def process_xlsx(url: str, election_date: str, specs: list[dict]) -> list[dict]:
+    """Legge una o più entry XLSX di uno ZIP Eligendo.
+
+    ``specs`` è una lista di ``{"match": glob, "inject": {...}}``: permette di
+    leggere più file (es. Scrutini 1° e 2° turno) e iniettare ``turno``.
+    """
+    payload = download_bytes(url)
+    records: list[dict] = []
+    for spec in specs:
+        entries = select_entries(
+            payload,
+            match=spec.get("match", "*.xlsx"),
+            only_ext=[".xlsx"],
+        )
+        for name, data in entries.items():
+            header, rows = read_table(data, name)
+            if not header:
+                continue
+            col_names, col_indices = normalize_columns(header)
+            if not col_names:
+                continue
+            for row in rows:
+                if not row or not any(cell.strip() for cell in row):
+                    continue
+                rec = {"data_elezione": election_date}
+                rec.update(spec.get("inject") or {})
+                for cname, idx in zip(col_names, col_indices):
+                    if idx < len(row):
+                        val = row[idx].strip().strip('"')
+                        if cname in NUMERIC_FIELDS:
+                            val = normalize_number(val)
+                        rec[cname] = val
+                if "cognome" in rec and "nome" in rec:
+                    rec["candidato"] = (
+                        f"{rec.pop('cognome', '')} {rec.pop('nome', '')}".strip()
+                    )
+                records.append(rec)
+    return records
+
+
 # Colonne attese da clean.sql: garantite anche per le tornate storiche che non
 # le portano (es. 1989-1992 senza turno/candidato).
 CANONICAL_COLS = [
@@ -340,7 +411,18 @@ def main():
     all_records: list[dict] = []
     for url, election_date, is_zip in sources:
         print(f"  {election_date} -> download...", file=sys.stderr)
-        if election_date == "2024-06-09":
+        if election_date == "2022-06-12":
+            records = process_xlsx(
+                url,
+                election_date,
+                [
+                    {"match": "*Scrutini*Primo*", "inject": {"turno": "1"}},
+                    {"match": "*Scrutini*Secondo*", "inject": {"turno": "2"}},
+                ],
+            )
+        elif year == 2023:
+            records = process_xlsx(url, election_date, [{"match": "*.xlsx"}])
+        elif election_date == "2024-06-09":
             records = process_2024(url, election_date)
         elif year == 2021:
             records = process_2021(url, election_date)
