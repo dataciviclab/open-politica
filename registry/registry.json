@@ -4348,26 +4348,12 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261020T111659Z_a8b31f0c",
+        "run_id": "20261104T223955Z_d8c05969",
         "year": 2026,
-        "status": "SUCCESS",
-        "quality_score": {
-          "raw": 100,
-          "clean": 100,
-          "mart": 100
-        },
-        "output_rows": {
-          "clean": 126667,
-          "mart": 12921
-        },
-        "output_bytes": {
-          "raw": 2394668,
-          "clean": 1619970,
-          "mart": 95436
-        },
-        "started_at": "2026-10-20T11:16:59.673847+00:00",
-        "finished_at": "2026-10-20T11:22:54.988662+00:00",
-        "duration_seconds": 355.315
+        "status": "FAILED",
+        "started_at": "2026-11-04T22:39:55.345852+00:00",
+        "finished_at": "2026-11-04T22:39:55.347527+00:00",
+        "duration_seconds": 0.002
       }
     },
     {
@@ -5019,64 +5005,6 @@
           "ddl_id": 9
         }
       },
-      "Comune": {
-        "entity": "Comune",
-        "label": "Comune (ISTAT)",
-        "datasets": [
-          {
-            "slug": "dait_amministratori_locali",
-            "name": "Dait Amministratori Locali",
-            "column": "codice_comune",
-            "semantic_type": "municipality_code"
-          },
-          {
-            "slug": "dait_amministratori_storico",
-            "name": "Dait Amministratori Storico",
-            "column": "codice_comune",
-            "semantic_type": "municipality_code"
-          },
-          {
-            "slug": "elezioni_comunali",
-            "name": "Elezioni Comunali",
-            "column": "comune",
-            "semantic_type": "municipality_name"
-          },
-          {
-            "slug": "elezioni_europee",
-            "name": "Elezioni Europee",
-            "column": "comune",
-            "semantic_type": "municipality_name"
-          },
-          {
-            "slug": "elezioni_politiche",
-            "name": "Elezioni Politiche",
-            "column": "comune",
-            "semantic_type": "municipality_name"
-          },
-          {
-            "slug": "elezioni_referendum",
-            "name": "Elezioni Referendum",
-            "column": "comune",
-            "semantic_type": "municipality_name"
-          },
-          {
-            "slug": "elezioni_regionali",
-            "name": "Elezioni Regionali",
-            "column": "comune",
-            "semantic_type": "municipality_name"
-          },
-          {
-            "slug": "elezioni_voto",
-            "name": "Elezioni Voto",
-            "column": "comune",
-            "semantic_type": "municipality_name"
-          }
-        ],
-        "types": {
-          "municipality_code": 2,
-          "municipality_name": 6
-        }
-      },
       "Gruppo parlamentare": {
         "entity": "Gruppo parlamentare",
         "label": "Gruppo parlamentare",
@@ -5267,126 +5195,6 @@
           "senator_id": 10
         }
       },
-      "Provincia": {
-        "entity": "Provincia",
-        "label": "Provincia",
-        "datasets": [
-          {
-            "slug": "dait_amministratori_locali",
-            "name": "Dait Amministratori Locali",
-            "column": "codice_provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "dait_amministratori_locali",
-            "name": "Dait Amministratori Locali",
-            "column": "sigla_provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "dait_amministratori_storico",
-            "name": "Dait Amministratori Storico",
-            "column": "codice_provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "dait_amministratori_storico",
-            "name": "Dait Amministratori Storico",
-            "column": "sigla_provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "elezioni_comunali",
-            "name": "Elezioni Comunali",
-            "column": "provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "elezioni_europee",
-            "name": "Elezioni Europee",
-            "column": "provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "elezioni_politiche",
-            "name": "Elezioni Politiche",
-            "column": "provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "elezioni_referendum",
-            "name": "Elezioni Referendum",
-            "column": "provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "elezioni_regionali",
-            "name": "Elezioni Regionali",
-            "column": "provincia",
-            "semantic_type": "province_code"
-          },
-          {
-            "slug": "elezioni_voto",
-            "name": "Elezioni Voto",
-            "column": "provincia",
-            "semantic_type": "province_code"
-          }
-        ],
-        "types": {
-          "province_code": 10
-        }
-      },
-      "Regione": {
-        "entity": "Regione",
-        "label": "Regione",
-        "datasets": [
-          {
-            "slug": "dait_amministratori_locali",
-            "name": "Dait Amministratori Locali",
-            "column": "codice_regione",
-            "semantic_type": "region_code"
-          },
-          {
-            "slug": "dait_amministratori_storico",
-            "name": "Dait Amministratori Storico",
-            "column": "codice_regione",
-            "semantic_type": "region_code"
-          },
-          {
-            "slug": "elezioni_comunali",
-            "name": "Elezioni Comunali",
-            "column": "regione",
-            "semantic_type": "region_code"
-          },
-          {
-            "slug": "elezioni_europee",
-            "name": "Elezioni Europee",
-            "column": "regione",
-            "semantic_type": "region_code"
-          },
-          {
-            "slug": "elezioni_referendum",
-            "name": "Elezioni Referendum",
-            "column": "regione",
-            "semantic_type": "region_code"
-          },
-          {
-            "slug": "elezioni_regionali",
-            "name": "Elezioni Regionali",
-            "column": "regione",
-            "semantic_type": "region_code"
-          },
-          {
-            "slug": "elezioni_voto",
-            "name": "Elezioni Voto",
-            "column": "regione",
-            "semantic_type": "region_code"
-          }
-        ],
-        "types": {
-          "region_code": 7
-        }
-      },
       "Tempo": {
         "entity": "Tempo",
         "label": "Tempo / data",
@@ -5410,12 +5218,6 @@
             "semantic_type": "year"
           },
           {
-            "slug": "dait_amministratori_locali",
-            "name": "Dait Amministratori Locali",
-            "column": "anno",
-            "semantic_type": "year"
-          },
-          {
             "slug": "osservatorio_parlamento",
             "name": "Osservatorio Parlamento",
             "column": "periodo",
@@ -5429,7 +5231,7 @@
           }
         ],
         "types": {
-          "year": 5,
+          "year": 4,
           "month": 1
         }
       }
