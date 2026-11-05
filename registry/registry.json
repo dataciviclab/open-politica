@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-11-04",
+  "updated_at": "2026-11-05",
   "datasets": [
     {
       "slug": "camera_atti_dibattito",
@@ -77,7 +77,7 @@
       "source": "",
       "source_id": "dati_camera",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
@@ -854,7 +854,7 @@
       "source": "",
       "source_id": "dati_camera",
       "period": {
-        "start": 2022,
+        "start": 2008,
         "end": 2026
       },
       "tags": [
@@ -1620,7 +1620,7 @@
       "source": "",
       "source_id": "dataciviclab_composite",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
@@ -1996,7 +1996,7 @@
       "source": "",
       "source_id": "dati_senato",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
@@ -2439,7 +2439,7 @@
       "source": "",
       "source_id": "dati_senato",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
@@ -2532,7 +2532,7 @@
       "source": "",
       "source_id": "dati_senato",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
@@ -2612,7 +2612,7 @@
       "source": "",
       "source_id": "dati_senato",
       "period": {
-        "start": 2022,
+        "start": 1996,
         "end": 2026
       },
       "tags": [
@@ -3921,7 +3921,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261030T225923Z_28e86bbd",
+        "run_id": "20261105T000543Z_e615491d",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -3935,12 +3935,12 @@
         },
         "output_bytes": {
           "raw": 445725,
-          "clean": 55591,
-          "mart": 48907
+          "clean": 55696,
+          "mart": 48934
         },
-        "started_at": "2026-10-30T22:59:23.087759+00:00",
-        "finished_at": "2026-10-30T22:59:31.443277+00:00",
-        "duration_seconds": 8.356
+        "started_at": "2026-11-05T00:05:43.245411+00:00",
+        "finished_at": "2026-11-05T00:05:47.222707+00:00",
+        "duration_seconds": 3.977
       }
     },
     {
@@ -3951,7 +3951,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T144118Z_cf52878a",
+        "run_id": "20261105T000547Z_bec1683c",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -3965,12 +3965,12 @@
         },
         "output_bytes": {
           "raw": 445725,
-          "clean": 2408,
-          "mart": 2351
+          "clean": 2432,
+          "mart": 2336
         },
-        "started_at": "2026-10-03T14:41:18.449403+00:00",
-        "finished_at": "2026-10-03T14:41:37.223514+00:00",
-        "duration_seconds": 18.774
+        "started_at": "2026-11-05T00:05:47.770813+00:00",
+        "finished_at": "2026-11-05T00:06:02.989726+00:00",
+        "duration_seconds": 15.219
       }
     },
     {
@@ -3981,7 +3981,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T173017Z_b4ae6743",
+        "run_id": "20261105T000603Z_958a1231",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -3995,12 +3995,12 @@
         },
         "output_bytes": {
           "raw": 344733,
-          "clean": 1321,
-          "mart": 1312
+          "clean": 1316,
+          "mart": 1310
         },
-        "started_at": "2026-10-03T17:30:17.903441+00:00",
-        "finished_at": "2026-10-03T17:30:30.517746+00:00",
-        "duration_seconds": 12.614
+        "started_at": "2026-11-05T00:06:03.510294+00:00",
+        "finished_at": "2026-11-05T00:06:13.325768+00:00",
+        "duration_seconds": 9.815
       }
     },
     {
@@ -4011,7 +4011,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T144137Z_d75171a4",
+        "run_id": "20261105T000613Z_a842b2a1",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4025,12 +4025,12 @@
         },
         "output_bytes": {
           "raw": 3819244,
-          "clean": 31280,
-          "mart": 31693
+          "clean": 31379,
+          "mart": 31713
         },
-        "started_at": "2026-10-03T14:41:37.455034+00:00",
-        "finished_at": "2026-10-03T14:42:03.505333+00:00",
-        "duration_seconds": 26.05
+        "started_at": "2026-11-05T00:06:13.866797+00:00",
+        "finished_at": "2026-11-05T00:06:37.772092+00:00",
+        "duration_seconds": 23.905
       }
     },
     {
@@ -4041,7 +4041,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T144203Z_a0d60408",
+        "run_id": "20261105T000638Z_f0697179",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4050,17 +4050,17 @@
           "mart": 100
         },
         "output_rows": {
-          "clean": 7719,
-          "mart": 15579
+          "clean": 7762,
+          "mart": 15666
         },
         "output_bytes": {
-          "raw": 33334846,
-          "clean": 104505,
-          "mart": 146876
+          "raw": 33462234,
+          "clean": 103944,
+          "mart": 146635
         },
-        "started_at": "2026-10-03T14:42:03.728158+00:00",
-        "finished_at": "2026-10-03T14:42:07.723629+00:00",
-        "duration_seconds": 3.995
+        "started_at": "2026-11-05T00:06:38.303115+00:00",
+        "finished_at": "2026-11-05T00:06:42.416239+00:00",
+        "duration_seconds": 4.113
       }
     },
     {
@@ -4071,7 +4071,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T173030Z_67b41b0c",
+        "run_id": "20261105T000642Z_3a76e4e8",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4085,12 +4085,12 @@
         },
         "output_bytes": {
           "raw": 344733,
-          "clean": 627814,
-          "mart": 251390
+          "clean": 623380,
+          "mart": 251327
         },
-        "started_at": "2026-10-03T17:30:30.732260+00:00",
-        "finished_at": "2026-10-03T17:30:36.064781+00:00",
-        "duration_seconds": 5.333
+        "started_at": "2026-11-05T00:06:42.950539+00:00",
+        "finished_at": "2026-11-05T00:06:46.441873+00:00",
+        "duration_seconds": 3.491
       }
     },
     {
@@ -4101,7 +4101,7 @@
       "detail": "anni 15-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261001T205112Z_c3fe5183",
+        "run_id": "20261104T233141Z_7223dd13",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4110,18 +4110,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 40718,
-          "clean": 20338,
-          "mart": 1050
+          "raw": 41494,
+          "clean": 20724,
+          "mart": 1085
         },
         "output_bytes": {
-          "raw": 4671442,
-          "clean": 153822,
-          "mart": 10902
+          "raw": 4760666,
+          "clean": 157226,
+          "mart": 11232
         },
-        "started_at": "2026-10-01T20:51:12.147846+00:00",
-        "finished_at": "2026-10-01T20:51:16.459917+00:00",
-        "duration_seconds": 4.312
+        "started_at": "2026-11-04T23:31:41.820781+00:00",
+        "finished_at": "2026-11-04T23:31:45.866711+00:00",
+        "duration_seconds": 4.046
       }
     },
     {
@@ -4132,7 +4132,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T103015Z_bbdd1414",
+        "run_id": "20261104T233151Z_abbc2087",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4141,18 +4141,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 778,
-          "clean": 778,
-          "mart": 387
+          "raw": 781,
+          "clean": 781,
+          "mart": 389
         },
         "output_bytes": {
-          "raw": 217067,
-          "clean": 9095,
-          "mart": 5568
+          "raw": 217929,
+          "clean": 9128,
+          "mart": 5579
         },
-        "started_at": "2026-10-03T10:30:15.450234+00:00",
-        "finished_at": "2026-10-03T10:30:16.656745+00:00",
-        "duration_seconds": 1.207
+        "started_at": "2026-11-04T23:31:51.103390+00:00",
+        "finished_at": "2026-11-04T23:31:51.763062+00:00",
+        "duration_seconds": 0.66
       }
     },
     {
@@ -4163,7 +4163,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261103T093535Z_22f4d4d8",
+        "run_id": "20261104T233204Z_f9874a93",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4172,18 +4172,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 3199,
-          "clean": 3172,
+          "raw": 3201,
+          "clean": 3174,
           "mart": 368
         },
         "output_bytes": {
-          "raw": 1364149,
-          "clean": 204166,
-          "mart": 5750
+          "raw": 1364713,
+          "clean": 204411,
+          "mart": 5749
         },
-        "started_at": "2026-11-03T09:35:35.298387+00:00",
-        "finished_at": "2026-11-03T09:35:37.358957+00:00",
-        "duration_seconds": 2.061
+        "started_at": "2026-11-04T23:32:04.026970+00:00",
+        "finished_at": "2026-11-04T23:32:05.428987+00:00",
+        "duration_seconds": 1.402
       }
     },
     {
@@ -4194,12 +4194,12 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261017T133748Z_489b0f4b",
+        "run_id": "20261104T233205Z_851e0b04",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
           "raw": 100,
-          "clean": 95,
+          "clean": 100,
           "mart": 100
         },
         "output_rows": {
@@ -4212,9 +4212,9 @@
           "clean": 922271,
           "mart": 111921
         },
-        "started_at": "2026-10-17T13:37:48.735510+00:00",
-        "finished_at": "2026-10-17T13:37:59.174447+00:00",
-        "duration_seconds": 10.439
+        "started_at": "2026-11-04T23:32:05.867546+00:00",
+        "finished_at": "2026-11-04T23:32:15.192269+00:00",
+        "duration_seconds": 9.325
       }
     },
     {
@@ -4225,7 +4225,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261001T205246Z_d0890285",
+        "run_id": "20261104T233323Z_c58a3c0f",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4234,18 +4234,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 47632,
-          "clean": 23663,
-          "mart": 3321
+          "raw": 48328,
+          "clean": 24011,
+          "mart": 3371
         },
         "output_bytes": {
-          "raw": 7417806,
-          "clean": 235184,
-          "mart": 39541
+          "raw": 7517014,
+          "clean": 238791,
+          "mart": 40020
         },
-        "started_at": "2026-10-01T20:52:46.247203+00:00",
-        "finished_at": "2026-10-01T20:52:54.179307+00:00",
-        "duration_seconds": 7.932
+        "started_at": "2026-11-04T23:33:23.779927+00:00",
+        "finished_at": "2026-11-04T23:33:29.667339+00:00",
+        "duration_seconds": 5.887
       }
     },
     {
@@ -4256,7 +4256,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084356Z_1f8f6375",
+        "run_id": "20261104T233330Z_18d27b0f",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4274,9 +4274,9 @@
           "clean": 5342,
           "mart": 538
         },
-        "started_at": "2026-09-28T08:43:56.886783+00:00",
-        "finished_at": "2026-09-28T08:43:57.841698+00:00",
-        "duration_seconds": 0.955
+        "started_at": "2026-11-04T23:33:30.088436+00:00",
+        "finished_at": "2026-11-04T23:33:30.751398+00:00",
+        "duration_seconds": 0.663
       }
     },
     {
@@ -4287,7 +4287,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084358Z_d3eba35f",
+        "run_id": "20261104T233331Z_7e131756",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4296,18 +4296,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 3096,
-          "clean": 2861,
-          "mart": 2196
+          "raw": 3099,
+          "clean": 2864,
+          "mart": 2198
         },
         "output_bytes": {
-          "raw": 1085550,
-          "clean": 112604,
-          "mart": 11938
+          "raw": 1086585,
+          "clean": 112858,
+          "mart": 11981
         },
-        "started_at": "2026-09-28T08:43:58.171772+00:00",
-        "finished_at": "2026-09-28T08:44:00.082470+00:00",
-        "duration_seconds": 1.911
+        "started_at": "2026-11-04T23:33:31.164297+00:00",
+        "finished_at": "2026-11-04T23:33:32.999578+00:00",
+        "duration_seconds": 1.835
       }
     },
     {
@@ -4318,7 +4318,7 @@
       "detail": "anni 2022-2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084519Z_64f114a9",
+        "run_id": "20261104T233449Z_09262e3c",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4327,17 +4327,18 @@
           "mart": 100
         },
         "output_rows": {
+          "raw": 7481,
           "clean": 7481,
           "mart": 351
         },
         "output_bytes": {
           "raw": 1076609,
-          "clean": 56754,
-          "mart": 3059
+          "clean": 56738,
+          "mart": 3055
         },
-        "started_at": "2026-09-28T08:45:19.484044+00:00",
-        "finished_at": "2026-09-28T08:45:26.975731+00:00",
-        "duration_seconds": 7.492
+        "started_at": "2026-11-04T23:34:49.691653+00:00",
+        "finished_at": "2026-11-04T23:34:56.635755+00:00",
+        "duration_seconds": 6.944
       }
     },
     {
@@ -4378,7 +4379,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T200948Z_9d77562d",
+        "run_id": "20261104T233510Z_d87ffaf4",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4387,18 +4388,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 354,
-          "clean": 380,
+          "raw": 361,
+          "clean": 387,
           "mart": 22
         },
         "output_bytes": {
-          "raw": 227293,
-          "clean": 37187,
+          "raw": 231670,
+          "clean": 37767,
           "mart": 2475
         },
-        "started_at": "2026-10-02T20:09:48.006753+00:00",
-        "finished_at": "2026-10-02T20:09:49.768273+00:00",
-        "duration_seconds": 1.762
+        "started_at": "2026-11-04T23:35:10.399112+00:00",
+        "finished_at": "2026-11-04T23:35:12.080015+00:00",
+        "duration_seconds": 1.681
       }
     },
     {
@@ -4409,7 +4410,7 @@
       "detail": "anni 16-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261008T181459Z_609d1c9a",
+        "run_id": "20261104T233522Z_f2310475",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4418,18 +4419,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 10413,
-          "clean": 10413,
-          "mart": 286
+          "raw": 8479,
+          "clean": 8479,
+          "mart": 281
         },
         "output_bytes": {
-          "raw": 1506833,
-          "clean": 111572,
-          "mart": 3059
+          "raw": 1294459,
+          "clean": 76680,
+          "mart": 3045
         },
-        "started_at": "2026-10-08T18:14:59.356366+00:00",
-        "finished_at": "2026-10-08T18:15:03.332843+00:00",
-        "duration_seconds": 3.976
+        "started_at": "2026-11-04T23:35:22.415681+00:00",
+        "finished_at": "2026-11-04T23:35:24.463511+00:00",
+        "duration_seconds": 2.048
       }
     },
     {
@@ -4440,7 +4441,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261103T093939Z_3269f72f",
+        "run_id": "20261104T235019Z_1414421f",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4449,18 +4450,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 31479,
-          "clean": 31479,
+          "raw": 31533,
+          "clean": 31533,
           "mart": 338
         },
         "output_bytes": {
-          "raw": 126596309,
-          "clean": 33872378,
-          "mart": 24900
+          "raw": 126817779,
+          "clean": 33930765,
+          "mart": 24858
         },
-        "started_at": "2026-11-03T09:39:39.104681+00:00",
-        "finished_at": "2026-11-03T09:40:19.466608+00:00",
-        "duration_seconds": 40.362
+        "started_at": "2026-11-04T23:50:19.229596+00:00",
+        "finished_at": "2026-11-04T23:50:53.340427+00:00",
+        "duration_seconds": 34.111
       }
     },
     {
@@ -4471,7 +4472,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261103T100149Z_3b0d5b8e",
+        "run_id": "20261104T233637Z_065552a1",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4480,18 +4481,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 28014,
-          "clean": 28014,
+          "raw": 28066,
+          "clean": 28066,
           "mart": 39
         },
         "output_bytes": {
-          "raw": 7152953,
-          "clean": 152078,
-          "mart": 2221
+          "raw": 7162818,
+          "clean": 152419,
+          "mart": 2210
         },
-        "started_at": "2026-11-03T10:01:49.306195+00:00",
-        "finished_at": "2026-11-03T10:01:56.457970+00:00",
-        "duration_seconds": 7.152
+        "started_at": "2026-11-04T23:36:37.377501+00:00",
+        "finished_at": "2026-11-04T23:36:43.574892+00:00",
+        "duration_seconds": 6.197
       }
     },
     {
@@ -4502,7 +4503,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261103T095441Z_3a7b9164",
+        "run_id": "20261104T234441Z_0b7f4ed3",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4511,18 +4512,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 133800,
-          "clean": 133800,
-          "mart": 31871
+          "raw": 133879,
+          "clean": 133879,
+          "mart": 31925
         },
         "output_bytes": {
-          "raw": 35567440,
-          "clean": 1008961,
-          "mart": 211754
+          "raw": 35588102,
+          "clean": 1009423,
+          "mart": 210129
         },
-        "started_at": "2026-11-03T09:54:41.969902+00:00",
-        "finished_at": "2026-11-03T09:55:39.472156+00:00",
-        "duration_seconds": 57.502
+        "started_at": "2026-11-04T23:44:41.639961+00:00",
+        "finished_at": "2026-11-04T23:45:30.437766+00:00",
+        "duration_seconds": 48.798
       }
     },
     {
@@ -4533,7 +4534,7 @@
       "detail": "anni 2018-2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084609Z_0b0737fd",
+        "run_id": "20261104T235118Z_f000ac4d",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4541,16 +4542,16 @@
           "clean": 100
         },
         "output_rows": {
-          "raw": 3483,
-          "clean": 3483
+          "raw": 4170,
+          "clean": 4170
         },
         "output_bytes": {
-          "raw": 849131,
-          "clean": 66639
+          "raw": 1058824,
+          "clean": 83100
         },
-        "started_at": "2026-09-28T08:46:09.424175+00:00",
-        "finished_at": "2026-09-28T08:46:12.776159+00:00",
-        "duration_seconds": 3.352
+        "started_at": "2026-11-04T23:51:18.356677+00:00",
+        "finished_at": "2026-11-04T23:51:21.074896+00:00",
+        "duration_seconds": 2.718
       }
     },
     {
@@ -4591,7 +4592,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20260928T084915Z_49aa4896",
+        "run_id": "20261104T235121Z_6edd6e6e",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4602,16 +4603,16 @@
         "output_rows": {
           "raw": 7505,
           "clean": 7579,
-          "mart": 312
+          "mart": 194
         },
         "output_bytes": {
           "raw": 2961831,
-          "clean": 275827,
-          "mart": 3898
+          "clean": 273902,
+          "mart": 3090
         },
-        "started_at": "2026-09-28T08:49:15.664612+00:00",
-        "finished_at": "2026-09-28T08:49:21.464397+00:00",
-        "duration_seconds": 5.8
+        "started_at": "2026-11-04T23:51:21.537438+00:00",
+        "finished_at": "2026-11-04T23:51:24.206733+00:00",
+        "duration_seconds": 2.669
       }
     },
     {
@@ -4622,7 +4623,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261017T133811Z_9ea08a6b",
+        "run_id": "20261104T235138Z_14e020ab",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4631,17 +4632,17 @@
           "mart": 100
         },
         "output_rows": {
-          "clean": 505,
+          "clean": 504,
           "mart": 2
         },
         "output_bytes": {
-          "raw": 6503,
-          "clean": 3083,
+          "raw": 6489,
+          "clean": 3074,
           "mart": 671
         },
-        "started_at": "2026-10-17T13:38:11.527530+00:00",
-        "finished_at": "2026-10-17T13:38:12.131293+00:00",
-        "duration_seconds": 0.604
+        "started_at": "2026-11-04T23:51:38.160978+00:00",
+        "finished_at": "2026-11-04T23:51:38.857761+00:00",
+        "duration_seconds": 0.697
       }
     },
     {
@@ -4652,7 +4653,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261017T133810Z_5a690f69",
+        "run_id": "20261104T235144Z_4088460d",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4666,13 +4667,13 @@
           "mart": 186
         },
         "output_bytes": {
-          "raw": 15933,
-          "clean": 5589,
-          "mart": 2149
+          "raw": 15942,
+          "clean": 5598,
+          "mart": 2151
         },
-        "started_at": "2026-10-17T13:38:10.325100+00:00",
-        "finished_at": "2026-10-17T13:38:11.526227+00:00",
-        "duration_seconds": 1.201
+        "started_at": "2026-11-04T23:51:44.181014+00:00",
+        "finished_at": "2026-11-04T23:51:44.687811+00:00",
+        "duration_seconds": 0.507
       }
     },
     {
@@ -4683,7 +4684,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T103126Z_086c5fdb",
+        "run_id": "20261104T235204Z_3fe0e9dc",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4692,18 +4693,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 1053,
-          "clean": 1053,
+          "raw": 1057,
+          "clean": 1057,
           "mart": 261
         },
         "output_bytes": {
-          "raw": 245042,
-          "clean": 12709,
-          "mart": 6619
+          "raw": 245844,
+          "clean": 12791,
+          "mart": 6615
         },
-        "started_at": "2026-10-03T10:31:26.194887+00:00",
-        "finished_at": "2026-10-03T10:31:28.189534+00:00",
-        "duration_seconds": 1.995
+        "started_at": "2026-11-04T23:52:04.440799+00:00",
+        "finished_at": "2026-11-04T23:52:06.930640+00:00",
+        "duration_seconds": 2.49
       }
     },
     {
@@ -4714,7 +4715,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261002T182651Z_3c77ad40",
+        "run_id": "20261104T235412Z_ecf004f2",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4724,17 +4725,17 @@
         },
         "output_rows": {
           "raw": 10000,
-          "clean": 5238,
-          "mart": 382
+          "clean": 5237,
+          "mart": 390
         },
         "output_bytes": {
-          "raw": 3801124,
-          "clean": 445725,
-          "mart": 23311
+          "raw": 3806852,
+          "clean": 448709,
+          "mart": 23938
         },
-        "started_at": "2026-10-02T18:26:51.418289+00:00",
-        "finished_at": "2026-10-02T18:27:05.031906+00:00",
-        "duration_seconds": 13.614
+        "started_at": "2026-11-04T23:54:12.739537+00:00",
+        "finished_at": "2026-11-04T23:54:34.148888+00:00",
+        "duration_seconds": 21.409
       }
     },
     {
@@ -4745,7 +4746,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T103521Z_1060eeef",
+        "run_id": "20261104T235727Z_21109d5a",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4754,18 +4755,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 38763,
-          "clean": 38763,
-          "mart": 4759
+          "raw": 39380,
+          "clean": 39380,
+          "mart": 4827
         },
         "output_bytes": {
-          "raw": 7110648,
-          "clean": 504736,
-          "mart": 12940
+          "raw": 7225550,
+          "clean": 511850,
+          "mart": 13138
         },
-        "started_at": "2026-10-03T10:35:21.823310+00:00",
-        "finished_at": "2026-10-03T10:35:53.650775+00:00",
-        "duration_seconds": 31.827
+        "started_at": "2026-11-04T23:57:27.856022+00:00",
+        "finished_at": "2026-11-04T23:57:51.231211+00:00",
+        "duration_seconds": 23.375
       }
     },
     {
@@ -4776,7 +4777,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T103610Z_087f5c25",
+        "run_id": "20261104T235808Z_913565a1",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4785,18 +4786,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 288,
-          "clean": 288,
+          "raw": 291,
+          "clean": 291,
           "mart": 16
         },
         "output_bytes": {
-          "raw": 39690,
-          "clean": 4248,
-          "mart": 2017
+          "raw": 40019,
+          "clean": 4305,
+          "mart": 2015
         },
-        "started_at": "2026-10-03T10:36:10.126553+00:00",
-        "finished_at": "2026-10-03T10:36:12.422501+00:00",
-        "duration_seconds": 2.296
+        "started_at": "2026-11-04T23:58:08.408802+00:00",
+        "finished_at": "2026-11-04T23:58:10.085428+00:00",
+        "duration_seconds": 1.677
       }
     },
     {
@@ -4807,7 +4808,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T103847Z_7a15fcd5",
+        "run_id": "20261105T000029Z_154b65cb",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4816,17 +4817,18 @@
           "mart": 100
         },
         "output_rows": {
-          "clean": 37313,
+          "raw": 38285,
+          "clean": 38285,
           "mart": 210
         },
         "output_bytes": {
-          "raw": 5006843,
-          "clean": 361076,
-          "mart": 2495
+          "raw": 5137051,
+          "clean": 369943,
+          "mart": 2491
         },
-        "started_at": "2026-10-03T10:38:47.148063+00:00",
-        "finished_at": "2026-10-03T10:39:06.474800+00:00",
-        "duration_seconds": 19.327
+        "started_at": "2026-11-05T00:00:29.863099+00:00",
+        "finished_at": "2026-11-05T00:00:48.157423+00:00",
+        "duration_seconds": 18.294
       }
     },
     {
@@ -4837,7 +4839,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261001T201133Z_85582646",
+        "run_id": "20261105T000048Z_4f5ae5e9",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4846,18 +4848,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 55657,
-          "clean": 30336,
-          "mart": 18140
+          "raw": 55796,
+          "clean": 30429,
+          "mart": 18184
         },
         "output_bytes": {
-          "raw": 6471802,
-          "clean": 472355,
-          "mart": 120501
+          "raw": 6487878,
+          "clean": 473875,
+          "mart": 121093
         },
-        "started_at": "2026-10-01T20:11:33.594241+00:00",
-        "finished_at": "2026-10-01T20:12:01.735869+00:00",
-        "duration_seconds": 28.142
+        "started_at": "2026-11-05T00:00:48.607774+00:00",
+        "finished_at": "2026-11-05T00:01:17.530097+00:00",
+        "duration_seconds": 28.922
       }
     },
     {
@@ -4868,7 +4870,7 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261003T100539Z_9ae4713e",
+        "run_id": "20261105T000421Z_d725f69c",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
@@ -4877,18 +4879,18 @@
           "mart": 100
         },
         "output_rows": {
-          "raw": 36403,
-          "clean": 36403,
+          "raw": 37317,
+          "clean": 37317,
           "mart": 206
         },
         "output_bytes": {
-          "raw": 12608390,
-          "clean": 464976,
-          "mart": 5454
+          "raw": 12924074,
+          "clean": 500217,
+          "mart": 5575
         },
-        "started_at": "2026-10-03T10:05:39.898249+00:00",
-        "finished_at": "2026-10-03T10:06:13.737861+00:00",
-        "duration_seconds": 33.84
+        "started_at": "2026-11-05T00:04:21.215663+00:00",
+        "finished_at": "2026-11-05T00:04:46.429391+00:00",
+        "duration_seconds": 25.214
       }
     },
     {
@@ -4929,7 +4931,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261001T201201Z_271df151",
+        "run_id": "20261105T000446Z_ec822764",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4939,17 +4941,17 @@
         },
         "output_rows": {
           "raw": 120000,
-          "clean": 29246,
-          "mart": 1041
+          "clean": 29335,
+          "mart": 1049
         },
         "output_bytes": {
-          "raw": 16794899,
-          "clean": 344733,
-          "mart": 12288
+          "raw": 16794823,
+          "clean": 345967,
+          "mart": 12405
         },
-        "started_at": "2026-10-01T20:12:01.796264+00:00",
-        "finished_at": "2026-10-01T20:12:41.935992+00:00",
-        "duration_seconds": 40.14
+        "started_at": "2026-11-05T00:04:46.902440+00:00",
+        "finished_at": "2026-11-05T00:05:42.241774+00:00",
+        "duration_seconds": 55.339
       }
     }
   ],
