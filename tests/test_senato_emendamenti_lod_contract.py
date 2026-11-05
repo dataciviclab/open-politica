@@ -14,7 +14,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import yaml
+
+pytestmark = pytest.mark.contract
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DS = REPO_ROOT / "datasets/senato-emendamenti-lod"

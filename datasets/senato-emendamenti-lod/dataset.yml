@@ -59,7 +59,10 @@ raw:
         # Keyset su ?e (URI emendamento): l'OFFSET è instabile su Virtuoso con
         # il FILTER sul nome-grafo (duplicati). Il {keyset} isola il FILTER in
         # sottoquery perché l'OPTIONAL lo farebbe ignorare all'ottimizzatore.
-        pages: 20
+        # `pages` è un TETTO di sicurezza: 30 × 10k = 300k copre la legislatura
+        # più grande (Leg17 = 253.387). Sotto il tetto il plugin fallisce con un
+        # errore che accusa la chiave, non il tetto → tenerlo sopra il massimo.
+        pages: 30
         step: 10000
         pagination: {"mode": "keyset", "key": "?e"}
 
