@@ -21,12 +21,14 @@ raw:
       primary: true
       client:
         # Full extraction misurata il 2026-11-03: 1333s (1.22M righe, 8284
-        # votazioni). 1200 era troppo stretto; 1800 lascia ~35% di margine.
-        timeout: 1800
+        # votazioni) su VM; da GitHub-hosted il WAF è più lento e variabile.
+        # 1800 era troppo stretto; 7200 allinea a camera-voti/camera-iter.
+        timeout: 7200
       args:
         # --incremental script-level (vedi camera-voti): delta su max(data) con
         # >= (il confine del giorno non perde voti), merge con dedup dentro il
-        # parquet. Richiede la baseline presente → runner con disco persistente (VM).
+        # parquet. Richiede la baseline presente → cache actions/cache nella
+        # corsia pesanti (pipeline-heavy.yml).
         command: "python preprocess.py --legislature 19 --out . --incremental"
         output: "senato_votazioni.parquet"
         filename: "senato_votazioni.parquet"
