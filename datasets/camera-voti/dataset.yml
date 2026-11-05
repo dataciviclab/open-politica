@@ -20,12 +20,15 @@ raw:
       type: "script"
       primary: true
       client:
-        timeout: 1800
+        # Full extraction ~770 query paginate (7,7M righe / 10k per pagina) su
+        # dati.camera.it: ~25-40 min, variabile col carico dell'endpoint.
+        # 1800 era troppo stretto (timeout 2026-11-05); 7200 lascia margine.
+        timeout: 7200
       args:
         # --incremental è a livello di SCRIPT (delta su max(data), merge/dedup
         # dentro il parquet), non il contratto raw.sources[].incremental di
         # toolkit#536. Richiede la baseline (camera_voti.parquet) presente →
-        # runner con disco persistente (VM). Vedi .github/workflows/pipeline-heavy.yml.
+        # cache actions/cache nella corsia pesanti. Vedi pipeline-heavy.yml.
         command: "python preprocess.py --legislature 19 --out . --incremental"
         output: "camera_voti.parquet"
         filename: "camera_voti.parquet"
