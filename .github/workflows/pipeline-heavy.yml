@@ -62,5 +62,5 @@ jobs:
         datasets/camera-iter/_cache
       cache-key: open-politica-heavy-v1
       extra-env: TOOLKIT_ALLOW_SCRIPT_SOURCE=1
-      sync-pattern: "per-dataset"
+      # sync-pattern omesso → default 'flat' (gestisce anche i mart flat).
     secrets: inherit

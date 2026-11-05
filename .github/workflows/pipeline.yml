@@ -39,5 +39,7 @@ jobs:
       run-batch-command: "make run-batch"
       detect-paths: "datasets compose"
       extra-env: TOOLKIT_ALLOW_SCRIPT_SOURCE=1
-      sync-pattern: "per-dataset"
+      # sync-pattern omesso → default 'flat': rispecchia out/data/{clean,mart} e
+      # gestisce anche i mart flat multi-anno (es. camera_votazioni_sparql), che
+      # il pattern 'per-dataset' salta (itera solo le cartelle-anno).
     secrets: inherit
