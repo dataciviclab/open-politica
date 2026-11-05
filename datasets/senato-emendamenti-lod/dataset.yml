@@ -1,0 +1,107 @@
+# Registro emendamenti del Senato (Leg13–19) — fonte ufficiale LOD.
+#
+# Fonte: dati.senato.it SPARQL, classe osr:Emendamento, grafi emendamenti/{leg}_{part}.
+# Complementare a senato-akn/senato_emendamenti (testo integrale dal corpus AKN).
+# Join verificato su un caso reale (atto 56260 / S.391): 119 = 119.
+#   chiave: (legislatura, atto_num = ddl/N, emend_id = numero, ramo aula/commissione)
+# Issue: #109
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "senato_emendamenti_lod"
+  source_id: "dati_senato"
+  tags: [politica, senato, emendamenti, registro, iter]
+  category: politica
+  years: [13, 14, 15, 16, 17, 18, 19]
+  time_coverage:
+    # Leg XIII–XIX (i grafi emendamenti/{leg} non esistono per I–XII)
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: overwrite
+  sources:
+    - name: "senato_emendamenti_lod_sparql"
+      type: "sparql"
+      primary: true
+      args:
+        endpoint: "https://dati.senato.it/sparql"
+        query: |
+          PREFIX osr: <http://dati.senato.it/osr/>
+          SELECT ?e ?num ?tipo ?flag ?url ?urlxml ?og ?ddl
+          WHERE {
+            {
+              SELECT ?e ?num ?tipo ?flag ?url ?urlxml ?og
+              WHERE {
+                GRAPH ?g {
+                  ?e a osr:Emendamento ;
+                     osr:numero ?num ;
+                     osr:tipo ?tipo ;
+                     osr:flagCommissione ?flag ;
+                     osr:oggetto ?og .
+                  OPTIONAL { ?e osr:URLTesto ?url . }
+                  OPTIONAL { ?e osr:URLTestoXml ?urlxml . }
+                }
+                # i grafi sono spezzati in parti (es. 19_1, 19_2, 19_3):
+                # il filtro sul nome-grafo prende tutte le parti della legislatura
+                FILTER(CONTAINS(STR(?g), 'emendamenti/{year}'))
+                {keyset}
+              }
+              ORDER BY ?e
+              LIMIT 10000
+            }
+            # bridge all'atto: oggetto → relativoA → ddl/N (default graph)
+            OPTIONAL { ?og osr:relativoA ?ddl . }
+          }
+          ORDER BY ?e
+        accept_format: "sparql-results+json"
+        # Keyset su ?e (URI emendamento): l'OFFSET è instabile su Virtuoso con
+        # il FILTER sul nome-grafo (duplicati). Il {keyset} isola il FILTER in
+        # sottoquery perché l'OPTIONAL lo farebbe ignorare all'ottimizzatore.
+        pages: 20
+        step: 10000
+        pagination: {"mode": "keyset", "key": "?e"}
+
+clean:
+  sql: "sql/clean.sql"
+  read_mode: robust
+  required_columns: [emend_uri_id, emend_id, numero, tipo, flag_commissione, ramo, n_atti, legislatura]
+  read:
+    source: auto
+    header: true
+    encoding: "utf-8"
+    strict_mode: false
+    ignore_errors: true
+    trim_whitespace: true
+  validate:
+    # atto_num è nullable (bridge sparso nelle legislature vecchie) → escluso
+    not_null: [emend_uri_id, emend_id, numero, tipo, flag_commissione, ramo, oggetto_id, n_atti, url_testo, url_testo_xml, legislatura]
+    # una riga = un emendamento (URI unico)
+    primary_key: [emend_uri_id]
+    # una run = una legislatura (Leg13 ~700; Leg19 ~131k)
+    min_rows: 100
+
+mart:
+  tables:
+    # emendamenti per legislatura e ramo (aula/commissione)
+    - name: "mart_sintesi"
+      sql: "sql/mart_sintesi.sql"
+    # emendamenti per atto (solo dove il bridge oggetto→ddl esiste)
+    - name: "mart_per_atto"
+      sql: "sql/mart_per_atto.sql"
+  required_tables:
+    - "mart_sintesi"
+  validate:
+    table_rules:
+      mart_sintesi:
+        required_columns: [legislatura, ramo, n_emendamenti]
+        primary_key: [legislatura, ramo]
+        # una run = una legislatura: alcune storiche sono tutte aula (1 ramo)
+        min_rows: 1
+      mart_per_atto:
+        required_columns: [legislatura, atto_num, n_emendamenti]
+        min_rows: 5
+
+validation:
+  fail_on_error: true
