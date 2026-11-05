@@ -2433,6 +2433,110 @@
       ]
     },
     {
+      "slug": "senato_emendamenti_lod",
+      "name": "Senato Emendamenti Lod",
+      "description": "",
+      "source": "",
+      "source_id": "dati_senato",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "senato",
+        "emendamenti",
+        "registro",
+        "iter"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "emend_uri_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "emend_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "numero",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "flag_commissione",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ramo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "atto_num",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "n_atti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "oggetto_id",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "url_testo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "url_testo_xml",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/senato_emendamenti_lod/*/senato_emendamenti_lod_*_clean.parquet",
+        "multi_file": true
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "senato_emendamenti_lod__mart_sintesi",
+        "senato_emendamenti_lod__mart_per_atto"
+      ]
+    },
+    {
       "slug": "senato_firmatari",
       "name": "Senato Firmatari",
       "description": "",
@@ -3762,6 +3866,26 @@
       }
     },
     {
+      "slug": "senato_emendamenti_lod__mart_per_atto",
+      "dataset": "senato_emendamenti_lod",
+      "table": "mart_per_atto",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/senato_emendamenti_lod/*/mart_per_atto.parquet",
+        "multi_file": true
+      }
+    },
+    {
+      "slug": "senato_emendamenti_lod__mart_sintesi",
+      "dataset": "senato_emendamenti_lod",
+      "table": "mart_sintesi",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/senato_emendamenti_lod/*/mart_sintesi.parquet",
+        "multi_file": true
+      }
+    },
+    {
       "slug": "senato_firmatari__mart_firmatari_ddl",
       "dataset": "senato_firmatari",
       "table": "mart_firmatari_ddl",
@@ -4739,6 +4863,37 @@
       }
     },
     {
+      "id": "senato_emendamenti_lod",
+      "source_id": "dati_senato",
+      "status": "ok",
+      "label": "senato_emendamenti_lod",
+      "detail": "anni 13-19 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261105T150839Z_2a0f3f3a",
+        "year": 19,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "raw": 132890,
+          "clean": 131335,
+          "mart": 429
+        },
+        "output_bytes": {
+          "raw": 37846091,
+          "clean": 2465471,
+          "mart": 3642
+        },
+        "started_at": "2026-11-05T15:08:39.970777+00:00",
+        "finished_at": "2026-11-05T15:11:46.243371+00:00",
+        "duration_seconds": 186.273
+      }
+    },
+    {
       "id": "senato_firmatari",
       "source_id": "dati_senato",
       "status": "ok",
@@ -4993,6 +5148,12 @@
             "semantic_type": "ddl_id"
           },
           {
+            "slug": "senato_emendamenti_lod",
+            "name": "Senato Emendamenti Lod",
+            "column": "atto_num",
+            "semantic_type": "ddl_id"
+          },
+          {
             "slug": "senato_firmatari",
             "name": "Senato Firmatari",
             "column": "ddl_id",
@@ -5018,7 +5179,7 @@
           }
         ],
         "types": {
-          "ddl_id": 9
+          "ddl_id": 10
         }
       },
       "Gruppo parlamentare": {
