@@ -1,0 +1,121 @@
+# Atti — dimensione conformata del Parlamento (Camera + Senato, Leg13-19).
+#
+# Livello di integrazione: NON è un prodotto analitico. Espone una riga per
+# atto con chiave canonica, tipo chiuso e identità del decreto-legge, così i
+# consumer (legal-graph, profilo, kpi) non ricostruiscono la stessa chiave
+# ognuno a modo suo.
+#
+# raw dichiarato per provenienza/registry; il clean legge dai support
+# multi-legislatura (pattern dei compose, vedi senato-corpus-parlamento).
+root: "../../out"
+schema_version: 1
+
+dataset:
+  name: "atti"
+  source_id: "dataciviclab_composite"
+  tags: [politica, parlamento, atti, ddl, camera, senato, dimensione]
+  category: politica
+  years: [2026]
+  description: >
+    Dimensione atto del Parlamento: una riga per atto nella numerazione
+    d'origine (ramo + legislatura + numero), con chiave namespaced,
+    tipo a enum chiuso, numero di legge e URN:NIR quando l'atto è
+    promulgato, identità del decreto-legge (numero, anno, data) quando è
+    un DDL di conversione. Fonte: senato_ddl, camera_ddl, camera_leggi.
+  time_coverage:
+    start_year: 1996
+    end_year: 2026
+
+raw:
+  output_policy: "overwrite"
+  sources:
+    - name: "senato_ddl"
+      type: "http_file"
+      primary: true
+      args:
+        url: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/19/senato_ddl_19_clean.parquet"
+        filename: "senato_ddl.parquet"
+
+support:
+  # Pattern C: path per LEGISLATURA (…/19/), non anno calendario (…/2026/)
+  - type: external
+    name: senato_ddl
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_ddl/{year}/senato_ddl_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: camera_ddl
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_ddl/{year}/camera_ddl_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  # Ponte atto Camera → legge (numero, data, URN): join (legislatura, ddl_numero)
+  - type: external
+    name: camera_leggi
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_leggi/{year}/camera_leggi_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+
+clean:
+  sql: "sql/clean.sql"
+  read:
+    source: config_only
+    mode: latest
+  required_columns:
+    - atto_id
+    - ramo
+    - legislatura
+    - numero_atto
+    - id_ddl
+    - atto_num
+    - atto_uri
+    - tipo
+    - natura_raw
+    - titolo
+    - titolo_breve
+    - data
+    - anno
+    - stato
+    - numero_legge
+    - data_legge
+    - urn_normattiva
+    - dl_numero
+    - dl_anno
+    - data_dl
+    - data_dl_fonte
+    - n_fasi
+    - source
+  validate:
+    not_null: [atto_id, ramo, legislatura, numero_atto, id_ddl, tipo, titolo, data]
+    primary_key: [atto_id]
+    # 34.539 atti Senato + 34.315 Camera (Leg13-19, 2026-11)
+    min_rows: 65000
+
+mart:
+  tables:
+    - name: "mart_atti"
+      sql: "sql/mart_atti.sql"
+    # decreti-legge: assorbe compose/decreti-legge (2026-11). Ordine
+    # obbligato: leggono le tabelle precedenti nella stessa sessione.
+    - name: "mart_dl"
+      sql: "sql/mart_dl.sql"
+    - name: "mart_dl_anno"
+      sql: "sql/mart_dl_anno.sql"
+  required_tables:
+    - "mart_atti"
+    - "mart_dl"
+    - "mart_dl_anno"
+  validate:
+    table_rules:
+      mart_atti:
+        required_columns: [atto_id, ramo, legislatura, tipo, numero_legge, urn_normattiva]
+        primary_key: [atto_id]
+        min_rows: 65000
+      mart_dl:
+        required_columns: [dl_numero, dl_anno, esito, giorni_conversione, atto_id]
+        primary_key: [dl_numero, dl_anno]
+        # 894 DL distinti (Leg13-19, 2026-11)
+        min_rows: 800
+      mart_dl_anno:
+        required_columns: [anno, n_dl, n_convertiti, n_decaduti, n_restituiti]
+        primary_key: [anno]
+        min_rows: 10
+
+validation:
+  fail_on_error: true

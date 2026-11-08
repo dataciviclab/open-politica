@@ -68,7 +68,7 @@ make registry-write   # aggiorna il catalogo
 
 ```
 datasets/    # un dataset per cartella (dataset.yml + sql/)
-compose/     # dataset compositi: profilo_politico, osservatorio_parlamento, decreti_legge
+compose/     # dataset compositi: atti, voti_ddl, profilo_politico, osservatorio_parlamento, decreti_legge
 registry/    # catalogo degli artifact
 scripts/     # estrazione SPARQL
 out/         # output runtime — mai versionato
