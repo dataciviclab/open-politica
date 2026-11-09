@@ -2,8 +2,184 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-11-06",
+  "updated_at": "2026-11-09",
   "datasets": [
+    {
+      "slug": "atti",
+      "name": "Atti",
+      "description": "Dimensione atto del Parlamento: una riga per atto nella numerazione d'origine (ramo + legislatura + numero), con chiave namespaced, tipo a enum chiuso, numero di legge e URN:NIR quando l'atto è promulgato, identità del decreto-legge (numero, anno, data) quando è un DDL di conversione. Fonte: senato_ddl, camera_ddl, camera_leggi.\n",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "parlamento",
+        "atti",
+        "ddl",
+        "camera",
+        "senato",
+        "dimensione"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "atto_id",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ramo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "numero_atto",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "id_ddl",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "atto_num",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "ddl_id"
+        },
+        {
+          "name": "atto_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "tipo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "natura_raw",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "titolo_breve",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "anno",
+          "type": "INTEGER",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "year"
+        },
+        {
+          "name": "stato",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "country_code"
+        },
+        {
+          "name": "numero_legge",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_legge",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "urn_normattiva",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "dl_numero",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "dl_anno",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "data_dl",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_dl_fonte",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "n_fasi",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "source",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/atti/2026/atti_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "atti__mart_atti",
+        "atti__mart_dl",
+        "atti__mart_dl_anno"
+      ]
+    },
     {
       "slug": "camera_atti_dibattito",
       "name": "Camera Atti Dibattito",
@@ -3346,6 +3522,36 @@
   ],
   "marts": [
     {
+      "slug": "atti__mart_atti",
+      "dataset": "atti",
+      "table": "mart_atti",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/atti/2026/mart_atti.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "atti__mart_dl",
+      "dataset": "atti",
+      "table": "mart_dl",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/atti/2026/mart_dl.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "atti__mart_dl_anno",
+      "dataset": "atti",
+      "table": "mart_dl_anno",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/atti/2026/mart_dl_anno.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "camera_atti_dibattito__mart_dibattiti_per_atto",
       "dataset": "camera_atti_dibattito",
       "table": "mart_dibattiti_per_atto",
@@ -4037,6 +4243,36 @@
     }
   ],
   "signals": [
+    {
+      "id": "compose:atti",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "atti",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261109T000520Z_7fd38691",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 95,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 68854,
+          "mart": 69779
+        },
+        "output_bytes": {
+          "raw": 448709,
+          "clean": 3074174,
+          "mart": 3133715
+        },
+        "started_at": "2026-11-09T00:05:20.341710+00:00",
+        "finished_at": "2026-11-09T00:05:37.114185+00:00",
+        "duration_seconds": 16.772
+      }
+    },
     {
       "id": "compose:decreti_legge",
       "source_id": "dataciviclab_composite",
@@ -5118,6 +5354,18 @@
         "label": "Atto legislativo / Disegno di legge",
         "datasets": [
           {
+            "slug": "atti",
+            "name": "Atti",
+            "column": "id_ddl",
+            "semantic_type": "ddl_id"
+          },
+          {
+            "slug": "atti",
+            "name": "Atti",
+            "column": "atto_num",
+            "semantic_type": "ddl_id"
+          },
+          {
             "slug": "camera_ddl",
             "name": "Camera Ddl",
             "column": "id_ddl",
@@ -5179,7 +5427,7 @@
           }
         ],
         "types": {
-          "ddl_id": 10
+          "ddl_id": 12
         }
       },
       "Gruppo parlamentare": {
@@ -5214,6 +5462,12 @@
         "label": "Nazione",
         "datasets": [
           {
+            "slug": "atti",
+            "name": "Atti",
+            "column": "stato",
+            "semantic_type": "country_code"
+          },
+          {
             "slug": "camera_ddl",
             "name": "Camera Ddl",
             "column": "stato",
@@ -5233,7 +5487,7 @@
           }
         ],
         "types": {
-          "country_code": 3
+          "country_code": 4
         }
       },
       "Persona": {
@@ -5377,6 +5631,12 @@
         "label": "Tempo / data",
         "datasets": [
           {
+            "slug": "atti",
+            "name": "Atti",
+            "column": "anno",
+            "semantic_type": "year"
+          },
+          {
             "slug": "camera_ddl",
             "name": "Camera Ddl",
             "column": "anno",
@@ -5408,7 +5668,7 @@
           }
         ],
         "types": {
-          "year": 4,
+          "year": 5,
           "month": 1
         }
       }
