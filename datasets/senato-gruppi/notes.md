@@ -12,13 +12,13 @@ Membership dei senatori ai gruppi parlamentari, con cariche e periodi
 
 ## Uso
 
-Alimenta `profilo_politico` per la metrica **pct_col_gruppo** (affidabilità):
+Alimenta `persone` (`mart_profilo`) per la metrica **pct_col_gruppo** (affidabilità):
 % di voti del senatore in linea col voto dominante del proprio gruppo sulla
 stessa votazione — l'indice di "vota col suo gruppo" (stile Openpolis).
 
 ```bash
 make run-senato-gruppi
-make run-profilo-politico   # ricompone il profilo con la membership
+python -m toolkit.cli.app run -c compose/persone/dataset.yml  # ricompone profilo con la membership
 ```
 
 ## 2026-10-02 — Pattern C multi-legislature

@@ -11,7 +11,7 @@ parlamentare non espone una chiave condivisa, la stessa persona ha un
 - Senato: `senato-anagrafica` multi-leg (`years: [13..19]`) — preprocess
   prende l'**ultima legislatura disponibile** (Leg19); lo storico non entra
   nel ponte attuale
-- **Compose fuori scope Pattern C** (#52): `profilo-politico` resta su
+- **Compose fuori scope Pattern C** (#52): `persone`/`profilo` restano su
   support `years: [2026]` — dopo il merge di Pattern C il run compose
   fallirà su path `senato_anagrafica/2026` mancante. Follow-up dedicato
   ad allineare i compose.

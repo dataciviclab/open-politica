@@ -106,34 +106,23 @@ def test_dataset_support_years_allineati():
             )
 
 
-def test_compose_fuori_scope_pattern_c():
-    """policy: i compose non devono essere toccati da Pattern C (follow-up dedicato).
+def test_compose_multi_leg_ammesso():
+    """policy (2026-11): i compose **leggono** i support multi-legislatura.
 
-    Se un compose dovesse già dichiarare support multi-anno sui dataset
-    Pattern C, questo test fallisce: allora il pin è entrato per sbaglio
-    e va spostato nella PR dei compose.
+    Il vecchio `test_compose_fuori_scope_pattern_c` vietava ai compose di
+    dichiarare support multi-anno (Pattern C): era una guardia della
+    migrazione, quando solo i `datasets/` dovevano usarla. Ora la lettura
+    multi-leg è il default dei consumatori (`atti`, `persone`, `osservatorio`,
+    `ponti`): il test è stato rimosso con la rimozione di `profilo-politico`,
+    che ne era l'ultima eccezione.
     """
-    for rel in (
-        "compose/profilo-politico/dataset.yml",
-        "compose/osservatorio-parlamento/dataset.yml",
-    ):
+    for rel in ("compose/atti/dataset.yml", "compose/persone/dataset.yml"):
         cfg = _load(rel)
-        support = {s["name"]: s for s in cfg.get("support", []) if isinstance(s, dict)}
-        for name in (
-            "senato_anagrafica",
-            "senato_gruppi",
-            "senato_commissioni",
-            "senato_interventi",
-            "camera_commissioni",
-            "camera_relatori",
-        ):
-            if name not in support:
-                continue
-            years = support[name].get("years") or []
-            # ammesso solo [2026] o assente: multi-anno = fuori scope
-            assert years in ([], [2026]), (
-                f"{rel}: support {name} years={years} — Pattern C non tocca i compose"
-            )
+        years = set()
+        for s in cfg.get("support", []):
+            if isinstance(s, dict):
+                years.update(s.get("years") or [])
+        assert {13, 19} <= years, f"{rel}: manca la lettura multi-legislatura"
 
 
 def test_firmatari_notes_idddl_globale():

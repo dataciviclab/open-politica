@@ -177,7 +177,7 @@ aggregata AS (
         max(gender)                                            AS gender,
         max(data_nascita)                                      AS data_nascita,
         max(luogo_nascita)                                     AS luogo_nascita,
-        min(fonte)                                             AS fonte,
+        arg_min(fonte, _prio)                                  AS fonte,
         count(*)                                               AS n_fonti
     FROM unione
     GROUP BY 1, 2, 3, 4

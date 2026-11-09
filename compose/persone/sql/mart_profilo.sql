@@ -90,7 +90,7 @@ senato_comm_agg AS (
         ) > 0                                                  AS presidente_commissione,
         string_agg(
             nome || ' (' || carica || ')',
-            '; ' ORDER BY nome
+            '; ' ORDER BY nome, carica
         ) FILTER (WHERE data_fine IS NULL)                     AS commissioni_attuali
     FROM read_parquet({support.senato_commissioni.outputs}, union_by_name = true)
     GROUP BY senatore_id
@@ -186,7 +186,7 @@ camera_comm_agg AS (
         ) > 0                                                     AS presidente_organo,
         string_agg(
             nome || ' (' || carica || ')',
-            '; ' ORDER BY nome
+            '; ' ORDER BY nome, carica
         ) FILTER (WHERE data_fine IS NULL)                        AS organi_ruoli
     FROM read_parquet({support.camera_commissioni.outputs}, union_by_name = true)
     GROUP BY deputato_id

@@ -205,3 +205,14 @@ def test_profilo_maggioranza_deterministica():
     assert "arg_max" not in code
     assert "ORDER BY count(*) DESC, voto" in code
     assert "n_secondo IS NULL OR n > n_secondo" in code
+
+
+def test_profilo_string_agg_deterministico():
+    """`string_agg(...)` con `ORDER BY nome` è ambiguo quando una persona ha
+    due cariche nello stesso organo (`nome` identico): l'ordine varia tra
+    build. La seconda chiave (`carica`) lo rende deterministico.
+    """
+    sql = (REPO_ROOT / "compose" / "persone" / "sql" / "mart_profilo.sql").read_text("utf-8")
+    code = "\n".join(line for line in sql.splitlines() if not line.strip().startswith("--"))
+    assert code.count("ORDER BY nome, carica") == 2
+    assert "ORDER BY nome\n" not in code
