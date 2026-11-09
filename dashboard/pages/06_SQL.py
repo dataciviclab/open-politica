@@ -6,7 +6,7 @@ from sources import get_registry, PREFIX
 render_sql_query(
     registry=get_registry(),
     prefix=PREFIX,
-    default_slug="profilo_politico",
+    default_slug="persone",
     title="🧪 Query SQL",
     description="Interroga direttamente i dati. Scrivi SQL su ``clean_input``.",
 )

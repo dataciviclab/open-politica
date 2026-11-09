@@ -47,7 +47,7 @@ def load_profilo(year: int = 2026):
     import pandas as pd
     from lab_connectors.duckdb.queries import load_clean
 
-    df = load_mart("profilo_politico", "mart_profilo", year)
+    df = load_mart("persone", "mart_profilo", year)
 
     # Camera: foto, biografia, scheda_url, gender
     try:
