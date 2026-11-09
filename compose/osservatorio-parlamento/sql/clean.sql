@@ -29,7 +29,7 @@ deputati AS (
     SELECT * FROM read_parquet({support.camera_deputati.clean})
 ),
 dl AS (
-    SELECT * FROM read_parquet({support.decreti_legge.clean})
+    SELECT * FROM read_parquet('{support.dl.path}')
 ),
 
 kpi AS (
@@ -214,22 +214,22 @@ kpi AS (
     -- ── G. Decreti-legge (XIX) ────────────────────────────────────
     UNION ALL
     SELECT 'repubblica_19', 'decreti', 'n_dl',
-           CAST(count(*) AS DOUBLE), 'decreti_legge'
+           CAST(count(*) AS DOUBLE), 'atti'
     FROM dl
     UNION ALL
     SELECT 'repubblica_19', 'decreti', 'n_dl_convertiti',
            CAST(count(*) FILTER (WHERE esito = 'convertito') AS DOUBLE),
-           'decreti_legge'
+           'atti'
     FROM dl
     UNION ALL
     SELECT 'repubblica_19', 'decreti', 'n_dl_decaduti',
            CAST(count(*) FILTER (WHERE esito = 'decaduto') AS DOUBLE),
-           'decreti_legge'
+           'atti'
     FROM dl
     UNION ALL
     SELECT 'repubblica_19', 'decreti', 'pct_dl_convertiti',
            round(100.0 * count(*) FILTER (WHERE esito = 'convertito') / NULLIF(count(*), 0), 1),
-           'decreti_legge'
+           'atti'
     FROM dl
 )
 

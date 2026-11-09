@@ -45,9 +45,10 @@ support:
     name: camera_deputati
     uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_deputati_legislature/{year}/camera_deputati_legislature_{year}_clean.parquet"
     years: [2026]
+  # decreti-legge: mart di `atti` (compose/decreti-legge assorbito 2026-11)
   - type: external
-    name: decreti_legge
-    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/decreti_legge/{year}/decreti_legge_{year}_clean.parquet"
+    name: dl
+    uri: "https://storage.googleapis.com/dataciviclab-mart/open-politica/atti/2026/mart_dl.parquet"
     years: [2026]
   - type: external
     name: camera_votazioni_sparql

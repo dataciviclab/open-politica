@@ -11,7 +11,7 @@ st.markdown("La macchina legislativa: decreti-legge, conversioni, tempi medi.")
 # ── Carica dati ─────────────────────────────────────────────────────────────
 
 try:
-    df = load_mart("decreti_legge", "mart_sintesi")
+    df = load_mart("atti", "mart_dl_anno")
 except Exception as e:
     st.error(f"Errore: {e}")
     st.stop()
