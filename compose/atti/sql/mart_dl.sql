@@ -27,7 +27,13 @@ SELECT
         WHEN bool_or(lower(stato) LIKE '%restit%')        THEN 'restituito'
         ELSE 'in_esame'
     END                                                   AS esito,
-    date_diff('day', min(data), max(data_legge))          AS giorni_conversione,
+    -- Giorni di conversione: dalla data del DECRETO (`data_dl`), non dalla
+    -- prima presentazione del DDL di conversione. Per 458 DL su 894 la prima
+    -- data dell'iter è successiva alla data del decreto (in media +16,9
+    -- giorni): partire dall'iter sottostimava i tempi (DL 200/2025 segnava
+    -- 3 giorni invece dei 58 dalla pubblicazione del decreto).
+    date_diff('day', coalesce(max(data_dl), min(data)), max(data_legge))
+                                                          AS giorni_conversione,
     arg_max(titolo, coalesce(data_legge, data))           AS titolo,
     -- atto rappresentativo: ramo Senato, poi iter più recente (stessa regola
     -- della vecchia `decreti_legge`: l'edge grafo punta a un solo atto)

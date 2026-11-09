@@ -56,6 +56,29 @@ match per pattern: la fonte scrive lo stato in più varianti e la vecchia
 uguaglianza esatta perdeva 105 DL "decreto legge decaduto" e 16 "restituito al
 Governo per essere ripresentato". Sono passati da `in_esame` all'esito vero.
 
+### Definizioni delle date (per chi legge il mart)
+
+- `giorni_conversione` = `data_conversione − data_dl`: dalla **data del
+  decreto**, non dalla prima presentazione del DDL di conversione. Per 458 DL
+  su 894 la prima data dell'iter è successiva alla data del decreto (+16,9
+  giorni medi): partire dall'iter sottostimava i tempi (DL 200/2025 segnava
+  3 giorni invece di 58). Range attuale 4–77 giorni.
+- `data_presentazione` = **prima data dell'iter parlamentare** (presentazione
+  del DDL di conversione), non la data del decreto. Per i DL convertiti è
+  tipicamente 1–2 mesi dopo `data_dl`.
+- `data_dl_fonte` = `titolo` (data letta dal titolo, 933/933 casi) oppure
+  `presentazione` (fallback quando il titolo non è interpretabile).
+
+### Perimetro e buchi noti della fonte
+
+- **`dl_numero`/`dl_anno` esistono solo sul ramo Senato** (933 DDL di
+  conversione, 0 Camera): il mart non può contenere DL mai arrivati al Senato.
+  È coerente col vecchio `decreti-legge`, che aveva la stessa sorgente.
+- **`stato` Camera è NULL prima della Leg17** (Leg13-15 0%, Leg16 0,2%,
+  Leg17-19 100%; 21.626 atti su 34.315). Non è un buco del clean: la fonte
+  Camera non lo fornisce. Il `tipo` non ne dipende; l'esito DL sì, ma i DL
+  arrivano dal ramo Senato dove `stato` c'è.
+
 ## Bug che questo livello rende impossibile
 
 `legal-graph` deduplicava `PARTITION BY id_ddl` senza `legislatura` su

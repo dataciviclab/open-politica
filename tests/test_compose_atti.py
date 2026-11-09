@@ -18,6 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 ATTI_YML = REPO_ROOT / "compose" / "atti" / "dataset.yml"
 ATTI_CLEAN = REPO_ROOT / "compose" / "atti" / "sql" / "clean.sql"
 ATTI_MART = REPO_ROOT / "out" / "data" / "mart" / "atti" / "2026" / "mart_atti.parquet"
+ATTI_MART_DL = REPO_ROOT / "out" / "data" / "mart" / "atti" / "2026" / "mart_dl.parquet"
 
 LEGISLATURE = [13, 14, 15, 16, 17, 18, 19]
 
@@ -149,3 +150,44 @@ def test_atti_mart_dl_identity():
         """
     ).fetchone()[0]
     assert n_dl >= 800, f"pochi DL distinti: {n_dl}"
+
+
+def test_mart_dl_giorni_dalla_data_del_decreto():
+    """`giorni_conversione` parte da `data_dl`, non dalla prima lettura.
+
+    Per 458 DL su 894 la prima data dell'iter è successiva alla data del
+    decreto (+16,9 giorni medi): partire dall'iter sottostimava i tempi
+    (DL 200/2025: 3 giorni invece di 58). Review #113.
+    """
+    if not ATTI_MART_DL.exists():
+        pytest.skip("mart_dl non presente — esegui toolkit run")
+    con = duckdb.connect()
+    incoerenti = con.execute(
+        f"""
+        SELECT COUNT(*) FROM read_parquet('{ATTI_MART_DL}')
+        WHERE data_conversione IS NOT NULL
+          AND data_dl IS NOT NULL
+          AND giorni_conversione <> date_diff('day', data_dl, data_conversione)
+        """
+    ).fetchone()[0]
+    assert incoerenti == 0, f"{incoerenti} DL con giorni non calcolati da data_dl"
+    negativi = con.execute(
+        f"SELECT COUNT(*) FROM read_parquet('{ATTI_MART_DL}') WHERE giorni_conversione < 0"
+    ).fetchone()[0]
+    assert negativi == 0, f"{negativi} DL con giorni negativi (data_dl dopo la conversione)"
+
+
+def test_mart_dl_giorni_del_caso_200_2025():
+    """Caso che aveva smascherato la base sbagliata: 58 giorni, non 3."""
+    if not ATTI_MART_DL.exists():
+        pytest.skip("mart_dl non presente")
+    con = duckdb.connect()
+    row = con.execute(
+        f"""
+        SELECT giorni_conversione FROM read_parquet('{ATTI_MART_DL}')
+        WHERE dl_numero = 200 AND dl_anno = 2025
+        """
+    ).fetchone()
+    if row is None:
+        pytest.skip("DL 200/2025 non presente nella fonte")
+    assert 55 <= row[0] <= 61, f"DL 200/2025: {row[0]} giorni (atteso ~58 dalla data del decreto)"
