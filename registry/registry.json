@@ -1577,110 +1577,6 @@
       ]
     },
     {
-      "slug": "decreti_legge",
-      "name": "Decreti Legge",
-      "description": "",
-      "source": "",
-      "source_id": "dataciviclab_composite",
-      "period": {
-        "start": 1996,
-        "end": 2026
-      },
-      "tags": [
-        "politica",
-        "governo",
-        "decreti-legge",
-        "conversione",
-        "iter"
-      ],
-      "category": "politica",
-      "columns": [
-        {
-          "name": "dl_numero",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "dl_anno",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "data_presentazione",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "data_conversione",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "esito",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "giorni_conversione",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "titolo",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "ddl_id",
-          "type": "BIGINT",
-          "role": "dimension",
-          "description": "",
-          "semantic_type": "ddl_id"
-        },
-        {
-          "name": "ddl_ramo",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "n_id_ddl_iter",
-          "type": "BIGINT",
-          "role": "metric",
-          "description": ""
-        },
-        {
-          "name": "data_dl",
-          "type": "DATE",
-          "role": "dimension",
-          "description": ""
-        },
-        {
-          "name": "data_dl_fonte",
-          "type": "VARCHAR",
-          "role": "dimension",
-          "description": ""
-        }
-      ],
-      "location": {
-        "type": "gcs",
-        "path": "gs://dataciviclab-clean/open-politica/decreti_legge/2026/decreti_legge_2026_clean.parquet",
-        "multi_file": false
-      },
-      "stage": "incubating",
-      "mart_refs": [
-        "decreti_legge__mart_sintesi",
-        "decreti_legge__mart_dettaglio"
-      ]
-    },
-    {
       "slug": "membri_governo",
       "name": "Membri Governo",
       "description": "",
@@ -5319,12 +5215,6 @@
             "slug": "camera_ddl",
             "name": "Camera Ddl",
             "column": "id_ddl",
-            "semantic_type": "ddl_id"
-          },
-          {
-            "slug": "decreti_legge",
-            "name": "Decreti Legge",
-            "column": "ddl_id",
             "semantic_type": "ddl_id"
           },
           {
