@@ -1747,6 +1747,135 @@
       ]
     },
     {
+      "slug": "persone",
+      "name": "Persone",
+      "description": "Dimensione persona del Parlamento: una riga per persona × legislatura × ramo, con chiave stabile (`persona_key`), anagrafica (nome, nascita, gender), il ponte Camera↔Senato e la provenienza dei dati. Perimetro: Repubblica Leg13-19, lo stesso delle relazioni del grafo.\n",
+      "source": "",
+      "source_id": "dataciviclab_composite",
+      "period": {
+        "start": 1996,
+        "end": 2026
+      },
+      "tags": [
+        "politica",
+        "parlamento",
+        "persone",
+        "anagrafica",
+        "dimensione"
+      ],
+      "category": "politica",
+      "columns": [
+        {
+          "name": "persona_key",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "ramo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "sistema",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "legislatura",
+          "type": "INTEGER",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "persona_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "person_id"
+        },
+        {
+          "name": "senatore_id",
+          "type": "BIGINT",
+          "role": "dimension",
+          "description": "",
+          "semantic_type": "senator_id"
+        },
+        {
+          "name": "deputato_uri",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "cognome",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "nome_completo",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "gender",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "data_nascita",
+          "type": "DATE",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "luogo_nascita",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "fonte",
+          "type": "VARCHAR",
+          "role": "dimension",
+          "description": ""
+        },
+        {
+          "name": "n_fonti",
+          "type": "BIGINT",
+          "role": "metric",
+          "description": ""
+        },
+        {
+          "name": "ponte",
+          "type": "BOOLEAN",
+          "role": "dimension",
+          "description": ""
+        }
+      ],
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-clean/open-politica/persone/2026/persone_2026_clean.parquet",
+        "multi_file": false
+      },
+      "stage": "incubating",
+      "mart_refs": [
+        "persone__mart_persone",
+        "persone__mart_profilo"
+      ]
+    },
+    {
       "slug": "ponte_persona",
       "name": "Ponte Persona",
       "description": "",
@@ -3818,6 +3947,26 @@
       }
     },
     {
+      "slug": "persone__mart_persone",
+      "dataset": "persone",
+      "table": "mart_persone",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/persone/2026/mart_persone.parquet",
+        "multi_file": false
+      }
+    },
+    {
+      "slug": "persone__mart_profilo",
+      "dataset": "persone",
+      "table": "mart_profilo",
+      "location": {
+        "type": "gcs",
+        "path": "gs://dataciviclab-mart/open-politica/persone/2026/mart_profilo.parquet",
+        "multi_file": false
+      }
+    },
+    {
       "slug": "ponte_persona__mart_match",
       "dataset": "ponte_persona",
       "table": "mart_match",
@@ -3834,16 +3983,6 @@
       "location": {
         "type": "gcs",
         "path": "gs://dataciviclab-mart/open-politica/ponti_parlamento/2026/mart_ponti_sintesi.parquet",
-        "multi_file": false
-      }
-    },
-    {
-      "slug": "profilo_politico__mart_profilo",
-      "dataset": "profilo_politico",
-      "table": "mart_profilo",
-      "location": {
-        "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/profilo_politico/2026/mart_profilo.parquet",
         "multi_file": false
       }
     },
@@ -4180,6 +4319,36 @@
       }
     },
     {
+      "id": "compose:persone",
+      "source_id": "dataciviclab_composite",
+      "status": "ok",
+      "label": "persone",
+      "detail": "anno 2026 — mart: si",
+      "action": "",
+      "run": {
+        "run_id": "20261109T103739Z_5d73603d",
+        "year": 2026,
+        "status": "SUCCESS",
+        "quality_score": {
+          "raw": 100,
+          "clean": 100,
+          "mart": 100
+        },
+        "output_rows": {
+          "clean": 6761,
+          "mart": 7384
+        },
+        "output_bytes": {
+          "raw": 5598,
+          "clean": 145174,
+          "mart": 176746
+        },
+        "started_at": "2026-11-09T10:37:39.912511+00:00",
+        "finished_at": "2026-11-09T10:38:39.045707+00:00",
+        "duration_seconds": 59.133
+      }
+    },
+    {
       "id": "compose:ponti_parlamento",
       "source_id": "dataciviclab_composite",
       "status": "ok",
@@ -4207,36 +4376,6 @@
         "started_at": "2026-11-05T00:06:03.510294+00:00",
         "finished_at": "2026-11-05T00:06:13.325768+00:00",
         "duration_seconds": 9.815
-      }
-    },
-    {
-      "id": "compose:profilo_politico",
-      "source_id": "dataciviclab_composite",
-      "status": "ok",
-      "label": "profilo_politico",
-      "detail": "anno 2026 — mart: si",
-      "action": "",
-      "run": {
-        "run_id": "20261105T000613Z_a842b2a1",
-        "year": 2026,
-        "status": "SUCCESS",
-        "quality_score": {
-          "raw": 100,
-          "clean": 100,
-          "mart": 100
-        },
-        "output_rows": {
-          "clean": 622,
-          "mart": 622
-        },
-        "output_bytes": {
-          "raw": 3819244,
-          "clean": 31379,
-          "mart": 31713
-        },
-        "started_at": "2026-11-05T00:06:13.866797+00:00",
-        "finished_at": "2026-11-05T00:06:37.772092+00:00",
-        "duration_seconds": 23.905
       }
     },
     {
@@ -5267,7 +5406,7 @@
           }
         ],
         "types": {
-          "ddl_id": 12
+          "ddl_id": 11
         }
       },
       "Gruppo parlamentare": {
@@ -5389,6 +5528,18 @@
             "semantic_type": "person_id"
           },
           {
+            "slug": "persone",
+            "name": "Persone",
+            "column": "persona_id",
+            "semantic_type": "person_id"
+          },
+          {
+            "slug": "persone",
+            "name": "Persone",
+            "column": "senatore_id",
+            "semantic_type": "senator_id"
+          },
+          {
             "slug": "ponte_persona",
             "name": "Ponte Persona",
             "column": "senatore_id",
@@ -5462,8 +5613,8 @@
           }
         ],
         "types": {
-          "person_id": 11,
-          "senator_id": 10
+          "person_id": 12,
+          "senator_id": 11
         }
       },
       "Tempo": {
