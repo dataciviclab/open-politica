@@ -65,6 +65,48 @@ support:
     uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/ponte_persona/2026/ponte_persona_2026_clean.parquet"
     years: [2026]
 
+  # ── metriche di `mart_profilo` (scheda XIX) ─────────────────────────
+  - type: external
+    name: senato_votazioni
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
+    years: [2026]
+  - type: external
+    name: senato_gruppi
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_gruppi/{year}/senato_gruppi_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: senato_commissioni
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_commissioni/{year}/senato_commissioni_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: senato_interventi
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/senato_interventi/{year}/senato_interventi_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: camera_commissioni
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_commissioni/{year}/camera_commissioni_{year}_clean.parquet"
+    years: [13, 14, 15, 16, 17, 18, 19]
+  - type: external
+    name: camera_relatori
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_relatori/{year}/camera_relatori_{year}_clean.parquet"
+    years: [16, 17, 18, 19]
+  - type: external
+    name: camera_voti
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_voti/2026/camera_voti_2026_clean.parquet"
+    years: [2026]
+  - type: external
+    name: camera_interventi
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_interventi/2026/camera_interventi_2026_clean.parquet"
+    years: [2026]
+  - type: external
+    name: camera_votazioni_sparql
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/camera_votazioni_sparql/{year}/camera_votazioni_sparql_{year}_clean.parquet"
+    years: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+  - type: external
+    name: membri_governo
+    uri: "https://storage.googleapis.com/dataciviclab-clean/open-politica/membri_governo/2026/membri_governo_2026_clean.parquet"
+    years: [2026]
+
 clean:
   sql: "sql/clean.sql"
   read:
@@ -95,14 +137,22 @@ mart:
   tables:
     - name: "mart_persone"
       sql: "sql/mart_persone.sql"
+    # scheda XIX: metriche per persona. Legge mart_persone (stessa sessione).
+    - name: "mart_profilo"
+      sql: "sql/mart_profilo.sql"
   required_tables:
     - "mart_persone"
+    - "mart_profilo"
   validate:
     table_rules:
       mart_persone:
         required_columns: [persona_key, ramo, legislatura, nome_completo, ponte]
         primary_key: [persona_key, ramo, sistema, legislatura]
         min_rows: 5000
+      mart_profilo:
+        required_columns: [ramo, id_parlamentare, nome, cognome, n_voti, pct_col_gruppo]
+        primary_key: [ramo, id_parlamentare]
+        min_rows: 500
 
 validation:
   fail_on_error: true

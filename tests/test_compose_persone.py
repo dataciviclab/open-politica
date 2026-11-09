@@ -144,3 +144,64 @@ def test_persone_senatori_recuperati_da_camera(con):
         WHERE ramo = 'senato' AND ponte AND nome IS NOT NULL
     """).fetchone()[0]
     assert n >= 150, f"solo {n} senatori con nome recuperato dal ponte"
+
+
+PROFILO_MART = (
+    REPO_ROOT / "out" / "data" / "mart" / "persone" / "2026" / "mart_profilo.parquet"
+)
+
+
+@pytest.fixture(scope="module")
+def profilo():
+    if not PROFILO_MART.exists():
+        pytest.skip("mart_profilo non presente — esegui toolkit run")
+    db = duckdb.connect()
+    db.execute(f"create view prof as select * from read_parquet('{PROFILO_MART}')")
+    yield db
+    db.close()
+
+
+def test_profilo_schema_e_pk(profilo):
+    """Stesso schema del vecchio `profilo_politico/mart_profilo`."""
+    cols = {r[0] for r in profilo.execute("DESCRIBE SELECT * FROM prof").fetchall()}
+    assert {
+        "ramo", "id_parlamentare", "persona_id", "nome", "cognome",
+        "n_voti", "pct_coerente", "pct_col_gruppo", "in_governo",
+        "n_commissioni_attuali", "commissioni_attuali",
+    } <= cols
+    dup = profilo.execute("""
+        SELECT COUNT(*) FROM (
+          SELECT ramo, id_parlamentare FROM prof GROUP BY 1,2 HAVING COUNT(*) > 1
+        )
+    """).fetchone()[0]
+    assert dup == 0, f"chiavi duplicate: {dup}"
+
+
+def test_profilo_righe_e_range(profilo):
+    n, nulli, fuori = profilo.execute("""
+        SELECT COUNT(*),
+               COUNT(*) FILTER (WHERE id_parlamentare IS NULL),
+               COUNT(*) FILTER (WHERE pct_col_gruppo NOT BETWEEN 0 AND 100)
+        FROM prof
+    """).fetchone()
+    assert n >= 500, f"poche righe: {n}"
+    assert nulli == 0
+    assert fuori == 0
+
+
+def test_profilo_legge_mart_persone():
+    """L'identità viene da mart_persone, non da anagrafica + ponte."""
+    sql = (REPO_ROOT / "compose" / "persone" / "sql" / "mart_profilo.sql").read_text("utf-8")
+    code = "\n".join(line for line in sql.splitlines() if not line.strip().startswith("--"))
+    assert "FROM mart_persone" in code
+    assert "senato_anagrafica" not in code
+    assert "ponte_persona" not in code
+
+
+def test_profilo_maggioranza_deterministica():
+    """La moda del gruppo non usa `arg_max` (tie-break arbitrario)."""
+    sql = (REPO_ROOT / "compose" / "persone" / "sql" / "mart_profilo.sql").read_text("utf-8")
+    code = "\n".join(line for line in sql.splitlines() if not line.strip().startswith("--"))
+    assert "arg_max" not in code
+    assert "ORDER BY count(*) DESC, voto" in code
+    assert "n_secondo IS NULL OR n > n_secondo" in code

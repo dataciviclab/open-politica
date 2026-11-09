@@ -10,7 +10,7 @@ st.title("🗳️ Come Votano")
 st.markdown("Disciplina di partito, ribelli del Parlamento e chi parla più spesso.")
 
 try:
-    df = load_mart("profilo_politico", "mart_profilo")
+    df = load_mart("persone", "mart_profilo")
 except Exception as e:
     st.error(f"Errore: {e}")
     st.stop()
@@ -77,7 +77,7 @@ st.subheader("🎤 Chi parla più spesso in Camera")
 
 try:
     df_top = load_mart("camera_interventi", "mart_top_parlanti")
-    df_profilo = load_mart("profilo_politico", "mart_profilo")
+    df_profilo = load_mart("persone", "mart_profilo")
 
     # Join per avere nomi
     df_parlanti = pd.merge(

@@ -33,6 +33,7 @@ WITH ponte AS (
         CAST(persona_id AS BIGINT)  AS persona_id
     FROM read_parquet('{support.ponte_persona.path}')
     WHERE senatore_id IS NOT NULL AND persona_id IS NOT NULL
+      AND tipo_match = '1to1'   -- 'ambiguo' (18 righe) non è un'identità certa
 ),
 
 -- ── Senato: anagrafica ────────────────────────────────────────────────
