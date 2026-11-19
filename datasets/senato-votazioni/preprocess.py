@@ -36,6 +36,11 @@ ENDPOINT = "https://dati.senato.it/sparql"
 # Default: 480s in incrementale (il blocco misurato dura >=257s), nessun
 # tetto nel full (un'estrazione completa deve poter finire).
 _RETRY_ATTEMPTS = (5, 15, 45, 90, 180, 300)
+# L'endpoint rifiuta (403 immediato, non rate-limit) le query con IN-list
+# lunghe: misurato il 2026-11-19 — 20 URI ok (1,1 KB), 30 URI → 403 (1,5 KB).
+# La full non ha IN-list (pagina per graph); l'incrementale sì, quindi va
+# spezzata sotto soglia.
+_IN_LIST_BATCH = 20
 _RETRY_BUDGET_ENV = os.environ.get("SENATO_RETRY_BUDGET_S")
 _RETRY_BUDGET_S: float | None = 480.0
 _retry_spent = 0.0
@@ -203,7 +208,7 @@ def fetch_votazioni_meta(graph: str) -> list[dict]:
     """)
 
 
-def fetch_votazioni_meta_union(sedute: set[str], batch: int = 200) -> list[dict]:
+def fetch_votazioni_meta_union(sedute: set[str], batch: int = _IN_LIST_BATCH) -> list[dict]:
     """Metadati delle votazioni delle sedute indicate — unione dei graph.
 
     Il default graph di Virtuoso è l'unione dei graph: si evita ``GRAPH ?g``
@@ -284,7 +289,7 @@ def fetch_voti(graph: str) -> list[dict]:
     return voti
 
 
-def fetch_voti_incrementali(votazioni: set[str], batch: int = 200) -> list[dict]:
+def fetch_voti_incrementali(votazioni: set[str], batch: int = _IN_LIST_BATCH) -> list[dict]:
     """Voti individuali SOLO per un set di votazioni (incrementale).
 
     Un'unica query sull'unione dei graph invece di una per graph: il Senato

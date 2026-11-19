@@ -302,7 +302,24 @@ def test_meta_union_spezza_le_sedute_in_batch(monkeypatch):
 
     m.fetch_votazioni_meta_union(sedute)
 
-    assert len(catturato) == 2  # 200 + 50
+    assert len(catturato) == 13  # default 20 → 13 batch (12×20 + 10)
+
+
+def test_default_batch_sotto_la_soglia_dell_endpoint(monkeypatch):
+    """L'endpoint rifiuta le IN-list lunghe: 20 URI ok, 30 → 403 (misurato).
+
+    Il default deve restare sotto soglia per voti e sedute: se qualcuno lo
+    alza a 200, le query incrementali tornano a prendere 403 immediato.
+    """
+    m = _load_preprocess()
+    assert m._IN_LIST_BATCH <= 20
+
+    catturato: list[str] = []
+    monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
+    m.fetch_voti_incrementali({f"http://dati.senato.it/votazione/19-1-{i}" for i in range(45)})
+    assert len(catturato) == 3  # 20 + 20 + 5
+    for q in catturato:
+        assert q.count("http://dati.senato.it/votazione/") <= 20
 
 
 def test_full_graph_fallito_non_cancella_la_cache(tmp_path, monkeypatch):

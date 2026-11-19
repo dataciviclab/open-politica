@@ -36,9 +36,14 @@ python3 datasets/senato-votazioni/preprocess.py --merge-only
    graph (niente `GRAPH`, niente una query per graph);
 4. **1 query** (paginata) per i voti di quelle votazioni, anch'essa sull'unione.
 
-Il WAF di dati.senato.it blocca (403) dopo ~8 richieste: 7 metadati + N voti
-bastavano a far scattare il rate-limit a ogni run. Le query "unione" usano il
-default graph di Virtuoso, che è l'insieme dei graph (verificato dal vivo).
+Le IN-list sono spezzate in **batch da 20**. Misurato il 2026-11-19: una
+query con 20 URI passa (1,1 KB), con 30 URI l'endpoint risponde **403
+immediato** (1,5 KB, in 0,6s — non è rate-limit, è la query). La full non ha
+IN-list (pagina per graph, query da 245 caratteri): per questo 1,2M righe
+passano. L'incrementale sì, quindi la lunghezza va tenuta sotto soglia.
+
+Le query "unione" usano il default graph di Virtuoso, che è l'insieme dei
+graph (verificato dal vivo).
 
 Il retry ha un **budget totale di attesa per run** (`SENATO_RETRY_BUDGET_S`):
 default **480s in incrementale** (il blocco misurato dura >=257s), **nessun
