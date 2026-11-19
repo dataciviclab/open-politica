@@ -1,12 +1,14 @@
 """Contract senato_votazioni — percorso incrementale.
 
-Protegge tre cose che, se rotte, non si vedono dal risultato (solo dal tempo
-o da un buco nei dati):
+Protegge le cose che, se rotte, non si vedono dal risultato ma dal tempo o da
+un buco nei dati:
 
-1. la lista dei graph per legislatura (niente scansione globale dello store);
+1. la lista deterministica dei graph (run full, niente scansione globale);
 2. il filtro ``sedute >= max(data)`` con il confine incluso;
-3. la query metadati che in incrementale chiede SOLO le sedute nuove,
-   invece di rileggere tutte le votazioni della legislatura.
+3. le due query "unione" dell'incrementale (metadati e voti): una sola
+   richiesta invece di una per graph — il WAF blocca dopo ~8 richieste;
+4. il budget di retry per run (il WAF non deve costare ore);
+5. end-to-end offline con baseline + delta, e graph fallito fatale.
 
 Non tocca la rete: ``query`` è sostituita da un finto che cattura lo SPARQL.
 """
@@ -33,7 +35,7 @@ def _load_preprocess():
 
 
 # ---------------------------------------------------------------------------
-# Graph per legislatura
+# Graph per legislatura (run full)
 # ---------------------------------------------------------------------------
 
 
@@ -83,39 +85,73 @@ def test_sedute_dal_ignora_date_mancanti():
 
 
 # ---------------------------------------------------------------------------
-# Query metadati
+# Query: unione (incrementale) vs per-graph (full)
 # ---------------------------------------------------------------------------
 
 
-def test_meta_incrementale_filtra_per_seduta(monkeypatch):
-    """Con ``sedute`` la query non rilegge tutte le votazioni del graph."""
+def test_meta_incrementale_una_query_sull_unione(monkeypatch):
+    """In incrementale: niente GRAPH, filtro sulle sedute, una sola query."""
     m = _load_preprocess()
     catturato: list[str] = []
-
-    def fake_query(sparql: str, timeout: int = 120):
-        catturato.append(sparql)
-        return []
-
-    monkeypatch.setattr(m, "query", fake_query)
-    m.fetch_votazioni_meta("http://dati.senato.it/votazioni-fasi-1/19",
-                           {"http://dati.senato.it/sedutaassemblea/1"})
+    monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
+    m.fetch_votazioni_meta_union({"http://dati.senato.it/sedutaassemblea/1"})
 
     assert len(catturato) == 1
     q = catturato[0]
-    assert "?v osr:seduta ?s . FILTER(?s IN (<http://dati.senato.it/sedutaassemblea/1>))" in q
-    assert "OPTIONAL { ?v osr:seduta ?s . }" not in q
+    assert "GRAPH" not in q
+    assert "?v a osr:Votazione ; osr:seduta ?s ." in q
+    assert "FILTER(?s IN (<http://dati.senato.it/sedutaassemblea/1>))" in q
 
 
-def test_meta_full_senza_filtro(monkeypatch):
-    """Senza ``sedute`` resta il comportamento full (OPTIONAL, nessun FILTER)."""
+def test_meta_full_resta_per_graph(monkeypatch):
+    """Il full resta per graph: limita alla legislatura, non a tutto lo store."""
     m = _load_preprocess()
     catturato: list[str] = []
     monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
     m.fetch_votazioni_meta("http://dati.senato.it/votazioni-fasi-1/19")
 
     q = catturato[0]
+    assert "GRAPH <http://dati.senato.it/votazioni-fasi-1/19>" in q
     assert "OPTIONAL { ?v osr:seduta ?s . }" in q
-    assert "FILTER(?s IN" not in q
+
+
+def test_voti_incrementali_una_query_sull_unione(monkeypatch):
+    """I voti nuovi: niente GRAPH (altrimenti 5 richieste), filtro sulle votazioni."""
+    m = _load_preprocess()
+    catturato: list[str] = []
+    monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
+    m.fetch_voti_incrementali({"http://dati.senato.it/votazione/19-1-1"})
+
+    assert len(catturato) == 1
+    q = catturato[0]
+    assert "GRAPH" not in q
+    assert "?v IN (<http://dati.senato.it/votazione/19-1-1>)" in q
+
+
+# ---------------------------------------------------------------------------
+# Budget di retry
+# ---------------------------------------------------------------------------
+
+
+def test_retry_budget_esaurito_fallisce_subito(monkeypatch):
+    """Il WAF non deve costare ore: esaurito il budget, la query fallisce."""
+    m = _load_preprocess()
+    monkeypatch.setattr(m, "_RETRY_BUDGET_S", 10.0)
+    monkeypatch.setattr(m, "_retry_spent", 0.0)
+    monkeypatch.setattr(m.time, "sleep", lambda _s: None)
+    chiamate: list[int] = []
+
+    def sempre_403(*_a, **_k):
+        chiamate.append(1)
+        raise RuntimeError("SPARQL curl HTTP 403")
+
+    monkeypatch.setattr(m, "execute_sparql_rows_curl", sempre_403)
+
+    with pytest.raises(RuntimeError, match="retry budget"):
+        m.query("SELECT 1")
+
+    # 5s (tentativo 1) + 5s troncati dal budget (tentativo 2) → stop.
+    assert len(chiamate) == 2
 
 
 # ---------------------------------------------------------------------------
@@ -150,31 +186,26 @@ def test_incremental_end_to_end_solo_nuove_sedute(tmp_path, monkeypatch):
         {"s": "s-old", "d": "2026-10-30"},
         {"s": "s-new", "d": "2026-11-18"},
     ]
-    chiamate_meta: list[set[str] | None] = []
+    chiamate_meta: list[set[str]] = []
 
     monkeypatch.setattr(m, "fetch_sedute", lambda leg: sedute)
 
-    def fake_meta(graph, sedute_filtrate=None):
+    def fake_meta_union(sedute_filtrate):
         chiamate_meta.append(sedute_filtrate)
-        if sedute_filtrate and "votazioni-fasi-1" in graph:
-            return [{
-                "v": "v-new", "seduta": "s-new", "legislatura": "19",
-                "tipoVotazione": "elettronica", "esito": "approvato",
-                "favorevoli": "1", "contrari": "0", "astenuti": "0",
-                "votanti": "1", "presenti": "1", "maggioranza": "1",
-                "congedoMissione": "0",
-            }]
-        return []
+        return [{
+            "v": "v-new", "seduta": "s-new", "legislatura": "19",
+            "tipoVotazione": "elettronica", "esito": "approvato",
+            "favorevoli": "1", "contrari": "0", "astenuti": "0",
+            "votanti": "1", "presenti": "1", "maggioranza": "1",
+            "congedoMissione": "0",
+        }]
 
-    monkeypatch.setattr(m, "fetch_votazioni_meta", fake_meta)
-
-    def fake_voti(graph, votazioni):
-        if "votazioni-fasi-1" in graph:
-            return [{"v": "v-new", "sen": "http://dati.senato.it/senatore/123",
-                     "p": m.OSR + "favorevole"}]
-        return []
-
-    monkeypatch.setattr(m, "fetch_voti_filtered", fake_voti)
+    monkeypatch.setattr(m, "fetch_votazioni_meta_union", fake_meta_union)
+    monkeypatch.setattr(
+        m, "fetch_voti_incrementali",
+        lambda votazioni: [{"v": "v-new", "sen": "http://dati.senato.it/senatore/123",
+                            "p": m.OSR + "favorevole"}],
+    )
     monkeypatch.setattr(sys, "argv", [
         "preprocess.py", "--legislature", "19", "--out", str(tmp_path), "--incremental",
     ])
@@ -182,7 +213,7 @@ def test_incremental_end_to_end_solo_nuove_sedute(tmp_path, monkeypatch):
     assert m.main() == 0
 
     # La query metadati ha visto SOLO la seduta nuova, non tutta la legislatura.
-    assert chiamate_meta and all(s == {"s-new"} for s in chiamate_meta)
+    assert chiamate_meta == [{"s-new"}]
 
     import duckdb
     rows = duckdb.connect().execute(
@@ -198,7 +229,7 @@ def test_incremental_senza_sedute_nuove_non_interroga_i_metadati(tmp_path, monke
 
     monkeypatch.setattr(m, "fetch_sedute", lambda leg: [{"s": "s-old", "d": "2026-11-18"}])
     monkeypatch.setattr(
-        m, "fetch_votazioni_meta",
+        m, "fetch_votazioni_meta_union",
         lambda *a, **k: pytest.fail("metadati interrogati senza sedute nuove"),
     )
     monkeypatch.setattr(sys, "argv", [
@@ -208,8 +239,8 @@ def test_incremental_senza_sedute_nuove_non_interroga_i_metadati(tmp_path, monke
     assert m.main() == 0
 
 
-def test_incremental_graph_fallito_non_scrive_parquet_parziale(tmp_path, monkeypatch):
-    """Un graph che fallisce rende il run invalido: niente merge parziale.
+def test_incremental_voti_falliti_non_scrive_parquet_parziale(tmp_path, monkeypatch):
+    """Se la query voti fallisce il run è invalido: niente merge parziale.
 
     Prima il graph fallito veniva saltato in silenzio: il merge avanzava
     max(data) e le votazioni mancanti non venivano più riprese.
@@ -221,15 +252,15 @@ def test_incremental_graph_fallito_non_scrive_parquet_parziale(tmp_path, monkeyp
 
     monkeypatch.setattr(m, "fetch_sedute",
                         lambda leg: [{"s": "s-new", "d": "2026-11-18"}])
-    monkeypatch.setattr(m, "fetch_votazioni_meta", lambda g, s=None: [{
+    monkeypatch.setattr(m, "fetch_votazioni_meta_union", lambda s: [{
         "v": "v-new", "seduta": "s-new", "legislatura": "19",
         "tipoVotazione": "elettronica", "esito": "approvato",
         "favorevoli": "1", "contrari": "0", "astenuti": "0", "votanti": "1",
         "presenti": "1", "maggioranza": "1", "congedoMissione": "0",
     }])
     monkeypatch.setattr(
-        m, "fetch_voti_filtered",
-        lambda g, v: (_ for _ in ()).throw(RuntimeError("WAF 403")),
+        m, "fetch_voti_incrementali",
+        lambda v: (_ for _ in ()).throw(RuntimeError("WAF 403")),
     )
     monkeypatch.setattr(sys, "argv", [
         "preprocess.py", "--legislature", "19", "--out", str(tmp_path), "--incremental",

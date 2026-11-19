@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -28,6 +29,12 @@ from lab_connectors.http import execute_sparql_rows_curl
 
 OSR = "http://dati.senato.it/osr/"
 ENDPOINT = "https://dati.senato.it/sparql"
+
+# Retry WAF: tentativi per query e budget complessivo di attesa per run.
+# Oltre il budget il run fallisce invece di macinare per un'ora.
+_RETRY_ATTEMPTS = (5, 15, 45, 90, 180, 300)
+_RETRY_BUDGET_S = float(os.environ.get("SENATO_RETRY_BUDGET_S", "240"))
+_retry_spent = 0.0
 VOTO_PROPS = [
     f"{OSR}favorevole",
     f"{OSR}contrario",
@@ -51,21 +58,41 @@ def query(sparql: str, timeout: int = 120) -> list[dict]:
     Il WAF di dati.senato.it:
     - fa TLS-fingerprinting: le librerie Python ricevono 403/risposte vuote;
       il binario curl passa;
-    - ha rate-limit per IP a burst: dopo poche query pesanti risponde 403
-      (HTML) per ~1 minuto. Il client condiviso solleva RuntimeError su
-      risposta non-JSON/HTTP non-200; qui si ritenta con backoff progressivo.
+    - ha rate-limit per IP a burst: dopo ~8 query pesanti risponde 403
+      (HTML) per diversi minuti. Il client condiviso solleva RuntimeError su
+      risposta non-JSON/HTTP non-200.
     - serve risultati vuoti per query con variabili lunghe (vedi fetch_*).
+
+    Il retry ha un **budget totale per run** (``SENATO_RETRY_BUDGET_S``,
+    default 240s): quando il WAF blocca, non si resta appesi 10 minuti per
+    ogni query. Esaurito il budget il run fallisce (e non scrive un parquet
+    parziale); il successivo riparte dallo stesso ``max(data)``.
     """
-    attempts = [5, 15, 45, 90, 180, 300]
-    for i, wait in enumerate(attempts):
+    global _retry_spent
+    ultimo: RuntimeError | None = None
+    for i, wait in enumerate(_RETRY_ATTEMPTS):
+        residuo = _RETRY_BUDGET_S - _retry_spent
+        if residuo <= 0:
+            raise RuntimeError(
+                f"retry budget {_RETRY_BUDGET_S:.0f}s esaurito "
+                f"(tentativo {i}): {ultimo}"
+            ) from ultimo
         try:
             rows = execute_sparql_rows_curl(ENDPOINT, sparql, timeout=timeout)
             time.sleep(8)
             return rows
         except RuntimeError as exc:
-            log.warning("query fallita (tentativo %d): %s — attesa %ds", i + 1, exc, wait)
-            time.sleep(wait)
-    raise RuntimeError(f"query fallita dopo {len(attempts)} tentativi: {sparql[:120]}...")
+            ultimo = exc
+            pausa = min(wait, residuo)
+            _retry_spent += pausa
+            log.warning(
+                "query fallita (tentativo %d): %s — attesa %.0fs (budget %.0f/%.0fs)",
+                i + 1, exc, pausa, _retry_spent, _RETRY_BUDGET_S,
+            )
+            time.sleep(pausa)
+    raise RuntimeError(
+        f"query fallita dopo {len(_RETRY_ATTEMPTS)} tentativi: {sparql[:120]}..."
+    )
 
 
 def graphs_for_legislature(legislatura: int) -> list[str]:
@@ -107,45 +134,63 @@ def discover_graphs(legislatura: int) -> list[str]:
     return [r["g"] for r in rows if r["g"].endswith(f"/{legislatura}")]
 
 
-def fetch_votazioni_meta(graph: str, sedute: set[str] | None = None) -> list[dict]:
-    """Metadati delle votazioni di un graph (una riga per votazione).
-
-    ``sedute`` limita la query alle sedute indicate (modalità incrementale:
-    solo quelle dal ``max(data)`` in poi). ``None`` = tutte le votazioni,
-    come nel run full.
-
-    Nomi variabili corti: il WAF di dati.senato.it serve risultati vuoti
-    per query con variabili lunghe (es. ?votazione) su alcuni pattern.
-    """
-    if sedute:
-        in_list = "<" + ">,<".join(sorted(sedute)) + ">"
-        filtro_seduta = f"?v osr:seduta ?s . FILTER(?s IN ({in_list}))"
-    else:
-        filtro_seduta = "OPTIONAL { ?v osr:seduta ?s . }"
-    return query(f"""
-        PREFIX osr: <{OSR}>
-        SELECT ?v
+_META_SELECT = """SELECT ?v
                (MAX(?s) AS ?seduta) (MAX(?l) AS ?legislatura)
                (MAX(?tipo) AS ?tipoVotazione) (MAX(?es) AS ?esito)
                (MAX(?fav) AS ?favorevoli) (MAX(?con) AS ?contrari)
                (MAX(?ast) AS ?astenuti) (MAX(?vot) AS ?votanti)
                (MAX(?pres) AS ?presenti) (MAX(?maj) AS ?maggioranza)
-               (MAX(?cong) AS ?congedoMissione)
+               (MAX(?cong) AS ?congedoMissione)"""
+_META_OPTIONALS = """OPTIONAL { ?v osr:legislatura ?l . }
+            OPTIONAL { ?v osr:tipoVotazione ?tipo . }
+            OPTIONAL { ?v osr:esito ?es . }
+            OPTIONAL { ?v osr:favorevoli ?fav . }
+            OPTIONAL { ?v osr:contrari ?con . }
+            OPTIONAL { ?v osr:astenuti ?ast . }
+            OPTIONAL { ?v osr:votanti ?vot . }
+            OPTIONAL { ?v osr:presenti ?pres . }
+            OPTIONAL { ?v osr:maggioranza ?maj . }
+            OPTIONAL { ?v osr:congedoMissione ?cong . }"""
+
+
+def fetch_votazioni_meta(graph: str) -> list[dict]:
+    """Metadati di tutte le votazioni di un graph (solo run full).
+
+    In incrementale si usa :func:`fetch_votazioni_meta_union`: una query sola
+    invece di una per graph, perché il WAF blocca dopo poche richieste.
+
+    Nomi variabili corti: il WAF di dati.senato.it serve risultati vuoti
+    per query con variabili lunghe (es. ?votazione) su alcuni pattern.
+    """
+    return query(f"""
+        PREFIX osr: <{OSR}>
+        {_META_SELECT}
         WHERE {{
           GRAPH <{graph}> {{
             ?v a osr:Votazione .
-            {filtro_seduta}
-            OPTIONAL {{ ?v osr:legislatura ?l . }}
-            OPTIONAL {{ ?v osr:tipoVotazione ?tipo . }}
-            OPTIONAL {{ ?v osr:esito ?es . }}
-            OPTIONAL {{ ?v osr:favorevoli ?fav . }}
-            OPTIONAL {{ ?v osr:contrari ?con . }}
-            OPTIONAL {{ ?v osr:astenuti ?ast . }}
-            OPTIONAL {{ ?v osr:votanti ?vot . }}
-            OPTIONAL {{ ?v osr:presenti ?pres . }}
-            OPTIONAL {{ ?v osr:maggioranza ?maj . }}
-            OPTIONAL {{ ?v osr:congedoMissione ?cong . }}
+            OPTIONAL {{ ?v osr:seduta ?s . }}
+            {_META_OPTIONALS}
           }}
+        }}
+        GROUP BY ?v
+    """)
+
+
+def fetch_votazioni_meta_union(sedute: set[str]) -> list[dict]:
+    """Metadati delle votazioni delle sedute indicate — unione dei graph.
+
+    Il default graph di Virtuoso è l'unione dei graph: si evita ``GRAPH ?g``
+    (e quindi l'elenco dei graph) e si fa **una sola** richiesta. Il filtro
+    sulle sedute nuove limita la scansione alle votazioni che servono.
+    """
+    in_list = "<" + ">,<".join(sorted(sedute)) + ">"
+    return query(f"""
+        PREFIX osr: <{OSR}>
+        {_META_SELECT}
+        WHERE {{
+          ?v a osr:Votazione ; osr:seduta ?s .
+          FILTER(?s IN ({in_list}))
+          {_META_OPTIONALS}
         }}
         GROUP BY ?v
     """)
@@ -207,11 +252,12 @@ def fetch_voti(graph: str) -> list[dict]:
     return voti
 
 
-def fetch_voti_filtered(graph: str, votazioni: set[str], batch: int = 200) -> list[dict]:
-    """Voti individuali SOLO per un set di votazioni (incremental).
+def fetch_voti_incrementali(votazioni: set[str], batch: int = 200) -> list[dict]:
+    """Voti individuali SOLO per un set di votazioni (incrementale).
 
-    Deterministico: IN-list fissa per batch → OFFSET stabile dentro il batch
-    (nessun overlap come la paginazione globale).
+    Un'unica query sull'unione dei graph invece di una per graph: il Senato
+    blocca (403) dopo poche richieste. Deterministico: IN-list fissa per
+    batch → OFFSET stabile dentro il batch (nessun overlap).
     """
     voti: list[dict] = []
     vlist = sorted(votazioni)
@@ -222,10 +268,8 @@ def fetch_voti_filtered(graph: str, votazioni: set[str], batch: int = 200) -> li
         while True:
             rows = query(f"""
                 SELECT ?v ?sen ?p WHERE {{
-                  GRAPH <{graph}> {{
-                    ?v ?p ?sen .
-                    FILTER(?p IN {VOTO_IN} && ?v IN ({in_list}))
-                  }}
+                  ?v ?p ?sen .
+                  FILTER(?p IN {VOTO_IN} && ?v IN ({in_list}))
                 }}
                 LIMIT 10000 OFFSET {offset}
             """)
@@ -316,65 +360,73 @@ def main() -> int:
                     log.info("nessuna seduta nuova — parquet invariato: %s", final_path)
                     return 0
 
-        for g in graphs:
-            meta = fetch_votazioni_meta(g, new_sedute)
-            all_meta.extend(meta)
-
-        # In incrementale i metadati sono già filtrati per seduta: ogni riga è nuova.
-        if last_date is not None:
+        incr = last_date is not None
+        if incr:
+            # ── Incrementale: 1 query metadati + 1 query voti (unione graph) ──
+            all_meta.extend(fetch_votazioni_meta_union(new_sedute))
             new_votazioni = {m["v"] for m in all_meta}
             log.info("incremental: %d votazioni nuove (sedute dal %s)",
                      len(new_votazioni), last_date)
             if not new_votazioni:
                 log.info("niente di nuovo — parquet invariato: %s", final_path)
                 return 0
+            try:
+                voti = fetch_voti_incrementali(new_votazioni)
+            except Exception as exc:
+                log.error("voti nuovi: ERRORE %s — run non valido, parquet invariato", exc)
+                return 1
+            voti = [v for v in voti if v["v"] in new_votazioni]
+            if not voti:
+                log.info("nessun voto nuovo — parquet invariato: %s", final_path)
+                return 0
+            f = out_dir / "voti_incr.parquet"
+            pq.write_table(
+                pa.table(
+                    {
+                        "votazione": [v["v"] for v in voti],
+                        "senatore": [v["sen"] for v in voti],
+                        "voto": [VOTO_LABEL[v["p"]] for v in voti],
+                    }
+                ),
+                f,
+            )
+            voti_files.append(f)
+            log.info("voti nuovi: %d → %s", len(voti), f.name)
         else:
-            new_votazioni = None
-
-        incr = last_date is not None
-        for g in graphs:
-            graph_name = g.rstrip('/').split('/')[-2]
-            if incr:
-                # Incrementale: niente cache per-graph (serve al resume di un
-                # full). I voti nuovi vanno in file dedicati; il merge li unisce
-                # all'esistente con dedup. Un run incrementale morto a metà non
-                # lascia cache che il run dopo salterebbe.
-                f = out_dir / f"voti_incr_{graph_name}.parquet"
-            else:
+            # ── Full: una query per graph (resta dentro la legislatura) ──
+            for g in graphs:
+                all_meta.extend(fetch_votazioni_meta(g))
+            for g in graphs:
+                graph_name = g.rstrip('/').split('/')[-2]
                 f = out_dir / f"voti_{graph_name}.parquet"
                 if f.exists():
                     log.info("  graph %s: già estratto, salto", graph_name)
                     voti_files.append(f)
                     continue
-            try:
-                if incr:
-                    voti = fetch_voti_filtered(g, new_votazioni)
-                    voti = [v for v in voti if v["v"] in new_votazioni]
-                    log.info("  graph %s: %d voti nuovi", graph_name, len(voti))
-                else:
+                try:
                     voti = fetch_voti(g)
-            except Exception as exc:
-                log.error("  graph %s: ERRORE %s — salto", graph_name, exc)
-                graph_falliti.append(graph_name)
-                continue
-            if not voti:
-                log.warning("  graph %s: nessun voto", graph_name)
-                continue
-            table = pa.table(
-                {
-                    "votazione": [v["v"] for v in voti],
-                    "senatore": [v["sen"] for v in voti],
-                    "voto": [VOTO_LABEL[v["p"]] for v in voti],
-                }
-            )
-            pq.write_table(table, f)
-            voti_files.append(f)
-            log.info("  graph %s: salvato %s (%d voti)", graph_name, f.name, len(voti))
+                except Exception as exc:
+                    log.error("  graph %s: ERRORE %s — salto", graph_name, exc)
+                    graph_falliti.append(graph_name)
+                    continue
+                if not voti:
+                    log.warning("  graph %s: nessun voto", graph_name)
+                    continue
+                table = pa.table(
+                    {
+                        "votazione": [v["v"] for v in voti],
+                        "senatore": [v["sen"] for v in voti],
+                        "voto": [VOTO_LABEL[v["p"]] for v in voti],
+                    }
+                )
+                pq.write_table(table, f)
+                voti_files.append(f)
+                log.info("  graph %s: salvato %s (%d voti)", graph_name, f.name, len(voti))
 
         if graph_falliti:
-            # Un graph fallito in incrementale non deve produrre un parquet
-            # parziale e "silenzioso": il prossimo run userebbe max(data)
-            # avanzato e salterebbe per sempre le votazioni mancanti.
+            # Un graph fallito in full non deve produrre un parquet parziale e
+            # "silenzioso": il prossimo run userebbe max(data) avanzato e
+            # salterebbe per sempre le votazioni mancanti.
             for f in voti_files:
                 f.unlink(missing_ok=True)
             log.error("graph falliti: %s — run non valido, parquet invariato: %s",

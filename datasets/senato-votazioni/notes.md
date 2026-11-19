@@ -27,17 +27,27 @@ python3 datasets/senato-votazioni/preprocess.py --merge-only
 
 ### Incrementale
 
-`--incremental` non rilegge tutta la legislatura:
+`--incremental` non rilegge tutta la legislatura e fa **3 richieste** in tutto
+(contro ~13 di prima):
 
-1. una query per le sedute, poi tiene solo quelle con `dataSeduta >= max(data)`;
-2. **se non ci sono sedute nuove termina subito** (1 query, prima erano una
-   per graph più una scoperta globale);
-3. i metadati si chiedono solo per quelle sedute, non per tutte le ~8k
-   votazioni;
-4. i voti si chiedono solo per le votazioni nuove.
+1. **1 query** per le sedute, poi tiene solo quelle con `dataSeduta >= max(data)`;
+2. **se non ci sono sedute nuove termina subito** (1 richiesta);
+3. **1 query** per i metadati delle votazioni di quelle sedute, sull'unione dei
+   graph (niente `GRAPH`, niente una query per graph);
+4. **1 query** (paginata) per i voti di quelle votazioni, anch'essa sull'unione.
 
-I graph sono una lista deterministica per legislatura
-(`graphs_for_legislature`); `--discover-graphs` ripristina la query globale.
+Il WAF di dati.senato.it blocca (403) dopo ~8 richieste: 7 metadati + N voti
+bastavano a far scattare il rate-limit a ogni run. Le query "unione" usano il
+default graph di Virtuoso, che è l'insieme dei graph (verificato dal vivo).
+
+Il retry ha un **budget totale per run** (`SENATO_RETRY_BUDGET_S`, default
+240s). Esaurito il budget il run fallisce in pochi minuti invece di restare
+appeso per un'ora: il parquet non viene toccato, `max(data)` non avanza e il
+run successivo riparte dallo stesso punto (nessun buco).
+
+Il run full (prima estrazione, o legislatura nuova) resta una query per graph
+(`graphs_for_legislature`, lista deterministica; `--discover-graphs` per la
+scoperta dinamica).
 
 Se un graph fallisce il run **esce con errore** e non fa il merge: un parquet
 parziale avanzerebbe `max(data)` e le votazioni mancanti non verrebbero più
@@ -47,8 +57,9 @@ job: il source `script` del toolkit fa tee su stderr mentre il comando gira.
 L'endpoint dati.senato.it ha un WAF restrittivo:
 - **TLS-fingerprinting**: le librerie Python (requests/urllib) ricevono 403 o
   risposte vuote; lo script usa il binario `curl` via subprocess
-- **Rate-limit a burst**: dopo poche query pesanti risponde 403 (HTML) per ~1
-  minuto; lo script rileva l'HTML, attende (backoff fino a 300s) e ritenta
+- **Rate-limit a burst**: dopo ~8 richieste pesanti risponde 403 (HTML) per
+  diversi minuti. Il retry ha un budget per run (240s): oltre, il run fallisce
+  invece di macinare per un'ora (misurato: 4m17s di stop, parquet intatto)
 - **Variabili lunghe**: query con nomi variabile come `?votazione` vengono
   servite vuote; si usano variabili corte (`?v`, `?sen`, `?p`)
 - Endpoint capisce a **10.000 righe** per query → paginazione OFFSET
