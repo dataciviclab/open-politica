@@ -293,16 +293,46 @@ def test_incremental_voti_falliti_non_scrive_parquet_parziale(tmp_path, monkeypa
     assert baseline.read_bytes() == prima
 
 
-def test_meta_union_spezza_le_sedute_in_batch(monkeypatch):
-    """Con molte sedute nuove la IN-list non è un'unica query gigante."""
+def test_query_sotto_la_soglia_di_lunghezza(monkeypatch):
+    """Il limite dell'endpoint è in BYTE, non in numero di URI.
+
+    Misurato il 2026-11-19: 1.508 B ok, 1.568 B → 403. La query meta ha una
+    base ~800 B più lunga della voti: con lo stesso N la prima sfonda prima.
+    Il test guarda la lunghezza di OGNI query generata, per entrambe.
+    """
+    m = _load_preprocess()
+    assert m._QUERY_MAX_CHARS < 1500  # margine sotto il punto di rottura
+
+    catturato: list[str] = []
+    monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
+
+    # 60 sedute: con il batch per numero (20) la meta sarebbe 1.968 B → 403.
+    m.fetch_votazioni_meta_union(
+        {f"http://dati.senato.it/sedutaassemblea/{i}" for i in range(60)}
+    )
+    # 200 votazioni: la voti è più corta e può stare più larga.
+    m.fetch_voti_incrementali(
+        {f"http://dati.senato.it/votazione/19-1-{i}" for i in range(200)}
+    )
+
+    assert len(catturato) > 2
+    for q in catturato:
+        assert len(q) <= m._QUERY_MAX_CHARS, f"query {len(q)} B > soglia"
+
+
+def test_batch_per_lunghezza_non_tronca(monkeypatch):
+    """Spezzare per lunghezza non deve perdere né duplicare item."""
     m = _load_preprocess()
     catturato: list[str] = []
     monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
-    sedute = {f"http://dati.senato.it/sedutaassemblea/{i}" for i in range(250)}
 
-    m.fetch_votazioni_meta_union(sedute)
+    sedute = [f"http://dati.senato.it/sedutaassemblea/{i}" for i in range(60)]
+    m.fetch_votazioni_meta_union(set(sedute))
 
-    assert len(catturato) == 2  # 200 + 50
+    visti = [
+        s for q in catturato for s in sedute if f"<{s}>" in q
+    ]
+    assert sorted(visti) == sorted(sedute)  # ognuna esattamente una volta
 
 
 def test_full_graph_fallito_non_cancella_la_cache(tmp_path, monkeypatch):

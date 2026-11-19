@@ -36,6 +36,12 @@ ENDPOINT = "https://dati.senato.it/sparql"
 # Default: 480s in incrementale (il blocco misurato dura >=257s), nessun
 # tetto nel full (un'estrazione completa deve poter finire).
 _RETRY_ATTEMPTS = (5, 15, 45, 90, 180, 300)
+# L'endpoint rifiuta (403 immediato, non rate-limit) le query sopra ~1,5 KB:
+# misurato il 2026-11-19 — 1.508 B ok, 1.568 B → 403. Il batch è quindi per
+# LUNGHEZZA, non per numero di URI: la query meta ha una base ~800 B più lunga
+# di quella voti (20 sedute = 1.968 B → 403 anche con "20 URI").
+# La full non ha IN-list (pagina per graph); l'incrementale sì.
+_QUERY_MAX_CHARS = 1300
 _RETRY_BUDGET_ENV = os.environ.get("SENATO_RETRY_BUDGET_S")
 _RETRY_BUDGET_S: float | None = 480.0
 _retry_spent = 0.0
@@ -203,28 +209,52 @@ def fetch_votazioni_meta(graph: str) -> list[dict]:
     """)
 
 
-def fetch_votazioni_meta_union(sedute: set[str], batch: int = 200) -> list[dict]:
+def _batches_per_lunghezza(
+    items: list[str], build_query, max_chars: int = _QUERY_MAX_CHARS,
+):
+    """Raggruppa ``items`` in batch la cui query resta sotto ``max_chars``.
+
+    Il limite dell'endpoint è sulla lunghezza della query, non sul numero di
+    URI: la stessa N produce query di lunghezza diversa a seconda della base
+    (meta vs voti). Un item da solo che sfonda viene comunque inviato: non c'è
+    modo di spezzarlo ulteriormente.
+    """
+    batch: list[str] = []
+    for item in items:
+        if batch and len(build_query([*batch, item])) > max_chars:
+            yield batch
+            batch = [item]
+        else:
+            batch.append(item)
+    if batch:
+        yield batch
+
+
+def _meta_union_query(items: list[str]) -> str:
+    in_list = "<" + ">,<".join(items) + ">"
+    return f"""
+        PREFIX osr: <{OSR}>
+        {_META_SELECT}
+        WHERE {{
+          ?v a osr:Votazione ; osr:seduta ?s .
+          FILTER(?s IN ({in_list}))
+          {_META_OPTIONALS}
+        }}
+        GROUP BY ?v
+    """
+
+
+def fetch_votazioni_meta_union(sedute: set[str]) -> list[dict]:
     """Metadati delle votazioni delle sedute indicate — unione dei graph.
 
     Il default graph di Virtuoso è l'unione dei graph: si evita ``GRAPH ?g``
-    (e quindi l'elenco dei graph). Le sedute sono spezzate in batch da 200
-    come i voti: con una baseline vecchia le sedute nuove possono essere
-    centinaia e un'unica IN-list lunga è più fragile.
+    (e quindi l'elenco dei graph). I batch sono chiusi **per lunghezza** della
+    query: con una baseline vecchia le sedute nuove possono essere decine e
+    una IN-list lunga prende 403 anche con pochi URI.
     """
     meta: list[dict] = []
-    s_list = sorted(sedute)
-    for i in range(0, len(s_list), batch):
-        in_list = "<" + ">,<".join(s_list[i:i + batch]) + ">"
-        meta.extend(query(f"""
-            PREFIX osr: <{OSR}>
-            {_META_SELECT}
-            WHERE {{
-              ?v a osr:Votazione ; osr:seduta ?s .
-              FILTER(?s IN ({in_list}))
-              {_META_OPTIONALS}
-            }}
-            GROUP BY ?v
-        """))
+    for batch in _batches_per_lunghezza(sorted(sedute), _meta_union_query):
+        meta.extend(query(_meta_union_query(batch)))
     return meta
 
 
@@ -284,27 +314,31 @@ def fetch_voti(graph: str) -> list[dict]:
     return voti
 
 
-def fetch_voti_incrementali(votazioni: set[str], batch: int = 200) -> list[dict]:
+def _voti_query(items: list[str], offset: int) -> str:
+    in_list = "<" + ">,<".join(items) + ">"
+    return f"""
+        SELECT ?v ?sen ?p WHERE {{
+          ?v ?p ?sen .
+          FILTER(?p IN {VOTO_IN} && ?v IN ({in_list}))
+        }}
+        LIMIT 10000 OFFSET {offset}
+    """
+
+
+def fetch_voti_incrementali(votazioni: set[str]) -> list[dict]:
     """Voti individuali SOLO per un set di votazioni (incrementale).
 
     Un'unica query sull'unione dei graph invece di una per graph: il Senato
-    blocca (403) dopo poche richieste. Deterministico: IN-list fissa per
-    batch → OFFSET stabile dentro il batch (nessun overlap).
+    blocca (403) le query lunghe. I batch sono chiusi **per lunghezza**;
+    dentro il batch l'OFFSET è stabile (nessun overlap).
     """
     voti: list[dict] = []
-    vlist = sorted(votazioni)
-    for bi in range(0, len(vlist), batch):
-        batch_v = vlist[bi:bi + batch]
-        in_list = "<" + ">,<".join(batch_v) + ">"
+    for batch in _batches_per_lunghezza(
+        sorted(votazioni), lambda b: _voti_query(b, 0),
+    ):
         offset = 0
         while True:
-            rows = query(f"""
-                SELECT ?v ?sen ?p WHERE {{
-                  ?v ?p ?sen .
-                  FILTER(?p IN {VOTO_IN} && ?v IN ({in_list}))
-                }}
-                LIMIT 10000 OFFSET {offset}
-            """)
+            rows = query(_voti_query(batch, offset))
             voti.extend(rows)
             if len(rows) < 10000:
                 break
