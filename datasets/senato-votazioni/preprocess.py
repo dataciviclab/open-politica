@@ -68,7 +68,37 @@ def query(sparql: str, timeout: int = 120) -> list[dict]:
     raise RuntimeError(f"query fallita dopo {len(attempts)} tentativi: {sparql[:120]}...")
 
 
+def graphs_for_legislature(legislatura: int) -> list[str]:
+    """Graph votazioni del Senato per legislatura (lista deterministica).
+
+    Evita la query globale ``GRAPH ?g { ?s a osr:Votazione }`` — scansiona
+    TUTTO lo store (tutte le legislature) a ogni run. Elenco verificato il
+    2026-11-19 con ``SELECT DISTINCT ?g WHERE { GRAPH ?g { ?s a osr:Votazione } }``:
+
+    - leg 13-16 → ``votazioni/<leg>`` (graph unico)
+    - leg 17-18 → ``votazioni-doc``, ``votazioni-fasi-1..4``, ``votazioni-sindisp``
+    - leg 19    → come sopra + ``votazioni-fasi-5``
+
+    Se il Senato aggiunge un graph, ``--discover-graphs`` ripristina la
+    scoperta dinamica (una query in più, ma a prova di fonte nuova).
+    """
+    if legislatura <= 16:
+        return [f"http://dati.senato.it/votazioni/{legislatura}"]
+    nomi = [
+        "votazioni-doc",
+        "votazioni-fasi-1",
+        "votazioni-fasi-2",
+        "votazioni-fasi-3",
+        "votazioni-fasi-4",
+    ]
+    if legislatura >= 19:
+        nomi.append("votazioni-fasi-5")
+    nomi.append("votazioni-sindisp")
+    return [f"http://dati.senato.it/{n}/{legislatura}" for n in nomi]
+
+
 def discover_graphs(legislatura: int) -> list[str]:
+    """Scoperta dinamica dei graph (solo con ``--discover-graphs``)."""
     rows = query(f"""
         SELECT DISTINCT ?g WHERE {{
           GRAPH ?g {{ ?s a <{OSR}Votazione> }}
@@ -77,12 +107,21 @@ def discover_graphs(legislatura: int) -> list[str]:
     return [r["g"] for r in rows if r["g"].endswith(f"/{legislatura}")]
 
 
-def fetch_votazioni_meta(graph: str) -> list[dict]:
-    """Metadati di tutte le votazioni in un graph (una riga per votazione).
+def fetch_votazioni_meta(graph: str, sedute: set[str] | None = None) -> list[dict]:
+    """Metadati delle votazioni di un graph (una riga per votazione).
+
+    ``sedute`` limita la query alle sedute indicate (modalità incrementale:
+    solo quelle dal ``max(data)`` in poi). ``None`` = tutte le votazioni,
+    come nel run full.
 
     Nomi variabili corti: il WAF di dati.senato.it serve risultati vuoti
     per query con variabili lunghe (es. ?votazione) su alcuni pattern.
     """
+    if sedute:
+        in_list = "<" + ">,<".join(sorted(sedute)) + ">"
+        filtro_seduta = f"?v osr:seduta ?s . FILTER(?s IN ({in_list}))"
+    else:
+        filtro_seduta = "OPTIONAL { ?v osr:seduta ?s . }"
     return query(f"""
         PREFIX osr: <{OSR}>
         SELECT ?v
@@ -95,7 +134,7 @@ def fetch_votazioni_meta(graph: str) -> list[dict]:
         WHERE {{
           GRAPH <{graph}> {{
             ?v a osr:Votazione .
-            OPTIONAL {{ ?v osr:seduta ?s . }}
+            {filtro_seduta}
             OPTIONAL {{ ?v osr:legislatura ?l . }}
             OPTIONAL {{ ?v osr:tipoVotazione ?tipo . }}
             OPTIONAL {{ ?v osr:esito ?es . }}
@@ -208,6 +247,18 @@ def fetch_sedute(legislatura: int) -> list[dict]:
     """)
 
 
+def sedute_dal(sedute: list[dict], last_date) -> set[str]:
+    """URI delle sedute con ``data >= last_date`` (confronto ISO su stringa).
+
+    Confine ``>=`` incluso: l'ultima data già presente può ricevere votazioni
+    nuove (pubblicazione a fine giornata).
+    """
+    return {
+        s["s"] for s in sedute
+        if s.get("d") and str(s["d"]) >= str(last_date)
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--legislature", type=int, default=19)
@@ -216,6 +267,9 @@ def main() -> int:
                         help="salta l'estrazione SPARQL e ri-merge i parquet già estratti")
     parser.add_argument("--incremental", action="store_true",
                         help="estrae solo le votazioni successive alla max data già presente")
+    parser.add_argument("--discover-graphs", action="store_true",
+                        help="scopre i graph con una query globale invece della lista "
+                             "deterministica per legislatura (usare se il Senato aggiunge un graph)")
     args = parser.parse_args()
 
     out_dir = Path(args.out)
@@ -225,16 +279,25 @@ def main() -> int:
     all_meta: list[dict] = []
     voti_files: list[Path] = []
     last_date = None  # set in modalità incremental (per l'UNION nel merge)
+    graph_falliti: list[str] = []
 
     if not args.merge_only:
-        graphs = discover_graphs(args.legislature)
+        if args.discover_graphs:
+            graphs = discover_graphs(args.legislature)
+        else:
+            graphs = graphs_for_legislature(args.legislature)
         if not graphs:
             log.error("nessun graph trovato per la legislatura %d", args.legislature)
             return 1
         log.info("legislatura %d — %d graph: %s", args.legislature, len(graphs),
                  ", ".join(g.split("/")[-1] for g in graphs))
 
-        # ── Incremental: determina le votazioni nuove (data > max esistente) ──
+        # Sedute caricate una volta sola (servono al filtro incrementale e al merge).
+        sedute = fetch_sedute(args.legislature)
+        log.info("sedute: %d", len(sedute))
+
+        # ── Incremental: solo le sedute dal max(data) in poi ──
+        new_sedute: set[str] | None = None
         last_date = None
         if args.incremental and final_path.exists():
             with duckdb.connect() as con:
@@ -245,19 +308,23 @@ def main() -> int:
                 log.info("incremental: parquet esistente senza date → full")
             else:
                 log.info("incremental: max data esistente = %s", last_date)
+                new_sedute = sedute_dal(sedute, last_date)
+                log.info("incremental: %d sedute dal %s", len(new_sedute), last_date)
+                if not new_sedute:
+                    # Nessuna seduta nuova → nessuna query metadati (prima se ne
+                    # facevano una per graph, più una scoperta globale).
+                    log.info("nessuna seduta nuova — parquet invariato: %s", final_path)
+                    return 0
 
         for g in graphs:
-            meta = fetch_votazioni_meta(g)
+            meta = fetch_votazioni_meta(g, new_sedute)
             all_meta.extend(meta)
 
-        # mappa votazione → data (via seduta) per filtrare le nuove
+        # In incrementale i metadati sono già filtrati per seduta: ogni riga è nuova.
         if last_date is not None:
-            sedute_map = {s["s"]: s["d"] for s in fetch_sedute(args.legislature)}
-            new_votazioni = {
-                m["v"] for m in all_meta
-                if sedute_map.get(m["seduta"]) and str(sedute_map[m["seduta"]]) >= str(last_date)
-            }
-            log.info("incremental: %d votazioni nuove (data >= %s)", len(new_votazioni), last_date)
+            new_votazioni = {m["v"] for m in all_meta}
+            log.info("incremental: %d votazioni nuove (sedute dal %s)",
+                     len(new_votazioni), last_date)
             if not new_votazioni:
                 log.info("niente di nuovo — parquet invariato: %s", final_path)
                 return 0
@@ -288,6 +355,7 @@ def main() -> int:
                     voti = fetch_voti(g)
             except Exception as exc:
                 log.error("  graph %s: ERRORE %s — salto", graph_name, exc)
+                graph_falliti.append(graph_name)
                 continue
             if not voti:
                 log.warning("  graph %s: nessun voto", graph_name)
@@ -303,6 +371,16 @@ def main() -> int:
             voti_files.append(f)
             log.info("  graph %s: salvato %s (%d voti)", graph_name, f.name, len(voti))
 
+        if graph_falliti:
+            # Un graph fallito in incrementale non deve produrre un parquet
+            # parziale e "silenzioso": il prossimo run userebbe max(data)
+            # avanzato e salterebbe per sempre le votazioni mancanti.
+            for f in voti_files:
+                f.unlink(missing_ok=True)
+            log.error("graph falliti: %s — run non valido, parquet invariato: %s",
+                      ", ".join(graph_falliti), final_path)
+            return 1
+
         if not voti_files:
             # Nessun graph ha prodotto voti (incrementale senza novità, o tutti
             # i graph falliti): non tentare il merge con read_parquet([]).
@@ -310,8 +388,6 @@ def main() -> int:
             return 0
 
         log.info("metadati: %d votazioni", len(all_meta))
-        sedute = fetch_sedute(args.legislature)
-        log.info("sedute: %d", len(sedute))
 
         meta_t = pa.table(
             {

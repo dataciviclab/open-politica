@@ -17,9 +17,32 @@ individuale: chiude il gap "nessun voto in aula" del profilo politico.
 ```bash
 # estrazione completa XIX (paginata, ~30 min per il rate-limit WAF)
 python3 datasets/senato-votazioni/preprocess.py --legislature 19
+# incrementale (corsia pesanti: parte dal max(data) del parquet esistente)
+python3 datasets/senato-votazioni/preprocess.py --legislature 19 --incremental
+# scoperta dinamica dei graph (se il Senato ne aggiunge uno)
+python3 datasets/senato-votazioni/preprocess.py --legislature 19 --discover-graphs
 # ri-merge senza re-estrarre (dopo un cambio di clean.sql/mart.sql)
 python3 datasets/senato-votazioni/preprocess.py --merge-only
 ```
+
+### Incrementale
+
+`--incremental` non rilegge tutta la legislatura:
+
+1. una query per le sedute, poi tiene solo quelle con `dataSeduta >= max(data)`;
+2. **se non ci sono sedute nuove termina subito** (1 query, prima erano una
+   per graph più una scoperta globale);
+3. i metadati si chiedono solo per quelle sedute, non per tutte le ~8k
+   votazioni;
+4. i voti si chiedono solo per le votazioni nuove.
+
+I graph sono una lista deterministica per legislatura
+(`graphs_for_legislature`); `--discover-graphs` ripristina la query globale.
+
+Se un graph fallisce il run **esce con errore** e non fa il merge: un parquet
+parziale avanzerebbe `max(data)` e le votazioni mancanti non verrebbero più
+riprese. Lo stderr del preprocess (retry WAF inclusi) è visibile nel log del
+job: il source `script` del toolkit fa tee su stderr mentre il comando gira.
 
 L'endpoint dati.senato.it ha un WAF restrittivo:
 - **TLS-fingerprinting**: le librerie Python (requests/urllib) ricevono 403 o
