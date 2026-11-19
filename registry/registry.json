@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-11-16",
+  "updated_at": "2026-11-19",
   "datasets": [
     {
       "slug": "atti",
@@ -895,7 +895,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/open-politica/camera_iter/2026/camera_iter_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/camera_iter/2026/camera_iter_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -1567,7 +1567,7 @@
       ],
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-clean/open-politica/camera_voti/2026/camera_voti_2026_clean.parquet",
+        "path": "gs://dataciviclab-clean/camera_voti/2026/camera_voti_2026_clean.parquet",
         "multi_file": false
       },
       "stage": "incubating",
@@ -3552,7 +3552,7 @@
       "table": "mart_atti",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/atti/2026/mart_atti.parquet",
+        "path": "gs://dataciviclab-mart/atti/2026/mart_atti.parquet",
         "multi_file": false
       }
     },
@@ -3562,7 +3562,7 @@
       "table": "mart_dl",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/atti/2026/mart_dl.parquet",
+        "path": "gs://dataciviclab-mart/atti/2026/mart_dl.parquet",
         "multi_file": false
       }
     },
@@ -3572,7 +3572,7 @@
       "table": "mart_dl_anno",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/atti/2026/mart_dl_anno.parquet",
+        "path": "gs://dataciviclab-mart/atti/2026/mart_dl_anno.parquet",
         "multi_file": false
       }
     },
@@ -3582,7 +3582,7 @@
       "table": "mart_dibattiti_per_atto",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_atti_dibattito/*/mart_dibattiti_per_atto.parquet",
+        "path": "gs://dataciviclab-mart/camera_atti_dibattito/*/mart_dibattiti_per_atto.parquet",
         "multi_file": true
       }
     },
@@ -3592,7 +3592,7 @@
       "table": "mart_membro_organo",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_commissioni/*/mart_membro_organo.parquet",
+        "path": "gs://dataciviclab-mart/camera_commissioni/*/mart_membro_organo.parquet",
         "multi_file": true
       }
     },
@@ -3602,7 +3602,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_commissioni/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/camera_commissioni/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -3612,7 +3612,7 @@
       "table": "mart_anno",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_ddl/*/mart_anno.parquet",
+        "path": "gs://dataciviclab-mart/camera_ddl/*/mart_anno.parquet",
         "multi_file": true
       }
     },
@@ -3622,7 +3622,7 @@
       "table": "mart_firmatari",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_ddl/*/mart_firmatari.parquet",
+        "path": "gs://dataciviclab-mart/camera_ddl/*/mart_firmatari.parquet",
         "multi_file": true
       }
     },
@@ -3632,7 +3632,7 @@
       "table": "mart_stato",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_ddl/*/mart_stato.parquet",
+        "path": "gs://dataciviclab-mart/camera_ddl/*/mart_stato.parquet",
         "multi_file": true
       }
     },
@@ -3642,7 +3642,7 @@
       "table": "mart_legislatura_genere",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_deputati_legislature/2026/mart_legislatura_genere.parquet",
+        "path": "gs://dataciviclab-mart/camera_deputati_legislature/2026/mart_legislatura_genere.parquet",
         "multi_file": false
       }
     },
@@ -3652,7 +3652,7 @@
       "table": "mart_top_mandati",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_deputati_legislature/2026/mart_top_mandati.parquet",
+        "path": "gs://dataciviclab-mart/camera_deputati_legislature/2026/mart_top_mandati.parquet",
         "multi_file": false
       }
     },
@@ -3662,7 +3662,7 @@
       "table": "mart_firmatari_per_atto",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_firmatari/*/mart_firmatari_per_atto.parquet",
+        "path": "gs://dataciviclab-mart/camera_firmatari/*/mart_firmatari_per_atto.parquet",
         "multi_file": true
       }
     },
@@ -3672,7 +3672,7 @@
       "table": "mart_firmatari_per_deputato",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_firmatari/*/mart_firmatari_per_deputato.parquet",
+        "path": "gs://dataciviclab-mart/camera_firmatari/*/mart_firmatari_per_deputato.parquet",
         "multi_file": true
       }
     },
@@ -3682,7 +3682,7 @@
       "table": "mart_gruppi_legislatura",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_gruppi/2026/mart_gruppi_legislatura.parquet",
+        "path": "gs://dataciviclab-mart/camera_gruppi/2026/mart_gruppi_legislatura.parquet",
         "multi_file": false
       }
     },
@@ -3692,7 +3692,7 @@
       "table": "mart_ruoli_legislatura",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_incarichi/2026/mart_ruoli_legislatura.parquet",
+        "path": "gs://dataciviclab-mart/camera_incarichi/2026/mart_ruoli_legislatura.parquet",
         "multi_file": false
       }
     },
@@ -3702,7 +3702,7 @@
       "table": "mart_top_deputati",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_incarichi/2026/mart_top_deputati.parquet",
+        "path": "gs://dataciviclab-mart/camera_incarichi/2026/mart_top_deputati.parquet",
         "multi_file": false
       }
     },
@@ -3712,7 +3712,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_interventi/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/camera_interventi/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -3722,7 +3722,7 @@
       "table": "mart_top_parlanti",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_interventi/*/mart_top_parlanti.parquet",
+        "path": "gs://dataciviclab-mart/camera_interventi/*/mart_top_parlanti.parquet",
         "multi_file": true
       }
     },
@@ -3732,7 +3732,7 @@
       "table": "mart_commissioni",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_iter/2026/mart_commissioni.parquet",
+        "path": "gs://dataciviclab-mart/camera_iter/2026/mart_commissioni.parquet",
         "multi_file": false
       }
     },
@@ -3742,7 +3742,7 @@
       "table": "mart_iter_per_atto",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_iter/2026/mart_iter_per_atto.parquet",
+        "path": "gs://dataciviclab-mart/camera_iter/2026/mart_iter_per_atto.parquet",
         "multi_file": false
       }
     },
@@ -3752,7 +3752,7 @@
       "table": "mart_tempi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_iter/2026/mart_tempi.parquet",
+        "path": "gs://dataciviclab-mart/camera_iter/2026/mart_tempi.parquet",
         "multi_file": false
       }
     },
@@ -3762,7 +3762,7 @@
       "table": "mart_anno",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/*/mart_anno.parquet",
+        "path": "gs://dataciviclab-mart/camera_leggi/*/mart_anno.parquet",
         "multi_file": true
       }
     },
@@ -3772,7 +3772,7 @@
       "table": "mart_costituzionali",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/*/mart_costituzionali.parquet",
+        "path": "gs://dataciviclab-mart/camera_leggi/*/mart_costituzionali.parquet",
         "multi_file": true
       }
     },
@@ -3782,7 +3782,7 @@
       "table": "mart_normattiva",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/*/mart_normattiva.parquet",
+        "path": "gs://dataciviclab-mart/camera_leggi/*/mart_normattiva.parquet",
         "multi_file": true
       }
     },
@@ -3792,7 +3792,7 @@
       "table": "mart_tipo",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_leggi/*/mart_tipo.parquet",
+        "path": "gs://dataciviclab-mart/camera_leggi/*/mart_tipo.parquet",
         "multi_file": true
       }
     },
@@ -3802,7 +3802,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_relatori/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/camera_relatori/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -3812,7 +3812,7 @@
       "table": "mart_top_relatori",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_relatori/*/mart_top_relatori.parquet",
+        "path": "gs://dataciviclab-mart/camera_relatori/*/mart_top_relatori.parquet",
         "multi_file": true
       }
     },
@@ -3822,7 +3822,7 @@
       "table": "mart_anni",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/*/mart_anni.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp/*/mart_anni.parquet",
         "multi_file": true
       }
     },
@@ -3832,7 +3832,7 @@
       "table": "mart_odg_ddl",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/*/mart_odg_ddl.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp/*/mart_odg_ddl.parquet",
         "multi_file": true
       }
     },
@@ -3842,7 +3842,7 @@
       "table": "mart_odg_ddl_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/*/mart_odg_ddl_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp/*/mart_odg_ddl_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -3852,7 +3852,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -3862,7 +3862,7 @@
       "table": "mart_per_ministro",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp_destinatari/*/mart_per_ministro.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp_destinatari/*/mart_per_ministro.parquet",
         "multi_file": true
       }
     },
@@ -3872,7 +3872,7 @@
       "table": "mart_firmatari_per_atto",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp_firmatari/*/mart_firmatari_per_atto.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp_firmatari/*/mart_firmatari_per_atto.parquet",
         "multi_file": true
       }
     },
@@ -3882,7 +3882,7 @@
       "table": "mart_per_deputato",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_sindisp_firmatari/*/mart_per_deputato.parquet",
+        "path": "gs://dataciviclab-mart/camera_sindisp_firmatari/*/mart_per_deputato.parquet",
         "multi_file": true
       }
     },
@@ -3892,7 +3892,7 @@
       "table": "camera_votazioni",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_votazioni_sparql/camera_votazioni.parquet",
+        "path": "gs://dataciviclab-mart/camera_votazioni_sparql/camera_votazioni.parquet",
         "multi_file": false
       }
     },
@@ -3902,7 +3902,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_voti/2026/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/camera_voti/2026/mart_sintesi.parquet",
         "multi_file": false
       }
     },
@@ -3912,7 +3912,7 @@
       "table": "mart_voto_deputato",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/camera_voti/2026/mart_voto_deputato.parquet",
+        "path": "gs://dataciviclab-mart/camera_voti/2026/mart_voto_deputato.parquet",
         "multi_file": false
       }
     },
@@ -3922,7 +3922,7 @@
       "table": "mart_governi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/membri_governo/2026/mart_governi.parquet",
+        "path": "gs://dataciviclab-mart/membri_governo/2026/mart_governi.parquet",
         "multi_file": false
       }
     },
@@ -3932,7 +3932,7 @@
       "table": "mart_legislatura",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/membri_governo/2026/mart_legislatura.parquet",
+        "path": "gs://dataciviclab-mart/membri_governo/2026/mart_legislatura.parquet",
         "multi_file": false
       }
     },
@@ -3942,7 +3942,7 @@
       "table": "mart_kpi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/osservatorio_parlamento/2026/mart_kpi.parquet",
+        "path": "gs://dataciviclab-mart/osservatorio_parlamento/2026/mart_kpi.parquet",
         "multi_file": false
       }
     },
@@ -3952,7 +3952,7 @@
       "table": "mart_persone",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/persone/2026/mart_persone.parquet",
+        "path": "gs://dataciviclab-mart/persone/2026/mart_persone.parquet",
         "multi_file": false
       }
     },
@@ -3962,7 +3962,7 @@
       "table": "mart_profilo",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/persone/2026/mart_profilo.parquet",
+        "path": "gs://dataciviclab-mart/persone/2026/mart_profilo.parquet",
         "multi_file": false
       }
     },
@@ -3972,7 +3972,7 @@
       "table": "mart_match",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/ponte_persona/2026/mart_match.parquet",
+        "path": "gs://dataciviclab-mart/ponte_persona/2026/mart_match.parquet",
         "multi_file": false
       }
     },
@@ -3982,7 +3982,7 @@
       "table": "mart_ponti_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/ponti_parlamento/2026/mart_ponti_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/ponti_parlamento/2026/mart_ponti_sintesi.parquet",
         "multi_file": false
       }
     },
@@ -3992,7 +3992,7 @@
       "table": "mart_luogo_nascita",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_anagrafica/*/mart_luogo_nascita.parquet",
+        "path": "gs://dataciviclab-mart/senato_anagrafica/*/mart_luogo_nascita.parquet",
         "multi_file": true
       }
     },
@@ -4002,7 +4002,7 @@
       "table": "mart_nascita_anno",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_anagrafica/*/mart_nascita_anno.parquet",
+        "path": "gs://dataciviclab-mart/senato_anagrafica/*/mart_nascita_anno.parquet",
         "multi_file": true
       }
     },
@@ -4012,7 +4012,7 @@
       "table": "mart_membro_commissione",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_commissioni/*/mart_membro_commissione.parquet",
+        "path": "gs://dataciviclab-mart/senato_commissioni/*/mart_membro_commissione.parquet",
         "multi_file": true
       }
     },
@@ -4022,7 +4022,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_commissioni/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/senato_commissioni/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -4032,7 +4032,7 @@
       "table": "mart_atto_corpus",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_corpus_parlamento/2026/mart_atto_corpus.parquet",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_atto_corpus.parquet",
         "multi_file": false
       }
     },
@@ -4042,7 +4042,7 @@
       "table": "mart_decreti_peso",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_corpus_parlamento/2026/mart_decreti_peso.parquet",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_decreti_peso.parquet",
         "multi_file": false
       }
     },
@@ -4052,7 +4052,7 @@
       "table": "mart_intensita_emendativa",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_corpus_parlamento/2026/mart_intensita_emendativa.parquet",
+        "path": "gs://dataciviclab-mart/senato_corpus_parlamento/2026/mart_intensita_emendativa.parquet",
         "multi_file": false
       }
     },
@@ -4062,7 +4062,7 @@
       "table": "mart_anno",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_ddl/*/mart_anno.parquet",
+        "path": "gs://dataciviclab-mart/senato_ddl/*/mart_anno.parquet",
         "multi_file": true
       }
     },
@@ -4072,7 +4072,7 @@
       "table": "mart_iter_tempi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_ddl/*/mart_iter_tempi.parquet",
+        "path": "gs://dataciviclab-mart/senato_ddl/*/mart_iter_tempi.parquet",
         "multi_file": true
       }
     },
@@ -4082,7 +4082,7 @@
       "table": "mart_stato",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_ddl/*/mart_stato.parquet",
+        "path": "gs://dataciviclab-mart/senato_ddl/*/mart_stato.parquet",
         "multi_file": true
       }
     },
@@ -4092,7 +4092,7 @@
       "table": "mart_per_atto",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_emendamenti_lod/*/mart_per_atto.parquet",
+        "path": "gs://dataciviclab-mart/senato_emendamenti_lod/*/mart_per_atto.parquet",
         "multi_file": true
       }
     },
@@ -4102,7 +4102,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_emendamenti_lod/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/senato_emendamenti_lod/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -4112,7 +4112,7 @@
       "table": "mart_firmatari_ddl",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_firmatari/*/mart_firmatari_ddl.parquet",
+        "path": "gs://dataciviclab-mart/senato_firmatari/*/mart_firmatari_ddl.parquet",
         "multi_file": true
       }
     },
@@ -4122,7 +4122,7 @@
       "table": "mart_tipo_iniziativa",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_firmatari/*/mart_tipo_iniziativa.parquet",
+        "path": "gs://dataciviclab-mart/senato_firmatari/*/mart_tipo_iniziativa.parquet",
         "multi_file": true
       }
     },
@@ -4132,7 +4132,7 @@
       "table": "mart_carica_gruppo",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_gruppi/*/mart_carica_gruppo.parquet",
+        "path": "gs://dataciviclab-mart/senato_gruppi/*/mart_carica_gruppo.parquet",
         "multi_file": true
       }
     },
@@ -4142,7 +4142,7 @@
       "table": "mart_gruppi_attuali",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_gruppi/*/mart_gruppi_attuali.parquet",
+        "path": "gs://dataciviclab-mart/senato_gruppi/*/mart_gruppi_attuali.parquet",
         "multi_file": true
       }
     },
@@ -4152,7 +4152,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_interventi/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/senato_interventi/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -4162,7 +4162,7 @@
       "table": "mart_top_parlanti",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_interventi/*/mart_top_parlanti.parquet",
+        "path": "gs://dataciviclab-mart/senato_interventi/*/mart_top_parlanti.parquet",
         "multi_file": true
       }
     },
@@ -4172,7 +4172,7 @@
       "table": "mart_relatori_per_ddl",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_relatori/2026/mart_relatori_per_ddl.parquet",
+        "path": "gs://dataciviclab-mart/senato_relatori/2026/mart_relatori_per_ddl.parquet",
         "multi_file": false
       }
     },
@@ -4182,7 +4182,7 @@
       "table": "mart_relatori_per_senatore",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_relatori/2026/mart_relatori_per_senatore.parquet",
+        "path": "gs://dataciviclab-mart/senato_relatori/2026/mart_relatori_per_senatore.parquet",
         "multi_file": false
       }
     },
@@ -4192,7 +4192,7 @@
       "table": "mart_per_senatore",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_sindisp/*/mart_per_senatore.parquet",
+        "path": "gs://dataciviclab-mart/senato_sindisp/*/mart_per_senatore.parquet",
         "multi_file": true
       }
     },
@@ -4202,7 +4202,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_sindisp/*/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/senato_sindisp/*/mart_sintesi.parquet",
         "multi_file": true
       }
     },
@@ -4212,7 +4212,7 @@
       "table": "mart_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_votazioni/2026/mart_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/senato_votazioni/2026/mart_sintesi.parquet",
         "multi_file": false
       }
     },
@@ -4222,7 +4222,7 @@
       "table": "mart_voto_senatore",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_votazioni/2026/mart_voto_senatore.parquet",
+        "path": "gs://dataciviclab-mart/senato_votazioni/2026/mart_voto_senatore.parquet",
         "multi_file": false
       }
     },
@@ -4232,7 +4232,7 @@
       "table": "mart_votazioni_per_ddl",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/senato_votazioni_oggetto/2026/mart_votazioni_per_ddl.parquet",
+        "path": "gs://dataciviclab-mart/senato_votazioni_oggetto/2026/mart_votazioni_per_ddl.parquet",
         "multi_file": false
       }
     },
@@ -4242,7 +4242,7 @@
       "table": "mart_voti_ddl",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/voti_ddl_dettaglio/2026/mart_voti_ddl.parquet",
+        "path": "gs://dataciviclab-mart/voti_ddl_dettaglio/2026/mart_voti_ddl.parquet",
         "multi_file": false
       }
     },
@@ -4252,7 +4252,7 @@
       "table": "mart_voti_ddl_sintesi",
       "location": {
         "type": "gcs",
-        "path": "gs://dataciviclab-mart/open-politica/voti_ddl_dettaglio/2026/mart_voti_ddl_sintesi.parquet",
+        "path": "gs://dataciviclab-mart/voti_ddl_dettaglio/2026/mart_voti_ddl_sintesi.parquet",
         "multi_file": false
       }
     }
@@ -4694,7 +4694,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261116T163531Z_d937e860",
+        "run_id": "20261119T171422Z_a256a025",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4707,13 +4707,13 @@
           "mart": 12951
         },
         "output_bytes": {
-          "raw": 2408568,
-          "clean": 1631362,
+          "raw": 2409753,
+          "clean": 1635152,
           "mart": 95245
         },
-        "started_at": "2026-11-16T16:35:31.290010+00:00",
-        "finished_at": "2026-11-16T16:35:40.806388+00:00",
-        "duration_seconds": 9.516
+        "started_at": "2026-11-19T17:14:22.475172+00:00",
+        "finished_at": "2026-11-19T17:14:30.585038+00:00",
+        "duration_seconds": 8.11
       }
     },
     {
@@ -4907,7 +4907,7 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261116T151645Z_ed4faeea",
+        "run_id": "20261119T170502Z_b708e693",
         "year": 2026,
         "status": "SUCCESS",
         "quality_score": {
@@ -4916,17 +4916,17 @@
           "mart": 100
         },
         "output_rows": {
-          "clean": 8183441,
+          "clean": 8204879,
           "mart": 420
         },
         "output_bytes": {
-          "raw": 102925119,
-          "clean": 37655606,
-          "mart": 7814
+          "raw": 102539394,
+          "clean": 37099603,
+          "mart": 7686
         },
-        "started_at": "2026-11-16T15:16:45.661846+00:00",
-        "finished_at": "2026-11-16T15:17:24.676347+00:00",
-        "duration_seconds": 39.015
+        "started_at": "2026-11-19T17:05:02.639653+00:00",
+        "finished_at": "2026-11-19T17:05:45.227181+00:00",
+        "duration_seconds": 42.588
       }
     },
     {
@@ -5277,26 +5277,12 @@
       "detail": "anno 2026 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261116T151725Z_791f5a3f",
+        "run_id": "20261119T170545Z_77d4743f",
         "year": 2026,
-        "status": "SUCCESS",
-        "quality_score": {
-          "raw": 100,
-          "clean": 100,
-          "mart": 100
-        },
-        "output_rows": {
-          "clean": 1224676,
-          "mart": 214
-        },
-        "output_bytes": {
-          "raw": 13773396,
-          "clean": 14273176,
-          "mart": 5756
-        },
-        "started_at": "2026-11-16T15:17:25.143441+00:00",
-        "finished_at": "2026-11-16T16:35:30.816776+00:00",
-        "duration_seconds": 4685.673
+        "status": "FAILED",
+        "started_at": "2026-11-19T17:05:45.593800+00:00",
+        "finished_at": "2026-11-19T17:14:22.141173+00:00",
+        "duration_seconds": 516.547
       }
     },
     {
