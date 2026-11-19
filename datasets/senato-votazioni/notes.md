@@ -27,20 +27,30 @@ python3 datasets/senato-votazioni/preprocess.py --merge-only
 
 ### Incrementale
 
-`--incremental` non rilegge tutta la legislatura e fa **3 richieste** in tutto
-(contro ~13 di prima):
+`--incremental` non rilegge tutta la legislatura e, col delta tipico, fa
+**6 richieste** (contro ~13 di prima):
 
 1. **1 query** per le sedute, poi tiene solo quelle con `dataSeduta >= max(data)`;
 2. **se non ci sono sedute nuove termina subito** (1 richiesta);
-3. **1 query** per i metadati delle votazioni di quelle sedute, sull'unione dei
-   graph (niente `GRAPH`, niente una query per graph);
-4. **1 query** (paginata) per i voti di quelle votazioni, anch'essa sull'unione.
+3. **query** per i metadati delle votazioni di quelle sedute, sull'unione dei
+   graph (niente `GRAPH`, niente una query per graph), a batch;
+4. **query** (paginata) per i voti di quelle votazioni, anch'essa sull'unione e
+   a batch.
 
-Le IN-list sono spezzate in **batch da 20**. Misurato il 2026-11-19: una
-query con 20 URI passa (1,1 KB), con 30 URI l'endpoint risponde **403
-immediato** (1,5 KB, in 0,6s — non è rate-limit, è la query). La full non ha
-IN-list (pagina per graph, query da 245 caratteri): per questo 1,2M righe
-passano. L'incrementale sì, quindi la lunghezza va tenuta sotto soglia.
+Il limite dell'endpoint è la **lunghezza della query (~1,5 KB)**, non il numero
+di URI: misurato il 2026-11-19, 1.508 B passano, 1.568 B → **403 immediato**
+(non è rate-limit). La full non ha IN-list (pagina per graph, query da 245
+caratteri) e per questo 1,2M righe passano.
+
+I batch si chiudono quindi **per lunghezza** (`_QUERY_MAX_CHARS = 1300`, ~210 B
+di margine), non per conteggio. Conta la base della query: la meta ha ~800 B
+più della voti, quindi sta in **~5 sedute per batch** mentre i voti stanno in
+**~25 per batch**. Con la regola sul numero (20) la meta a 20 sedute era
+1.968 B → 403.
+
+L'altro limite è il numero di richieste (~8-16 in pochi minuti): un delta
+molto grande moltiplica i batch (478 sedute → 96 query meta) e non è la strada
+dopo una pausa lunga — lì la cache scade e si va di full, che non ha IN-list.
 
 Le query "unione" usano il default graph di Virtuoso, che è l'insieme dei
 graph (verificato dal vivo).
