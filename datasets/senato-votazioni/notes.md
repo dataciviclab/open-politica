@@ -40,10 +40,14 @@ Il WAF di dati.senato.it blocca (403) dopo ~8 richieste: 7 metadati + N voti
 bastavano a far scattare il rate-limit a ogni run. Le query "unione" usano il
 default graph di Virtuoso, che è l'insieme dei graph (verificato dal vivo).
 
-Il retry ha un **budget totale per run** (`SENATO_RETRY_BUDGET_S`, default
-240s). Esaurito il budget il run fallisce in pochi minuti invece di restare
-appeso per un'ora: il parquet non viene toccato, `max(data)` non avanza e il
-run successivo riparte dallo stesso punto (nessun buco).
+Il retry ha un **budget totale di attesa per run** (`SENATO_RETRY_BUDGET_S`):
+default **480s in incrementale** (il blocco misurato dura >=257s), **nessun
+tetto nel full** (un'estrazione completa deve poter finire; resta il ladder
+per-query fino a 635s). Il budget limita l'attesa, non i tentativi: l'ultimo
+tentativo avviene comunque dopo l'ultima pausa. Esaurito il budget il run
+fallisce in pochi minuti invece di restare appeso per un'ora: il parquet non
+viene toccato, `max(data)` non avanza e il run successivo riparte dallo stesso
+punto (nessun buco).
 
 Il run full (prima estrazione, o legislatura nuova) resta una query per graph
 (`graphs_for_legislature`, lista deterministica; `--discover-graphs` per la
@@ -58,8 +62,9 @@ L'endpoint dati.senato.it ha un WAF restrittivo:
 - **TLS-fingerprinting**: le librerie Python (requests/urllib) ricevono 403 o
   risposte vuote; lo script usa il binario `curl` via subprocess
 - **Rate-limit a burst**: dopo ~8 richieste pesanti risponde 403 (HTML) per
-  diversi minuti. Il retry ha un budget per run (240s): oltre, il run fallisce
-  invece di macinare per un'ora (misurato: 4m17s di stop, parquet intatto)
+  diversi minuti. Il retry ha un budget di attesa per run (480s in
+  incrementale, nessun tetto nel full): oltre, il run fallisce invece di
+  macinare per un'ora (misurato: stop a budget esaurito, parquet intatto)
 - **Variabili lunghe**: query con nomi variabile come `?votazione` vengono
   servite vuote; si usano variabili corte (`?v`, `?sen`, `?p`)
 - Endpoint capisce a **10.000 righe** per query → paginazione OFFSET

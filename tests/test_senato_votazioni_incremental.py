@@ -134,24 +134,47 @@ def test_voti_incrementali_una_query_sull_unione(monkeypatch):
 
 
 def test_retry_budget_esaurito_fallisce_subito(monkeypatch):
-    """Il WAF non deve costare ore: esaurito il budget, la query fallisce."""
+    """Il WAF non deve costare ore: esaurito il budget, la query fallisce.
+
+    Il budget limita l'attesa, non i tentativi: l'ultimo tentativo avviene
+    DOPO l'ultima pausa (prima veniva rifiutato a budget esaurito).
+    """
     m = _load_preprocess()
     monkeypatch.setattr(m, "_RETRY_BUDGET_S", 10.0)
     monkeypatch.setattr(m, "_retry_spent", 0.0)
-    monkeypatch.setattr(m.time, "sleep", lambda _s: None)
-    chiamate: list[int] = []
+    eventi: list[tuple[str, float | None]] = []
+    monkeypatch.setattr(m.time, "sleep", lambda s: eventi.append(("sleep", s)))
 
     def sempre_403(*_a, **_k):
-        chiamate.append(1)
+        eventi.append(("query", None))
         raise RuntimeError("SPARQL curl HTTP 403")
 
     monkeypatch.setattr(m, "execute_sparql_rows_curl", sempre_403)
 
-    with pytest.raises(RuntimeError, match="retry budget"):
+    with pytest.raises(RuntimeError, match="query fallita"):
         m.query("SELECT 1")
 
-    # 5s (tentativo 1) + 5s troncati dal budget (tentativo 2) → stop.
-    assert len(chiamate) == 2
+    # 10s di budget: sleep 5, sleep 5, stop. 3 tentativi, l'ultimo dopo
+    # l'ultima pausa.
+    assert [e[0] for e in eventi] == ["query", "sleep", "query", "sleep", "query"]
+    assert m._retry_spent == 10.0
+
+
+def test_configura_budget_incrementale_e_full(monkeypatch):
+    """Incrementale: tetto 480s. Full: nessun tetto (estrazione lunga)."""
+    m = _load_preprocess()
+    monkeypatch.setattr(m, "_RETRY_BUDGET_ENV", None)
+    m.configura_budget(True)
+    assert m._RETRY_BUDGET_S == 480.0
+    m.configura_budget(False)
+    assert m._RETRY_BUDGET_S is None
+
+
+def test_configura_budget_env_override(monkeypatch):
+    m = _load_preprocess()
+    monkeypatch.setattr(m, "_RETRY_BUDGET_ENV", "60")
+    m.configura_budget(True)
+    assert m._RETRY_BUDGET_S == 60.0
 
 
 # ---------------------------------------------------------------------------
@@ -268,3 +291,62 @@ def test_incremental_voti_falliti_non_scrive_parquet_parziale(tmp_path, monkeypa
 
     assert m.main() == 1
     assert baseline.read_bytes() == prima
+
+
+def test_meta_union_spezza_le_sedute_in_batch(monkeypatch):
+    """Con molte sedute nuove la IN-list non è un'unica query gigante."""
+    m = _load_preprocess()
+    catturato: list[str] = []
+    monkeypatch.setattr(m, "query", lambda sparql, timeout=120: catturato.append(sparql) or [])
+    sedute = {f"http://dati.senato.it/sedutaassemblea/{i}" for i in range(250)}
+
+    m.fetch_votazioni_meta_union(sedute)
+
+    assert len(catturato) == 2  # 200 + 50
+
+
+def test_full_graph_fallito_non_cancella_la_cache(tmp_path, monkeypatch):
+    """Il fallimento di un graph in full non deve buttare i voti già estratti.
+
+    I ``voti_*.parquet`` sono la cache di resume: cancellarli fa ripartire da
+    zero un'estrazione da ~30 min.
+    """
+    m = _load_preprocess()
+    cache = tmp_path / "voti_votazioni-fasi-1.parquet"
+    _write_baseline(cache)
+
+    monkeypatch.setattr(m, "fetch_sedute", lambda leg: [])
+    monkeypatch.setattr(m, "fetch_votazioni_meta", lambda g: [])
+
+    def fetch_voti(g):
+        if "votazioni-fasi-2" in g:
+            raise RuntimeError("WAF 403")
+        return []
+
+    monkeypatch.setattr(m, "fetch_voti", fetch_voti)
+    monkeypatch.setattr(sys, "argv", [
+        "preprocess.py", "--legislature", "19", "--out", str(tmp_path),
+    ])
+
+    assert m.main() == 1
+    assert cache.exists()
+
+
+def test_retry_ripete_e_poi_riesce(monkeypatch):
+    """Un 403 isolato non fa fallire la query: si ritenta e si prosegue."""
+    m = _load_preprocess()
+    monkeypatch.setattr(m, "_RETRY_BUDGET_S", 100.0)
+    monkeypatch.setattr(m, "_retry_spent", 0.0)
+    monkeypatch.setattr(m.time, "sleep", lambda _s: None)
+    chiamate: list[int] = []
+
+    def instabile(*_a, **_k):
+        chiamate.append(1)
+        if len(chiamate) == 1:
+            raise RuntimeError("SPARQL curl HTTP 403")
+        return [{"x": "1"}]
+
+    monkeypatch.setattr(m, "execute_sparql_rows_curl", instabile)
+
+    assert m.query("SELECT 1") == [{"x": "1"}]
+    assert len(chiamate) == 2

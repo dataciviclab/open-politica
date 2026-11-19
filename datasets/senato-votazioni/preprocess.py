@@ -30,11 +30,17 @@ from lab_connectors.http import execute_sparql_rows_curl
 OSR = "http://dati.senato.it/osr/"
 ENDPOINT = "https://dati.senato.it/sparql"
 
-# Retry WAF: tentativi per query e budget complessivo di attesa per run.
-# Oltre il budget il run fallisce invece di macinare per un'ora.
+# Retry WAF: attese fra i tentativi e budget complessivo per run.
+# Il budget limita l'ATTESA, non i tentativi: l'ultimo tentativo avviene
+# comunque dopo l'ultima pausa (prima veniva rifiutato a budget esaurito).
+# Default: 480s in incrementale (il blocco misurato dura >=257s), nessun
+# tetto nel full (un'estrazione completa deve poter finire).
 _RETRY_ATTEMPTS = (5, 15, 45, 90, 180, 300)
-_RETRY_BUDGET_S = float(os.environ.get("SENATO_RETRY_BUDGET_S", "240"))
+_RETRY_BUDGET_ENV = os.environ.get("SENATO_RETRY_BUDGET_S")
+_RETRY_BUDGET_S: float | None = 480.0
 _retry_spent = 0.0
+
+
 VOTO_PROPS = [
     f"{OSR}favorevole",
     f"{OSR}contrario",
@@ -52,6 +58,19 @@ logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 log = logging.getLogger("senato-votazioni")
 
 
+def configura_budget(incrementale: bool) -> None:
+    """Imposta il budget di retry del run (env override se presente).
+
+    ``None`` = nessun tetto: si usa per il full, dove il ladder per-query
+    (fino a 635s) è l'unico modo per far passare un'estrazione lunga.
+    """
+    global _RETRY_BUDGET_S
+    if _RETRY_BUDGET_ENV is not None:
+        _RETRY_BUDGET_S = float(_RETRY_BUDGET_ENV)
+    else:
+        _RETRY_BUDGET_S = 480.0 if incrementale else None
+
+
 def query(sparql: str, timeout: int = 120) -> list[dict]:
     """Esegue una SELECT via curl condiviso (lab-connectors) e retry.
 
@@ -64,34 +83,42 @@ def query(sparql: str, timeout: int = 120) -> list[dict]:
     - serve risultati vuoti per query con variabili lunghe (vedi fetch_*).
 
     Il retry ha un **budget totale per run** (``SENATO_RETRY_BUDGET_S``,
-    default 240s): quando il WAF blocca, non si resta appesi 10 minuti per
-    ogni query. Esaurito il budget il run fallisce (e non scrive un parquet
-    parziale); il successivo riparte dallo stesso ``max(data)``.
+    default 480s in incrementale, nessun tetto nel full): quando il WAF
+    blocca, non si resta appesi 10 minuti *per ogni* query. Il budget limita
+    l'attesa, non i tentativi: dopo l'ultima pausa si prova comunque. Esaurito
+    il budget il run fallisce (e non scrive un parquet parziale); il successivo
+    riparte dallo stesso ``max(data)``.
     """
     global _retry_spent
     ultimo: RuntimeError | None = None
-    for i, wait in enumerate(_RETRY_ATTEMPTS):
-        residuo = _RETRY_BUDGET_S - _retry_spent
-        if residuo <= 0:
-            raise RuntimeError(
-                f"retry budget {_RETRY_BUDGET_S:.0f}s esaurito "
-                f"(tentativo {i}): {ultimo}"
-            ) from ultimo
+    # Un tentativo in più rispetto alle pause: l'ultimo avviene dopo l'ultima
+    # attesa (anche quando il budget è appena finito).
+    for i in range(len(_RETRY_ATTEMPTS) + 1):
+        if i > 0:
+            wait = _RETRY_ATTEMPTS[i - 1]
+            if _RETRY_BUDGET_S is None:
+                pausa = wait
+            else:
+                residuo = _RETRY_BUDGET_S - _retry_spent
+                if residuo <= 0:
+                    break
+                pausa = min(wait, residuo)
+                _retry_spent += pausa
+            log.warning(
+                "query fallita (tentativo %d): %s — attesa %.0fs (%s)",
+                i, ultimo, pausa,
+                "nessun tetto" if _RETRY_BUDGET_S is None
+                else f"budget {_retry_spent:.0f}/{_RETRY_BUDGET_S:.0f}s",
+            )
+            time.sleep(pausa)
         try:
             rows = execute_sparql_rows_curl(ENDPOINT, sparql, timeout=timeout)
             time.sleep(8)
             return rows
         except RuntimeError as exc:
             ultimo = exc
-            pausa = min(wait, residuo)
-            _retry_spent += pausa
-            log.warning(
-                "query fallita (tentativo %d): %s — attesa %.0fs (budget %.0f/%.0fs)",
-                i + 1, exc, pausa, _retry_spent, _RETRY_BUDGET_S,
-            )
-            time.sleep(pausa)
     raise RuntimeError(
-        f"query fallita dopo {len(_RETRY_ATTEMPTS)} tentativi: {sparql[:120]}..."
+        f"query fallita dopo {len(_RETRY_ATTEMPTS) + 1} tentativi: {sparql[:120]}..."
     )
 
 
@@ -176,24 +203,29 @@ def fetch_votazioni_meta(graph: str) -> list[dict]:
     """)
 
 
-def fetch_votazioni_meta_union(sedute: set[str]) -> list[dict]:
+def fetch_votazioni_meta_union(sedute: set[str], batch: int = 200) -> list[dict]:
     """Metadati delle votazioni delle sedute indicate — unione dei graph.
 
     Il default graph di Virtuoso è l'unione dei graph: si evita ``GRAPH ?g``
-    (e quindi l'elenco dei graph) e si fa **una sola** richiesta. Il filtro
-    sulle sedute nuove limita la scansione alle votazioni che servono.
+    (e quindi l'elenco dei graph). Le sedute sono spezzate in batch da 200
+    come i voti: con una baseline vecchia le sedute nuove possono essere
+    centinaia e un'unica IN-list lunga è più fragile.
     """
-    in_list = "<" + ">,<".join(sorted(sedute)) + ">"
-    return query(f"""
-        PREFIX osr: <{OSR}>
-        {_META_SELECT}
-        WHERE {{
-          ?v a osr:Votazione ; osr:seduta ?s .
-          FILTER(?s IN ({in_list}))
-          {_META_OPTIONALS}
-        }}
-        GROUP BY ?v
-    """)
+    meta: list[dict] = []
+    s_list = sorted(sedute)
+    for i in range(0, len(s_list), batch):
+        in_list = "<" + ">,<".join(s_list[i:i + batch]) + ">"
+        meta.extend(query(f"""
+            PREFIX osr: <{OSR}>
+            {_META_SELECT}
+            WHERE {{
+              ?v a osr:Votazione ; osr:seduta ?s .
+              FILTER(?s IN ({in_list}))
+              {_META_OPTIONALS}
+            }}
+            GROUP BY ?v
+        """))
+    return meta
 
 
 def fetch_voti(graph: str) -> list[dict]:
@@ -315,6 +347,7 @@ def main() -> int:
                         help="scopre i graph con una query globale invece della lista "
                              "deterministica per legislatura (usare se il Senato aggiunge un graph)")
     args = parser.parse_args()
+    configura_budget(args.incremental)
 
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -368,6 +401,13 @@ def main() -> int:
             log.info("incremental: %d votazioni nuove (sedute dal %s)",
                      len(new_votazioni), last_date)
             if not new_votazioni:
+                if new_sedute:
+                    # L'endpoint può servire risposte vuote: una stallo silenzioso
+                    # (sedute nuove, zero metadati) va reso visibile.
+                    log.warning(
+                        "incremental: %d sedute nuove ma 0 votazioni nei metadati "
+                        "— possibile risposta vuota dal endpoint", len(new_sedute),
+                    )
                 log.info("niente di nuovo — parquet invariato: %s", final_path)
                 return 0
             try:
@@ -427,8 +467,8 @@ def main() -> int:
             # Un graph fallito in full non deve produrre un parquet parziale e
             # "silenzioso": il prossimo run userebbe max(data) avanzato e
             # salterebbe per sempre le votazioni mancanti.
-            for f in voti_files:
-                f.unlink(missing_ok=True)
+            # I `voti_*.parquet` già estratti NON si cancellano: sono la cache
+            # di resume del full ("già estratto, salto" al run successivo).
             log.error("graph falliti: %s — run non valido, parquet invariato: %s",
                       ", ".join(graph_falliti), final_path)
             return 1
@@ -474,7 +514,7 @@ def main() -> int:
             log.error("nessun file voti_*.parquet in %s", out_dir)
             return 1
 
-    final_path = out_dir / f"senato_votazioni.parquet"
+    final_path = out_dir / "senato_votazioni.parquet"
     log.info("merge in %s", final_path)
     existing_union = (
         f"UNION ALL SELECT * FROM read_parquet('{final_path}')" if last_date is not None else ""
