@@ -2,7 +2,7 @@
   "schema_version": 1,
   "repo": "open-politica",
   "source_repo": "dataciviclab/open-politica",
-  "updated_at": "2026-11-21",
+  "updated_at": "2026-11-24",
   "datasets": [
     {
       "slug": "atti",
@@ -5122,27 +5122,27 @@
       "detail": "anni 13-19 — mart: si",
       "action": "",
       "run": {
-        "run_id": "20261104T235727Z_21109d5a",
+        "run_id": "20261124T132938Z_f361ca32",
         "year": 19,
         "status": "SUCCESS",
         "quality_score": {
           "raw": 100,
-          "clean": 100,
+          "clean": 95,
           "mart": 100
         },
         "output_rows": {
           "raw": 39380,
           "clean": 39380,
-          "mart": 4827
+          "mart": 4855
         },
         "output_bytes": {
-          "raw": 7225550,
-          "clean": 511850,
-          "mart": 13138
+          "raw": 7224495,
+          "clean": 512526,
+          "mart": 13248
         },
-        "started_at": "2026-11-04T23:57:27.856022+00:00",
-        "finished_at": "2026-11-04T23:57:51.231211+00:00",
-        "duration_seconds": 23.375
+        "started_at": "2026-11-24T13:29:38.887869+00:00",
+        "finished_at": "2026-11-24T13:29:57.207678+00:00",
+        "duration_seconds": 18.32
       }
     },
     {
