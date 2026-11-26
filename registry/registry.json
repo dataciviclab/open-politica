@@ -744,6 +744,9 @@
         "start": 2008,
         "end": 2026
       },
+      "partitions": {
+        "2026": 127127
+      },
       "columns": [
         {
           "name": "evento_id",
@@ -832,11 +835,10 @@
         "camera_iter__mart_commissioni"
       ],
       "last_run": {
-        "at": "2026-11-21T14:29:45.296278+00:00",
+        "at": "2026-11-26T16:40:51.020511+00:00",
         "year": 2026,
         "status": "SUCCESS"
-      },
-      "location": "gs://dataciviclab-clean/open-politica/camera_iter/2026/camera_iter_2026_clean.parquet"
+      }
     },
     {
       "slug": "camera_leggi",
@@ -1423,6 +1425,9 @@
         "start": 2022,
         "end": 2026
       },
+      "partitions": {
+        "2026": 8323296
+      },
       "columns": [
         {
           "name": "deputato_id",
@@ -1462,11 +1467,10 @@
         "camera_voti__mart_voto_deputato"
       ],
       "last_run": {
-        "at": "2026-11-21T14:26:51.699150+00:00",
+        "at": "2026-11-26T16:38:51.377641+00:00",
         "year": 2026,
         "status": "SUCCESS"
-      },
-      "location": "gs://dataciviclab-clean/open-politica/camera_voti/2026/camera_voti_2026_clean.parquet"
+      }
     },
     {
       "slug": "membri_governo",
@@ -2963,6 +2967,9 @@
         "start": 2022,
         "end": 2026
       },
+      "partitions": {
+        "2026": 1240942
+      },
       "columns": [
         {
           "name": "votazione",
@@ -3051,11 +3058,10 @@
         "senato_votazioni__mart_voto_senatore"
       ],
       "last_run": {
-        "at": "2026-11-21T14:27:31.684304+00:00",
+        "at": "2026-11-26T16:39:23.620019+00:00",
         "year": 2026,
         "status": "SUCCESS"
-      },
-      "location": "gs://dataciviclab-clean/open-politica/senato_votazioni/2026/senato_votazioni_2026_clean.parquet"
+      }
     },
     {
       "slug": "senato_votazioni_oggetto",
